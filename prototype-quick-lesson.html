@@ -1,0 +1,2324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>九章爱学 - 快速建课 三端交互原型</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   CSS Variables & Reset
+   ============================================ */
+:root {
+  /* Brand */
+  --brand: #2AADEB;
+  --brand-dark: #1E8FC4;
+  --brand-light: #E8F6FD;
+  --brand-10: rgba(42, 173, 235, 0.1);
+  --brand-20: rgba(42, 173, 235, 0.2);
+  --brand-ghost: rgba(42, 173, 235, 0.06);
+
+  /* Big Screen Dark Theme */
+  --bs-bg: #0B0E17;
+  --bs-surface: #141927;
+  --bs-card: #1C2235;
+  --bs-card-hover: #232A42;
+  --bs-border: rgba(255,255,255,0.08);
+  --bs-text: #E8ECF4;
+  --bs-text-secondary: #8B95AD;
+  --bs-text-muted: #5A6380;
+
+  /* Pad Light Theme */
+  --pad-bg: #F0F2F5;
+  --pad-surface: #FFFFFF;
+  --pad-card: #FFFFFF;
+  --pad-border: #E5E8ED;
+  --pad-text: #1A1F36;
+  --pad-text-secondary: #6B7280;
+  --pad-text-muted: #9CA3AF;
+  --pad-sidebar: #2C3142;
+
+  /* Student Light Theme */
+  --stu-bg: #F5F7FA;
+  --stu-surface: #FFFFFF;
+  --stu-text: #1A1F36;
+  --stu-text-secondary: #6B7280;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 36px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-xl: 0 24px 60px rgba(0,0,0,0.16), 0 8px 20px rgba(0,0,0,0.08);
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-2xl: 24px;
+
+  /* Status */
+  --status-ended: #9CA3AF;
+  --status-active: #2AADEB;
+  --status-active-bg: rgba(42,173,235,0.12);
+  --status-pending: #F59E0B;
+  --status-pending-bg: rgba(245,158,11,0.12);
+  --status-success: #10B981;
+  --status-success-bg: rgba(16,185,129,0.12);
+  --status-danger: #EF4444;
+  --status-danger-bg: rgba(239,68,68,0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans SC', 'DM Sans', -apple-system, sans-serif;
+  background: #E8EAEF;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   Tab Navigation
+   ============================================ */
+.proto-header {
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E8ED;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.proto-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1F36;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.proto-title .logo {
+  width: 24px;
+  height: 24px;
+  background: var(--brand);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  background: #F0F2F5;
+  padding: 3px;
+  border-radius: 10px;
+}
+.tab {
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6B7280;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+.tab:hover { color: #1A1F36; background: rgba(255,255,255,0.5); }
+.tab.active {
+  background: #FFFFFF;
+  color: var(--brand);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  font-weight: 600;
+}
+.flow-hint {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+/* ============================================
+   Device Viewport
+   ============================================ */
+.device-viewport {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px;
+  min-height: calc(100vh - 56px);
+}
+.device { display: none; width: 100%; }
+.device.active { display: flex; justify-content: center; }
+
+/* Big Screen Frame */
+.bigscreen-frame {
+  width: 960px;
+  height: 540px;
+  background: var(--bs-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255,255,255,0.05);
+  position: relative;
+}
+
+/* Pad Frame */
+.pad-frame {
+  width: 960px;
+  height: 672px;
+  background: var(--pad-bg);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  position: relative;
+  display: flex;
+}
+
+/* Student Frame */
+.student-frame {
+  width: 375px;
+  height: 680px;
+  background: var(--stu-bg);
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  position: relative;
+  border: 6px solid #1A1F36;
+}
+
+/* Page System */
+.page { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+.page.active {
+  display: flex;
+  flex-direction: column;
+  animation: pageIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   BIG SCREEN PAGES
+   ============================================ */
+
+/* BS Top Bar */
+.bs-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 28px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--bs-border);
+}
+.bs-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.bs-logo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bs-logo-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--brand);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+.bs-class-info {
+  font-size: 13px;
+  color: var(--bs-text-secondary);
+  padding-left: 16px;
+  border-left: 1px solid var(--bs-border);
+}
+.bs-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bs-date {
+  font-size: 13px;
+  color: var(--bs-text-secondary);
+  font-family: 'DM Sans', sans-serif;
+}
+.bs-teacher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--bs-text);
+}
+.bs-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand), #1E8FC4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* BS Schedule Content */
+.bs-content {
+  flex: 1;
+  padding: 20px 28px;
+  overflow-y: auto;
+}
+.bs-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.bs-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--bs-text);
+}
+.bs-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: linear-gradient(135deg, var(--brand), #1E9DD8);
+  color: white;
+  border: none;
+  border-radius: var(--r-md);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(42,173,235,0.35);
+}
+.bs-quick-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(42,173,235,0.45);
+}
+.bs-quick-btn .icon { font-size: 16px; }
+
+/* BS Lesson Cards */
+.bs-lessons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bs-lesson-card {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--bs-card);
+  border-radius: var(--r-md);
+  border: 1px solid var(--bs-border);
+  transition: all 0.2s ease;
+}
+.bs-lesson-card:hover { background: var(--bs-card-hover); }
+.bs-lesson-time {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bs-text);
+  width: 140px;
+  flex-shrink: 0;
+}
+.bs-lesson-divider {
+  width: 3px;
+  height: 32px;
+  border-radius: 2px;
+  margin: 0 16px;
+  flex-shrink: 0;
+}
+.bs-lesson-divider.ended { background: var(--status-ended); opacity: 0.4; }
+.bs-lesson-divider.active { background: var(--status-active); }
+.bs-lesson-divider.pending { background: var(--status-pending); }
+.bs-lesson-info { flex: 1; }
+.bs-lesson-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bs-text);
+  margin-bottom: 2px;
+}
+.bs-lesson-meta {
+  font-size: 12px;
+  color: var(--bs-text-muted);
+}
+.bs-lesson-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.bs-status-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+.bs-status-tag.ended { background: rgba(156,163,175,0.15); color: var(--status-ended); }
+.bs-status-tag.active { background: var(--status-active-bg); color: var(--status-active); }
+.bs-status-tag.pending { background: var(--status-pending-bg); color: var(--status-pending); }
+.bs-enter-btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--brand);
+  color: white;
+  transition: all 0.2s;
+}
+.bs-enter-btn:hover { background: var(--brand-dark); }
+
+/* BS QR Page */
+.bs-qr-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #141927 0%, var(--bs-bg) 100%);
+}
+.bs-qr-container {
+  text-align: center;
+  animation: qrAppear 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes qrAppear {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+.bs-qr-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--bs-text);
+  margin-bottom: 6px;
+}
+.bs-qr-subtitle {
+  font-size: 13px;
+  color: var(--bs-text-secondary);
+  margin-bottom: 24px;
+}
+.bs-qr-box {
+  width: 200px;
+  height: 200px;
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 16px;
+  margin: 0 auto 20px;
+  box-shadow: 0 0 60px rgba(42,173,235,0.2);
+  position: relative;
+}
+.qr-pattern {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(21, 1fr);
+  grid-template-rows: repeat(21, 1fr);
+  gap: 1px;
+}
+.qr-cell {
+  border-radius: 1px;
+}
+.qr-cell.dark { background: #1A1F36; }
+.qr-cell.light { background: transparent; }
+.bs-qr-context {
+  font-size: 14px;
+  color: var(--brand);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.bs-qr-hint {
+  font-size: 12px;
+  color: var(--bs-text-muted);
+  margin-bottom: 24px;
+}
+.bs-qr-hint .scan-icon {
+  display: inline-block;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.bs-qr-cancel {
+  padding: 8px 32px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--bs-border);
+  border-radius: var(--r-sm);
+  color: var(--bs-text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.bs-qr-cancel:hover { background: rgba(255,255,255,0.12); color: var(--bs-text); }
+
+/* BS Teaching Page */
+.bs-teach-page {
+  background: var(--bs-bg);
+}
+.bs-teach-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 24px;
+  background: var(--bs-surface);
+  border-bottom: 1px solid var(--bs-border);
+}
+.bs-teach-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--bs-text);
+}
+.bs-teach-quick-tag {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: var(--status-active-bg);
+  color: var(--brand);
+  border-radius: 4px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.bs-teach-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #10141F;
+  position: relative;
+}
+.bs-whiteboard {
+  width: 85%;
+  height: 85%;
+  background: #FFFFFF;
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D1D5DB;
+  font-size: 16px;
+  box-shadow: var(--shadow-lg);
+}
+.bs-teach-toolbar {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 24px;
+  background: var(--bs-surface);
+  border-top: 1px solid var(--bs-border);
+}
+.bs-tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 20px;
+  background: transparent;
+  border: 1px solid var(--bs-border);
+  border-radius: var(--r-sm);
+  color: var(--bs-text-secondary);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.bs-tool-btn:hover { background: rgba(255,255,255,0.05); color: var(--bs-text); }
+.bs-tool-btn .ico { font-size: 18px; }
+.bs-end-btn {
+  padding: 7px 20px;
+  background: var(--status-danger);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.bs-end-btn:hover { background: #DC2626; }
+
+/* Simulated scan success button (prototype helper) */
+.proto-simulate-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  padding: 8px 16px;
+  background: var(--status-success);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: all 0.2s;
+  z-index: 10;
+}
+.proto-simulate-btn:hover { opacity: 1; }
+.proto-simulate-btn::before {
+  content: '🧪 ';
+}
+
+/* ============================================
+   PAD PAGES
+   ============================================ */
+
+/* Pad Status Bar */
+.pad-statusbar {
+  height: 24px;
+  background: #1A1F36;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: white;
+  flex-shrink: 0;
+}
+
+/* Pad Top Bar */
+.pad-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: white;
+  border-bottom: 1px solid var(--pad-border);
+  flex-shrink: 0;
+}
+.pad-hello {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pad-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand), #1E8FC4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+}
+.pad-greeting {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--pad-text);
+}
+.pad-actions {
+  display: flex;
+  gap: 6px;
+}
+.pad-action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--pad-border);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.pad-action-btn:hover { background: var(--pad-bg); }
+.pad-action-btn.scan-highlight {
+  border-color: var(--brand);
+  background: var(--brand-light);
+  animation: scanPulse 2s ease-in-out infinite;
+}
+@keyframes scanPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(42,173,235,0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(42,173,235,0); }
+}
+.pad-action-btn .badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: var(--status-danger);
+  border-radius: 50%;
+  border: 1.5px solid white;
+}
+
+/* Pad Layout */
+.pad-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.pad-sidebar {
+  width: 72px;
+  background: var(--pad-sidebar);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.pad-nav-item {
+  width: 56px;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pad-nav-item .ico { font-size: 18px; }
+.pad-nav-item .label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  line-height: 1.2;
+}
+.pad-nav-item:hover { background: rgba(255,255,255,0.08); }
+.pad-nav-item.active {
+  background: rgba(42,173,235,0.2);
+}
+.pad-nav-item.active .label { color: var(--brand); }
+.pad-main {
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Pad Schedule */
+.pad-schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.pad-schedule-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pad-text);
+}
+.pad-week-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.pad-day {
+  flex: 1;
+  padding: 8px 4px;
+  text-align: center;
+  border-radius: var(--r-sm);
+  background: white;
+  border: 1px solid var(--pad-border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pad-day.today {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: white;
+}
+.pad-day .wd { font-size: 11px; color: var(--pad-text-muted); }
+.pad-day.today .wd { color: rgba(255,255,255,0.8); }
+.pad-day .dd { font-size: 14px; font-weight: 600; color: var(--pad-text); margin-top: 2px; font-family: 'DM Sans'; }
+.pad-day.today .dd { color: white; }
+
+/* Pad Lesson Cards */
+.pad-lessons { display: flex; flex-direction: column; gap: 10px; }
+.pad-lesson-card {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: white;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--pad-border);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.pad-lesson-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+.pad-lesson-card.ended::before { background: var(--status-ended); }
+.pad-lesson-card.active::before { background: var(--status-active); }
+.pad-lesson-card.pending::before { background: var(--status-pending); }
+.pad-lesson-card.quick::before { background: var(--brand); }
+.pad-lesson-time-col {
+  width: 100px;
+  flex-shrink: 0;
+  padding-left: 8px;
+}
+.pad-lesson-time {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pad-text);
+}
+.pad-lesson-room {
+  font-size: 11px;
+  color: var(--pad-text-muted);
+  margin-top: 2px;
+}
+.pad-lesson-info { flex: 1; }
+.pad-lesson-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pad-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pad-quick-icon {
+  font-size: 12px;
+  background: var(--status-active-bg);
+  color: var(--brand);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.pad-lesson-subject {
+  font-size: 12px;
+  color: var(--pad-text-secondary);
+  margin-top: 2px;
+}
+.pad-lesson-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pad-lesson-tag {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+.pad-lesson-tag.ended { background: rgba(156,163,175,0.1); color: var(--status-ended); }
+.pad-lesson-tag.active { background: var(--status-active-bg); color: var(--status-active); }
+.pad-lesson-tag.pending { background: var(--status-pending-bg); color: var(--status-pending); }
+.pad-go-btn {
+  padding: 7px 18px;
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pad-go-btn.primary { background: var(--brand); color: white; }
+.pad-go-btn.primary:hover { background: var(--brand-dark); }
+.pad-go-btn.outline {
+  background: white;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+}
+
+/* Pad Scanner Page */
+.pad-scanner-page {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #000;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.scanner-viewfinder {
+  width: 220px;
+  height: 220px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: var(--r-lg);
+  position: relative;
+  margin-bottom: 20px;
+}
+.scanner-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: var(--brand);
+  border-style: solid;
+  border-width: 0;
+}
+.scanner-corner.tl { top: -2px; left: -2px; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: var(--r-lg); }
+.scanner-corner.tr { top: -2px; right: -2px; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: var(--r-lg); }
+.scanner-corner.bl { bottom: -2px; left: -2px; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: var(--r-lg); }
+.scanner-corner.br { bottom: -2px; right: -2px; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: var(--r-lg); }
+.scanner-line {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--brand), transparent);
+  animation: scanLine 2s ease-in-out infinite;
+  border-radius: 1px;
+}
+@keyframes scanLine {
+  0% { top: 8px; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: calc(100% - 10px); opacity: 0; }
+}
+.scanner-hint {
+  font-size: 14px;
+  color: rgba(255,255,255,0.8);
+}
+.scanner-cancel {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: var(--r-sm);
+  color: white;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Pad Loading Overlay */
+.pad-loading-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.pad-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--pad-border);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.pad-loading-text {
+  font-size: 14px;
+  color: var(--pad-text-secondary);
+}
+
+/* Pad Success Overlay */
+.pad-success-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.pad-success-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--status-success-bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  animation: successPop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes successPop {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.pad-success-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--pad-text);
+}
+.pad-success-sub {
+  font-size: 13px;
+  color: var(--pad-text-secondary);
+}
+
+/* Pad Modal / Dialog */
+.pad-modal-mask {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pad-dialog {
+  background: white;
+  border-radius: var(--r-xl);
+  padding: 28px;
+  width: 380px;
+  box-shadow: var(--shadow-xl);
+  animation: dialogIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes dialogIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.pad-dialog-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 14px;
+}
+.pad-dialog-icon.info { background: var(--brand-10); }
+.pad-dialog-icon.warn { background: var(--status-pending-bg); }
+.pad-dialog-icon.error { background: var(--status-danger-bg); }
+.pad-dialog-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pad-text);
+  margin-bottom: 8px;
+}
+.pad-dialog-desc {
+  font-size: 13px;
+  color: var(--pad-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.pad-dialog-highlight {
+  background: var(--brand-10);
+  color: var(--brand-dark);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.pad-dialog-actions {
+  display: flex;
+  gap: 10px;
+}
+.pad-dialog-btn {
+  flex: 1;
+  padding: 11px 0;
+  border-radius: var(--r-md);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+.pad-dialog-btn.cancel {
+  background: var(--pad-bg);
+  color: var(--pad-text-secondary);
+}
+.pad-dialog-btn.cancel:hover { background: #E5E8ED; }
+.pad-dialog-btn.primary {
+  background: var(--brand);
+  color: white;
+}
+.pad-dialog-btn.primary:hover { background: var(--brand-dark); }
+.pad-dialog-btn.warn {
+  background: var(--status-pending);
+  color: white;
+}
+
+/* Conflict scenario switcher */
+.conflict-switcher {
+  display: flex;
+  gap: 4px;
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 3px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  z-index: 400;
+}
+.conflict-tab {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-family: inherit;
+  border: none;
+  background: transparent;
+  color: var(--pad-text-secondary);
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.conflict-tab.active {
+  background: var(--brand);
+  color: white;
+}
+
+/* Pad Teaching Control Page */
+.pad-teach-page {
+  background: var(--pad-bg);
+}
+.pad-teach-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: white;
+  border-bottom: 1px solid var(--pad-border);
+}
+.pad-teach-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--pad-text);
+}
+.pad-teach-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: var(--status-active-bg);
+  color: var(--brand);
+  border-radius: 4px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.pad-teach-sep {
+  color: var(--pad-text-muted);
+}
+.pad-teach-end-btn {
+  padding: 7px 20px;
+  background: var(--status-danger);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.pad-teach-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px;
+}
+.pad-mode-card {
+  flex: 1;
+  height: 100%;
+  background: white;
+  border-radius: var(--r-2xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: 2px solid transparent;
+}
+.pad-mode-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--brand-20);
+}
+.pad-mode-card .mode-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+.pad-mode-card .mode-icon.s1 { background: #EBF5FF; }
+.pad-mode-card .mode-icon.s2 { background: #F0FDF4; }
+.pad-mode-card .mode-icon.s3 { background: #FFF7ED; }
+.pad-mode-card .mode-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--pad-text);
+}
+.pad-mode-card .mode-desc {
+  font-size: 12px;
+  color: var(--pad-text-muted);
+}
+.pad-teach-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px;
+  background: white;
+  border-top: 1px solid var(--pad-border);
+  gap: 16px;
+}
+.pad-teach-footer-info {
+  font-size: 12px;
+  color: var(--pad-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.online-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--status-success);
+  border-radius: 50%;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ============================================
+   STUDENT PAGES
+   ============================================ */
+
+/* Student Status Bar */
+.stu-statusbar {
+  height: 44px;
+  background: white;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 20px 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A1F36;
+  flex-shrink: 0;
+}
+.stu-statusbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+}
+
+/* Student Home */
+.stu-home {
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+.stu-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.stu-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F59E0B, #EF4444);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+}
+.stu-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--stu-text);
+}
+.stu-class {
+  font-size: 12px;
+  color: var(--stu-text-secondary);
+  margin-top: 2px;
+}
+.stu-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--stu-text);
+  margin-bottom: 12px;
+}
+.stu-course-card {
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stu-course-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.stu-course-icon.math { background: #EBF5FF; }
+.stu-course-icon.chinese { background: #FEF3C7; }
+.stu-course-icon.english { background: #F0FDF4; }
+.stu-course-info { flex: 1; }
+.stu-course-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--stu-text);
+}
+.stu-course-time {
+  font-size: 12px;
+  color: var(--stu-text-secondary);
+  margin-top: 2px;
+}
+.stu-course-tag {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.stu-course-tag.ended { background: rgba(156,163,175,0.1); color: var(--status-ended); }
+.stu-course-tag.pending { background: var(--status-pending-bg); color: var(--status-pending); }
+
+/* Student Notification */
+.stu-notification {
+  position: absolute;
+  top: 56px;
+  left: 16px;
+  right: 16px;
+  background: white;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  animation: notifSlide 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 100;
+}
+@keyframes notifSlide {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.stu-notif-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--brand);
+  color: white;
+}
+.stu-notif-header .ico { font-size: 18px; }
+.stu-notif-header .text { font-size: 13px; font-weight: 500; }
+.stu-notif-body {
+  padding: 16px;
+}
+.stu-notif-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--stu-text);
+  margin-bottom: 6px;
+}
+.stu-notif-desc {
+  font-size: 12px;
+  color: var(--stu-text-secondary);
+  margin-bottom: 14px;
+}
+.stu-notif-enter-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--brand);
+  color: white;
+  border: none;
+  border-radius: var(--r-md);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.stu-notif-enter-btn:hover { background: var(--brand-dark); }
+
+/* Student Classroom Page */
+.stu-classroom {
+  background: white;
+}
+.stu-class-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid #F0F2F5;
+}
+.stu-class-info {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--stu-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stu-class-online {
+  font-size: 11px;
+  color: var(--status-success);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.stu-class-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+}
+.stu-waiting-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--brand-10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  animation: waitFloat 3s ease-in-out infinite;
+}
+@keyframes waitFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.stu-waiting-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--stu-text);
+}
+.stu-waiting-sub {
+  font-size: 12px;
+  color: var(--stu-text-secondary);
+}
+.stu-class-bottom {
+  padding: 12px 20px;
+  border-top: 1px solid #F0F2F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.stu-class-bottom .online-badge {
+  font-size: 12px;
+  color: var(--stu-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ============================================
+   Flow Guide
+   ============================================ */
+.flow-guide {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 500;
+  font-size: 12px;
+}
+.flow-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pad-text-muted);
+}
+.flow-step.active { color: var(--brand); font-weight: 600; }
+.flow-step.done { color: var(--status-success); }
+.flow-step .num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  background: #F0F2F5;
+  color: var(--pad-text-muted);
+}
+.flow-step.active .num { background: var(--brand); color: white; }
+.flow-step.done .num { background: var(--status-success); color: white; }
+.flow-arrow { color: #D1D5DB; font-size: 10px; }
+
+/* Reset button */
+.reset-btn {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid var(--pad-border);
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--pad-text-secondary);
+  cursor: pointer;
+  z-index: 500;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s;
+}
+.reset-btn:hover { background: var(--pad-bg); }
+
+/* Utility */
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Proto Header -->
+<div class="proto-header">
+  <div class="proto-title">
+    <div class="logo">九</div>
+    快速建课 · 三端交互原型
+  </div>
+  <div class="tab-bar">
+    <button class="tab active" data-device="bigscreen">📺 大屏端</button>
+    <button class="tab" data-device="pad">📱 教师Pad端</button>
+    <button class="tab" data-device="student">👨‍🎓 学生端</button>
+  </div>
+  <div class="flow-hint" id="flowHint">点击「快速建课」开始体验</div>
+</div>
+
+<!-- Device Viewport -->
+<div class="device-viewport">
+
+  <!-- ==================== BIG SCREEN ==================== -->
+  <div id="bigscreen" class="device active">
+    <div class="device-frame bigscreen-frame">
+
+      <!-- BS Page 1: Schedule -->
+      <div class="page active" id="bs-schedule">
+        <div class="bs-topbar">
+          <div class="bs-topbar-left">
+            <div class="bs-logo">
+              <div class="bs-logo-icon">九</div>
+              智慧课堂
+            </div>
+            <div class="bs-class-info">三年一班 · 301教室</div>
+          </div>
+          <div class="bs-topbar-right">
+            <div class="bs-date">2026/04/10 周五</div>
+            <div class="bs-teacher">
+              <div class="bs-avatar">吴</div>
+              吴老师
+            </div>
+          </div>
+        </div>
+        <div class="bs-content">
+          <div class="bs-section-header">
+            <div class="bs-section-title">今日课程</div>
+            <button class="bs-quick-btn" onclick="bsShowQR()">
+              <span class="icon">⚡</span>
+              快速建课
+            </button>
+          </div>
+          <div class="bs-lessons">
+            <div class="bs-lesson-card" style="animation: pageIn 0.35s ease both; animation-delay: 0.05s;">
+              <div class="bs-lesson-time">08:30 - 09:15</div>
+              <div class="bs-lesson-divider ended"></div>
+              <div class="bs-lesson-info">
+                <div class="bs-lesson-name">三年一班 · 数学</div>
+                <div class="bs-lesson-meta">分数的初步认识 · 301教室</div>
+              </div>
+              <div class="bs-lesson-status">
+                <span class="bs-status-tag ended">已结束</span>
+              </div>
+            </div>
+            <div class="bs-lesson-card" style="animation: pageIn 0.35s ease both; animation-delay: 0.1s;">
+              <div class="bs-lesson-time">10:00 - 10:45</div>
+              <div class="bs-lesson-divider ended"></div>
+              <div class="bs-lesson-info">
+                <div class="bs-lesson-name">三年一班 · 语文</div>
+                <div class="bs-lesson-meta">古诗三首 · 301教室</div>
+              </div>
+              <div class="bs-lesson-status">
+                <span class="bs-status-tag ended">已结束</span>
+              </div>
+            </div>
+            <div class="bs-lesson-card" style="animation: pageIn 0.35s ease both; animation-delay: 0.15s;">
+              <div class="bs-lesson-time">14:00 - 14:45</div>
+              <div class="bs-lesson-divider pending"></div>
+              <div class="bs-lesson-info">
+                <div class="bs-lesson-name">三年一班 · 英语</div>
+                <div class="bs-lesson-meta">Unit 3 At the Zoo · 301教室</div>
+              </div>
+              <div class="bs-lesson-status">
+                <span class="bs-status-tag pending">未开始</span>
+                <button class="bs-enter-btn">进入上课</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BS Page 2: QR Code -->
+      <div class="page" id="bs-qrcode">
+        <div class="bs-qr-page">
+          <div class="bs-qr-container">
+            <div class="bs-qr-title">⚡ 快速建课</div>
+            <div class="bs-qr-subtitle">扫码即可开始上课，无需提前创建课程</div>
+            <div class="bs-qr-box">
+              <div class="qr-pattern" id="qrPattern"></div>
+            </div>
+            <div class="bs-qr-context">三年一班 · 301教室</div>
+            <div class="bs-qr-hint"><span class="scan-icon">📱</span> 请使用教师Pad扫描二维码</div>
+            <button class="bs-qr-cancel" onclick="bsBackToSchedule()">取消</button>
+          </div>
+          <button class="proto-simulate-btn" onclick="simulateScanSuccess()">模拟Pad扫码成功</button>
+        </div>
+      </div>
+
+      <!-- BS Page 3: Teaching -->
+      <div class="page" id="bs-teaching">
+        <div class="bs-teach-page" style="display:flex;flex-direction:column;height:100%;">
+          <div class="bs-teach-topbar">
+            <div class="bs-teach-info">
+              <span class="bs-teach-quick-tag">⚡ 快速建课</span>
+              <span>吴老师</span>
+              <span style="color:var(--bs-text-muted)">·</span>
+              <span>三年一班</span>
+              <span style="color:var(--bs-text-muted)">·</span>
+              <span>301教室</span>
+              <span style="color:var(--bs-text-muted)">·</span>
+              <span style="font-family:'DM Sans';color:var(--bs-text-secondary);">16:30</span>
+            </div>
+            <button class="bs-end-btn" onclick="endClass()">下课</button>
+          </div>
+          <div class="bs-teach-main">
+            <div class="bs-whiteboard">
+              <div style="text-align:center;">
+                <div style="font-size:32px;margin-bottom:8px;">📝</div>
+                <div>白板区域 · 可开始书写</div>
+              </div>
+            </div>
+          </div>
+          <div class="bs-teach-toolbar">
+            <button class="bs-tool-btn"><span class="ico">✏️</span>白板</button>
+            <button class="bs-tool-btn"><span class="ico">🖊️</span>批注</button>
+            <button class="bs-tool-btn"><span class="ico">🎯</span>互动</button>
+            <button class="bs-tool-btn"><span class="ico">⏱️</span>计时器</button>
+            <button class="bs-tool-btn"><span class="ico">📸</span>拍照</button>
+            <button class="bs-tool-btn"><span class="ico">🔲</span>聚焦</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TEACHER PAD ==================== -->
+  <div id="pad" class="device">
+    <div class="device-frame pad-frame" style="flex-direction:column;position:relative;">
+
+      <!-- Pad Status Bar -->
+      <div class="pad-statusbar">
+        <span>16:30</span>
+        <span>📶 WiFi  🔋 86%</span>
+      </div>
+
+      <!-- Pad Top Bar -->
+      <div class="pad-topbar">
+        <div class="pad-hello">
+          <div class="pad-avatar">吴</div>
+          <span class="pad-greeting">Hello 吴老师</span>
+        </div>
+        <div class="pad-actions">
+          <button class="pad-action-btn scan-highlight" onclick="padStartScan()" title="扫一扫">
+            📷
+            <span class="badge"></span>
+          </button>
+          <button class="pad-action-btn" title="投屏">📺</button>
+          <button class="pad-action-btn" title="刷新">🔄</button>
+          <button class="pad-action-btn" title="打印">🖨️</button>
+          <button class="pad-action-btn" title="设置">⚙️</button>
+        </div>
+      </div>
+
+      <!-- Pad Body -->
+      <div class="pad-body" id="padBody" style="position:relative;">
+        <!-- Sidebar -->
+        <div class="pad-sidebar">
+          <div class="pad-nav-item active"><span class="ico">📅</span><span class="label">我的课表</span></div>
+          <div class="pad-nav-item"><span class="ico">📝</span><span class="label">作业任务</span></div>
+          <div class="pad-nav-item"><span class="ico">📊</span><span class="label">考试报告</span></div>
+          <div class="pad-nav-item"><span class="ico">📚</span><span class="label">课程资源</span></div>
+          <div class="pad-nav-item"><span class="ico">🎯</span><span class="label">靶向任务</span></div>
+          <div class="pad-nav-item"><span class="ico">📈</span><span class="label">学情管理</span></div>
+          <div class="pad-nav-item"><span class="ico">☁️</span><span class="label">班级云盘</span></div>
+        </div>
+
+        <!-- Main Content: Schedule -->
+        <div class="pad-main" id="padMain">
+          <div class="pad-schedule-header">
+            <div class="pad-schedule-title">2026年04月10日 · 课表</div>
+          </div>
+          <div class="pad-week-bar">
+            <div class="pad-day"><div class="wd">周日</div><div class="dd">06</div></div>
+            <div class="pad-day"><div class="wd">周一</div><div class="dd">07</div></div>
+            <div class="pad-day"><div class="wd">周二</div><div class="dd">08</div></div>
+            <div class="pad-day"><div class="wd">周三</div><div class="dd">09</div></div>
+            <div class="pad-day today"><div class="wd">周四</div><div class="dd">10</div></div>
+            <div class="pad-day"><div class="wd">周五</div><div class="dd">11</div></div>
+            <div class="pad-day"><div class="wd">周六</div><div class="dd">12</div></div>
+          </div>
+          <div class="pad-lessons" id="padLessons">
+            <div class="pad-lesson-card ended" style="animation: pageIn 0.35s ease both; animation-delay: 0.05s;">
+              <div class="pad-lesson-time-col">
+                <div class="pad-lesson-time">08:30-09:15</div>
+                <div class="pad-lesson-room">301教室</div>
+              </div>
+              <div class="pad-lesson-info">
+                <div class="pad-lesson-name">三年一班 · 数学</div>
+                <div class="pad-lesson-subject">分数的初步认识</div>
+              </div>
+              <div class="pad-lesson-actions">
+                <span class="pad-lesson-tag ended">已结束</span>
+              </div>
+            </div>
+            <div class="pad-lesson-card ended" style="animation: pageIn 0.35s ease both; animation-delay: 0.1s;">
+              <div class="pad-lesson-time-col">
+                <div class="pad-lesson-time">10:00-10:45</div>
+                <div class="pad-lesson-room">301教室</div>
+              </div>
+              <div class="pad-lesson-info">
+                <div class="pad-lesson-name">三年一班 · 语文</div>
+                <div class="pad-lesson-subject">古诗三首</div>
+              </div>
+              <div class="pad-lesson-actions">
+                <span class="pad-lesson-tag ended">已结束</span>
+              </div>
+            </div>
+            <div class="pad-lesson-card pending" style="animation: pageIn 0.35s ease both; animation-delay: 0.15s;">
+              <div class="pad-lesson-time-col">
+                <div class="pad-lesson-time">14:00-14:45</div>
+                <div class="pad-lesson-room">301教室</div>
+              </div>
+              <div class="pad-lesson-info">
+                <div class="pad-lesson-name">三年一班 · 英语</div>
+                <div class="pad-lesson-subject">Unit 3 At the Zoo</div>
+              </div>
+              <div class="pad-lesson-actions">
+                <span class="pad-lesson-tag pending">未开始</span>
+                <button class="pad-go-btn outline">备课</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scanner Overlay -->
+        <div class="pad-scanner-page hidden" id="padScanner">
+          <button class="scanner-cancel" onclick="padCancelScan()">← 返回</button>
+          <div class="scanner-viewfinder">
+            <div class="scanner-corner tl"></div>
+            <div class="scanner-corner tr"></div>
+            <div class="scanner-corner bl"></div>
+            <div class="scanner-corner br"></div>
+            <div class="scanner-line"></div>
+          </div>
+          <div class="scanner-hint">将二维码放入框内自动扫描</div>
+          <button class="proto-simulate-btn" style="position:absolute;bottom:40px;right:20px;" onclick="padScanDetected()">模拟扫码识别</button>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="pad-loading-overlay hidden" id="padLoading">
+          <div class="pad-spinner"></div>
+          <div class="pad-loading-text">正在创建课节...</div>
+        </div>
+
+        <!-- Success Overlay -->
+        <div class="pad-success-overlay hidden" id="padSuccess">
+          <div class="pad-success-icon">✅</div>
+          <div class="pad-success-text">课节创建成功！</div>
+          <div class="pad-success-sub">正在进入授课控制...</div>
+        </div>
+
+        <!-- Conflict Dialogs -->
+        <div class="pad-modal-mask hidden" id="padConflictMask">
+          <!-- Dialog A: Same teacher + same class already has lesson -->
+          <div class="pad-dialog" id="conflictA">
+            <div class="pad-dialog-icon info">📋</div>
+            <div class="pad-dialog-title">已有课节</div>
+            <div class="pad-dialog-desc">
+              该班级当前已有课节 <span class="pad-dialog-highlight">三年一班 · 数学</span>，是否直接进入该课节？
+            </div>
+            <div class="pad-dialog-actions">
+              <button class="pad-dialog-btn cancel" onclick="padConflictCancel()">取消</button>
+              <button class="pad-dialog-btn primary" onclick="padConflictConfirm()">直接进入</button>
+            </div>
+          </div>
+          <!-- Dialog B: Teacher time conflict -->
+          <div class="pad-dialog hidden" id="conflictB">
+            <div class="pad-dialog-icon warn">⚠️</div>
+            <div class="pad-dialog-title">时间冲突</div>
+            <div class="pad-dialog-desc">
+              您当前时间已有课节 <span class="pad-dialog-highlight">二年三班 · 语文 14:00-15:00</span>，继续创建将产生时间冲突。是否继续？
+            </div>
+            <div class="pad-dialog-actions">
+              <button class="pad-dialog-btn cancel" onclick="padConflictCancel()">取消</button>
+              <button class="pad-dialog-btn warn" onclick="padConflictConfirm()">继续创建</button>
+            </div>
+          </div>
+          <!-- Dialog C: Class time conflict -->
+          <div class="pad-dialog hidden" id="conflictC">
+            <div class="pad-dialog-icon warn">⚠️</div>
+            <div class="pad-dialog-title">班级冲突</div>
+            <div class="pad-dialog-desc">
+              <span class="pad-dialog-highlight">三年一班</span> 当前已有其他老师的课节正在进行中，继续创建可能导致学生端冲突。是否继续？
+            </div>
+            <div class="pad-dialog-actions">
+              <button class="pad-dialog-btn cancel" onclick="padConflictCancel()">取消</button>
+              <button class="pad-dialog-btn warn" onclick="padConflictConfirm()">继续创建</button>
+            </div>
+          </div>
+          <!-- Dialog D: Network error -->
+          <div class="pad-dialog hidden" id="conflictD">
+            <div class="pad-dialog-icon error">❌</div>
+            <div class="pad-dialog-title">网络异常</div>
+            <div class="pad-dialog-desc">
+              网络连接异常，无法创建课节。请检查网络连接后重试。
+            </div>
+            <div class="pad-dialog-actions">
+              <button class="pad-dialog-btn cancel" onclick="padConflictCancel()">取消</button>
+              <button class="pad-dialog-btn primary" onclick="padRetry()">重试</button>
+            </div>
+          </div>
+          <!-- Conflict Scenario Switcher -->
+          <div class="conflict-switcher">
+            <button class="conflict-tab active" onclick="showConflict('A')">情况A 已有课节</button>
+            <button class="conflict-tab" onclick="showConflict('B')">情况B 老师冲突</button>
+            <button class="conflict-tab" onclick="showConflict('C')">情况C 班级冲突</button>
+            <button class="conflict-tab" onclick="showConflict('D')">情况D 网络异常</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pad Teaching Page (replaces body) -->
+      <div class="page hidden" id="padTeaching" style="position:absolute;top:0;left:0;right:0;bottom:0;z-index:500;background:var(--pad-bg);">
+        <div class="pad-teach-page" style="display:flex;flex-direction:column;height:100%;">
+          <!-- Reuse status bar -->
+          <div class="pad-statusbar">
+            <span>16:32</span>
+            <span>📶 WiFi  🔋 85%</span>
+          </div>
+          <div class="pad-teach-topbar">
+            <div class="pad-teach-info">
+              <span class="pad-teach-tag">⚡ 快速建课</span>
+              <span>三年一班</span>
+              <span class="pad-teach-sep">|</span>
+              <span style="font-family:'DM Sans';">2026/04/10</span>
+              <span class="pad-teach-sep">|</span>
+              <span style="font-family:'DM Sans';">16:30</span>
+              <span class="pad-teach-sep">|</span>
+              <span>301教室</span>
+            </div>
+            <button class="pad-teach-end-btn" onclick="endClass()">下课</button>
+          </div>
+          <div class="pad-teach-main">
+            <div class="pad-mode-card" style="animation: pageIn 0.4s ease both; animation-delay: 0.1s;">
+              <div class="mode-icon s1">📖</div>
+              <div class="mode-name">课件控制</div>
+              <div class="mode-desc">S1 · 控制大屏课件翻页</div>
+            </div>
+            <div class="pad-mode-card" style="animation: pageIn 0.4s ease both; animation-delay: 0.2s;">
+              <div class="mode-icon s2">🎯</div>
+              <div class="mode-name">互动发起</div>
+              <div class="mode-desc">S2 · 发起课堂互动</div>
+            </div>
+            <div class="pad-mode-card" style="animation: pageIn 0.4s ease both; animation-delay: 0.3s;">
+              <div class="mode-icon s3">🖊️</div>
+              <div class="mode-name">涂鸦批注</div>
+              <div class="mode-desc">S3 · 大屏涂鸦标注</div>
+            </div>
+          </div>
+          <div class="pad-teach-footer">
+            <div class="pad-teach-footer-info"><span class="online-dot"></span> 大屏已连接</div>
+            <div class="pad-teach-footer-info" style="color:var(--status-success);">32/35 名学生在线</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== STUDENT ==================== -->
+  <div id="student" class="device">
+    <div class="device-frame student-frame" style="position:relative;">
+
+      <!-- Student Page 1: Home -->
+      <div class="page active" id="stu-home">
+        <div class="stu-statusbar">
+          <span>16:30</span>
+          <div class="stu-statusbar-right">📶 🔋</div>
+        </div>
+        <div class="stu-home">
+          <div class="stu-header">
+            <div class="stu-avatar">张</div>
+            <div>
+              <div class="stu-name">张小明</div>
+              <div class="stu-class">三年一班 · 15号</div>
+            </div>
+          </div>
+          <div class="stu-section-title">今日课程</div>
+          <div class="stu-course-card" style="animation: pageIn 0.35s ease both; animation-delay: 0.05s;">
+            <div class="stu-course-icon math">📐</div>
+            <div class="stu-course-info">
+              <div class="stu-course-name">数学 · 分数的初步认识</div>
+              <div class="stu-course-time">08:30-09:15 · 吴老师</div>
+            </div>
+            <span class="stu-course-tag ended">已结束</span>
+          </div>
+          <div class="stu-course-card" style="animation: pageIn 0.35s ease both; animation-delay: 0.1s;">
+            <div class="stu-course-icon chinese">📖</div>
+            <div class="stu-course-info">
+              <div class="stu-course-name">语文 · 古诗三首</div>
+              <div class="stu-course-time">10:00-10:45 · 吴老师</div>
+            </div>
+            <span class="stu-course-tag ended">已结束</span>
+          </div>
+          <div class="stu-course-card" style="animation: pageIn 0.35s ease both; animation-delay: 0.15s;">
+            <div class="stu-course-icon english">🔤</div>
+            <div class="stu-course-info">
+              <div class="stu-course-name">英语 · Unit 3 At the Zoo</div>
+              <div class="stu-course-time">14:00-14:45 · 吴老师</div>
+            </div>
+            <span class="stu-course-tag pending">未开始</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Notification Overlay -->
+      <div class="hidden" id="stuNotification" style="position:absolute;top:0;left:0;right:0;bottom:0;z-index:50;">
+        <div class="stu-notification">
+          <div class="stu-notif-header">
+            <span class="ico">🔔</span>
+            <span class="text">课堂通知</span>
+          </div>
+          <div class="stu-notif-body">
+            <div class="stu-notif-title">吴老师开始上课了！</div>
+            <div class="stu-notif-desc">⚡ 快速建课 · 三年一班 · 301教室 · 16:30</div>
+            <button class="stu-notif-enter-btn" onclick="stuEnterClass()">进入课堂</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Classroom Page -->
+      <div class="page hidden" id="stu-classroom">
+        <div class="stu-classroom" style="display:flex;flex-direction:column;height:100%;">
+          <div class="stu-statusbar">
+            <span>16:32</span>
+            <div class="stu-statusbar-right">📶 🔋</div>
+          </div>
+          <div class="stu-class-topbar">
+            <div class="stu-class-info">
+              <span>📖</span>
+              吴老师的课堂
+            </div>
+            <div class="stu-class-online">
+              <span class="online-dot"></span>
+              课堂进行中
+            </div>
+          </div>
+          <div class="stu-class-main">
+            <div class="stu-waiting-icon">📡</div>
+            <div class="stu-waiting-text">已进入课堂</div>
+            <div class="stu-waiting-sub">等待老师发起互动...</div>
+          </div>
+          <div class="stu-class-bottom">
+            <span class="online-badge"><span class="online-dot"></span> 32/35 在线</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Flow Guide -->
+<div class="flow-guide" id="flowGuide">
+  <div class="flow-step active" id="step1"><span class="num">1</span> 大屏快速建课</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step" id="step2"><span class="num">2</span> 展示二维码</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step" id="step3"><span class="num">3</span> Pad扫码</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step" id="step4"><span class="num">4</span> 创建课节</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step" id="step5"><span class="num">5</span> 三端联动上课</div>
+</div>
+
+<!-- Reset Button -->
+<button class="reset-btn" onclick="resetAll()">🔄 重置原型</button>
+
+<script>
+// ============================================
+// State Management
+// ============================================
+let currentDevice = 'bigscreen';
+let globalState = {
+  bsPage: 'schedule',    // schedule | qrcode | teaching
+  padPage: 'schedule',   // schedule | scanner | loading | conflict | success | teaching
+  stuPage: 'home',       // home | notification | classroom
+  conflictType: 'A',
+  flowStep: 1
+};
+
+// ============================================
+// Generate QR Pattern
+// ============================================
+function generateQR() {
+  const container = document.getElementById('qrPattern');
+  if (!container) return;
+  // Simplified QR-like pattern
+  const size = 21;
+  const pattern = [];
+  // Position detection patterns (top-left, top-right, bottom-left)
+  const posPatterns = [
+    {r: 0, c: 0}, {r: 0, c: 14}, {r: 14, c: 0}
+  ];
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      let dark = false;
+
+      // Position detection patterns
+      for (const pp of posPatterns) {
+        const dr = r - pp.r, dc = c - pp.c;
+        if (dr >= 0 && dr < 7 && dc >= 0 && dc < 7) {
+          if (dr === 0 || dr === 6 || dc === 0 || dc === 6) dark = true;
+          else if (dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4) dark = true;
+          else dark = false;
+        }
+      }
+
+      // Timing patterns
+      if (r === 6 && c > 7 && c < 13) dark = c % 2 === 0;
+      if (c === 6 && r > 7 && r < 13) dark = r % 2 === 0;
+
+      // Random data area
+      if (!dark && r > 8 && c > 8) {
+        dark = Math.random() > 0.55;
+      }
+      if (!dark && ((r > 7 && r < 13 && c > 0 && c < 6) || (r > 0 && r < 6 && c > 7 && c < 13))) {
+        dark = Math.random() > 0.5;
+      }
+
+      const cell = document.createElement('div');
+      cell.className = `qr-cell ${dark ? 'dark' : 'light'}`;
+      container.appendChild(cell);
+    }
+  }
+}
+
+// ============================================
+// Tab Switching
+// ============================================
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    const device = tab.dataset.device;
+    currentDevice = device;
+    document.querySelectorAll('.device').forEach(d => d.classList.remove('active'));
+    document.getElementById(device).classList.add('active');
+
+    updateFlowHint();
+  });
+});
+
+function updateFlowHint() {
+  const hint = document.getElementById('flowHint');
+  const step = globalState.flowStep;
+  const hints = {
+    1: '点击「⚡快速建课」开始体验',
+    2: '大屏展示二维码，等待Pad扫描',
+    3: '切换到Pad端，点击「📷扫一扫」',
+    4: '查看冲突校验场景，或确认创建',
+    5: '三端已联动，可切换Tab查看各端状态'
+  };
+  hint.textContent = hints[step] || '';
+}
+
+function updateFlowSteps(step) {
+  globalState.flowStep = step;
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('step' + i);
+    el.classList.remove('active', 'done');
+    if (i < step) el.classList.add('done');
+    else if (i === step) el.classList.add('active');
+  }
+  updateFlowHint();
+}
+
+// ============================================
+// Big Screen Actions
+// ============================================
+function bsShowQR() {
+  document.getElementById('bs-schedule').classList.remove('active');
+  document.getElementById('bs-qrcode').classList.add('active');
+  globalState.bsPage = 'qrcode';
+  updateFlowSteps(2);
+}
+
+function bsBackToSchedule() {
+  document.getElementById('bs-qrcode').classList.remove('active');
+  document.getElementById('bs-schedule').classList.add('active');
+  globalState.bsPage = 'schedule';
+  updateFlowSteps(1);
+}
+
+function bsEnterTeaching() {
+  document.getElementById('bs-qrcode').classList.remove('active');
+  document.getElementById('bs-teaching').classList.add('active');
+  globalState.bsPage = 'teaching';
+}
+
+// ============================================
+// Pad Actions
+// ============================================
+function padStartScan() {
+  document.getElementById('padScanner').classList.remove('hidden');
+  globalState.padPage = 'scanner';
+  updateFlowSteps(3);
+}
+
+function padCancelScan() {
+  document.getElementById('padScanner').classList.add('hidden');
+  globalState.padPage = 'schedule';
+}
+
+function padScanDetected() {
+  document.getElementById('padScanner').classList.add('hidden');
+  document.getElementById('padLoading').classList.remove('hidden');
+  globalState.padPage = 'loading';
+  updateFlowSteps(4);
+
+  setTimeout(() => {
+    document.getElementById('padLoading').classList.add('hidden');
+    // Show conflict dialog
+    document.getElementById('padConflictMask').classList.remove('hidden');
+    globalState.padPage = 'conflict';
+  }, 1500);
+}
+
+function showConflict(type) {
+  globalState.conflictType = type;
+  ['A','B','C','D'].forEach(t => {
+    document.getElementById('conflict' + t).classList.toggle('hidden', t !== type);
+  });
+  document.querySelectorAll('.conflict-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.textContent.includes('情况' + type));
+  });
+}
+
+function padConflictCancel() {
+  document.getElementById('padConflictMask').classList.add('hidden');
+  globalState.padPage = 'schedule';
+  updateFlowSteps(3);
+}
+
+function padConflictConfirm() {
+  document.getElementById('padConflictMask').classList.add('hidden');
+  document.getElementById('padSuccess').classList.remove('hidden');
+  globalState.padPage = 'success';
+
+  setTimeout(() => {
+    document.getElementById('padSuccess').classList.add('hidden');
+    // Enter teaching mode
+    document.getElementById('padTeaching').classList.remove('hidden');
+    document.getElementById('padTeaching').classList.add('active');
+    globalState.padPage = 'teaching';
+    updateFlowSteps(5);
+
+    // Also update big screen
+    bsEnterTeaching();
+
+    // Also show student notification
+    document.getElementById('stuNotification').classList.remove('hidden');
+    document.getElementById('stu-home').classList.add('active');
+    globalState.stuPage = 'notification';
+
+    // Add quick lesson to pad schedule (for when they return)
+    addQuickLessonToSchedule();
+  }, 1500);
+}
+
+function padRetry() {
+  document.getElementById('padConflictMask').classList.add('hidden');
+  document.getElementById('padLoading').classList.remove('hidden');
+  setTimeout(() => {
+    document.getElementById('padLoading').classList.add('hidden');
+    document.getElementById('padConflictMask').classList.remove('hidden');
+    showConflict('A');
+  }, 1000);
+}
+
+function addQuickLessonToSchedule() {
+  const lessons = document.getElementById('padLessons');
+  const quickCard = document.createElement('div');
+  quickCard.className = 'pad-lesson-card quick active';
+  quickCard.style.animation = 'pageIn 0.35s ease both';
+  quickCard.innerHTML = `
+    <div class="pad-lesson-time-col">
+      <div class="pad-lesson-time">16:30-</div>
+      <div class="pad-lesson-room">301教室</div>
+    </div>
+    <div class="pad-lesson-info">
+      <div class="pad-lesson-name">
+        三年一班
+        <span class="pad-quick-icon">⚡快速</span>
+      </div>
+      <div class="pad-lesson-subject">快速建课 · 授课中</div>
+    </div>
+    <div class="pad-lesson-actions">
+      <span class="pad-lesson-tag active">进行中</span>
+      <button class="pad-go-btn primary">去上课</button>
+    </div>
+  `;
+  lessons.appendChild(quickCard);
+}
+
+// ============================================
+// Student Actions
+// ============================================
+function stuEnterClass() {
+  document.getElementById('stuNotification').classList.add('hidden');
+  document.getElementById('stu-home').classList.remove('active');
+  document.getElementById('stu-classroom').classList.remove('hidden');
+  document.getElementById('stu-classroom').classList.add('active');
+  globalState.stuPage = 'classroom';
+}
+
+// ============================================
+// Simulate Scan from Big Screen
+// ============================================
+function simulateScanSuccess() {
+  // Auto switch to pad tab and trigger scan flow
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-device="pad"]').classList.add('active');
+  document.querySelectorAll('.device').forEach(d => d.classList.remove('active'));
+  document.getElementById('pad').classList.add('active');
+  currentDevice = 'pad';
+
+  // Start scan and auto-detect
+  padStartScan();
+  setTimeout(() => padScanDetected(), 1200);
+}
+
+// ============================================
+// End Class
+// ============================================
+function endClass() {
+  if (!confirm('确定要下课吗？下课后大屏和Pad将返回课表，学生端将返回首页。')) return;
+  resetAll();
+}
+
+// ============================================
+// Reset
+// ============================================
+function resetAll() {
+  // Big screen
+  document.querySelectorAll('#bigscreen .page').forEach(p => p.classList.remove('active'));
+  document.getElementById('bs-schedule').classList.add('active');
+
+  // Pad
+  document.getElementById('padScanner').classList.add('hidden');
+  document.getElementById('padLoading').classList.add('hidden');
+  document.getElementById('padSuccess').classList.add('hidden');
+  document.getElementById('padConflictMask').classList.add('hidden');
+  document.getElementById('padTeaching').classList.add('hidden');
+  document.getElementById('padTeaching').classList.remove('active');
+
+  // Remove quick lesson card if exists
+  const quickCards = document.querySelectorAll('.pad-lesson-card.quick');
+  quickCards.forEach(c => c.remove());
+
+  // Student
+  document.getElementById('stuNotification').classList.add('hidden');
+  document.getElementById('stu-classroom').classList.add('hidden');
+  document.getElementById('stu-classroom').classList.remove('active');
+  document.getElementById('stu-home').classList.add('active');
+
+  // Reset state
+  globalState = {
+    bsPage: 'schedule',
+    padPage: 'schedule',
+    stuPage: 'home',
+    conflictType: 'A',
+    flowStep: 1
+  };
+  showConflict('A');
+
+  // Switch to big screen tab
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-device="bigscreen"]').classList.add('active');
+  document.querySelectorAll('.device').forEach(d => d.classList.remove('active'));
+  document.getElementById('bigscreen').classList.add('active');
+  currentDevice = 'bigscreen';
+
+  updateFlowSteps(1);
+}
+
+// ============================================
+// Init
+// ============================================
+generateQR();
+updateFlowHint();
+</script>
+</body>
+</html>

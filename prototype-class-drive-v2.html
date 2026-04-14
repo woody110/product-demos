@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班级云盘 Pad端原型 V2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   CSS Variables — 九章爱学 Brand Palette
+   ========================================================= */
+:root {
+  --brand: #47B8E0;
+  --brand-dark: #2E9BC6;
+  --brand-light: #E6F6FC;
+  --brand-50: #F0FAFD;
+  --bg: #F5F5F5;
+  --bg-white: #FFFFFF;
+  --text-1: #333333;
+  --text-2: #666666;
+  --text-3: #999999;
+  --text-4: #CCCCCC;
+  --border: #E8E8E8;
+  --border-light: #F0F0F0;
+  --red: #F56C6C;
+  --red-light: #FEF0F0;
+  --green: #67C23A;
+  --green-light: #F0F9EB;
+  --orange: #E6A23C;
+  --orange-light: #FDF6EC;
+  --yellow-icon: #F4C752;
+  --green-icon: #6EC66A;
+  --red-icon: #E96E6E;
+  --blue-icon: #5B9BD5;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 24px rgba(0,0,0,0.12);
+  --radius: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans SC', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  user-select: none;
+  font-size: 14px;
+}
+
+/* =========================================================
+   Layout: Left Sidebar + Main Content
+   ========================================================= */
+.app-shell {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 160px;
+  background: var(--bg-white);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sidebar-logo .logo-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--brand);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sidebar-logo .logo-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 8px 0;
+  overflow-y: auto;
+}
+
+.nav-group-label {
+  font-size: 11px;
+  color: var(--text-3);
+  padding: 12px 16px 4px;
+  font-weight: 500;
+}
+
+.nav-item {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 13px;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover { background: var(--bg); }
+
+.nav-item.active {
+  background: var(--brand-light);
+  color: var(--brand);
+  border-left-color: var(--brand);
+  font-weight: 500;
+}
+
+.nav-item .nav-icon { font-size: 16px; }
+
+/* Main Area */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Top Header */
+.top-header {
+  height: 52px;
+  background: var(--bg-white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.breadcrumb-nav a {
+  color: var(--text-3);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.breadcrumb-nav a:hover { color: var(--brand); }
+.breadcrumb-nav .current { color: var(--text-1); font-weight: 500; }
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* =========================================================
+   Page Container (stacked, show/hide)
+   ========================================================= */
+.page {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: none;
+}
+
+.page.active { display: block; }
+
+/* =========================================================
+   PAGE 1: Resource List
+   ========================================================= */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-bar label {
+  font-size: 13px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.filter-input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-1);
+  outline: none;
+  min-width: 160px;
+  transition: border-color 0.2s;
+}
+
+.filter-input:focus { border-color: var(--brand); }
+
+.filter-select {
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-1);
+  background: white;
+  outline: none;
+  min-width: 120px;
+}
+
+.btn {
+  height: 32px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: white;
+}
+
+.btn-primary:hover { background: var(--brand-dark); }
+
+.btn-default {
+  background: white;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+}
+
+.btn-default:hover { border-color: var(--brand); color: var(--brand); }
+
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+
+.btn-add {
+  height: 36px;
+  padding: 0 20px;
+  background: var(--brand);
+  color: white;
+  font-size: 14px;
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+/* Resource Table */
+.resource-table {
+  width: 100%;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.resource-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.resource-table th {
+  background: var(--bg);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.resource-table td {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--text-1);
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.resource-table tr:last-child td { border-bottom: none; }
+
+.resource-table tr:hover td { background: var(--brand-50); }
+
+.file-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-type-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.file-type-icon.courseware { background: #E8F5E9; }
+.file-type-icon.folder { background: #FFF8E1; }
+.file-type-icon.video { background: #FCE4EC; }
+.file-type-icon.pdf { background: #FFEBEE; }
+
+.file-link {
+  color: var(--brand);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.file-link:hover { text-decoration: underline; }
+
+.student-link {
+  color: var(--brand);
+  cursor: pointer;
+}
+
+.student-link:hover { text-decoration: underline; }
+
+.action-links {
+  display: flex;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.action-link {
+  color: var(--brand);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.action-link:hover { text-decoration: underline; }
+
+.action-link.danger { color: var(--red); }
+
+/* =========================================================
+   PAGE 2: Add Method Selection (modal-like)
+   ========================================================= */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+
+.modal-mask.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.method-modal {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 32px;
+  width: 420px;
+  text-align: center;
+  transform: scale(0.92);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.modal-mask.visible .method-modal {
+  transform: scale(1);
+}
+
+.method-modal h3 {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.method-modal p {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 24px;
+}
+
+.method-cards {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.method-card {
+  width: 160px;
+  padding: 24px 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.method-card:hover {
+  border-color: var(--brand);
+  background: var(--brand-50);
+}
+
+.method-card .mc-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.method-card .mc-icon.cloud { background: var(--brand-light); }
+.method-card .mc-icon.capture { background: var(--orange-light); }
+
+.method-card .mc-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.method-card .mc-desc {
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+
+.method-modal-close {
+  margin-top: 20px;
+  color: var(--text-3);
+  font-size: 13px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+.method-modal-close:hover { color: var(--text-1); }
+
+/* =========================================================
+   PAGE 3: Cloud Drive File Picker
+   ========================================================= */
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.picker-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--border-light);
+  margin-bottom: 16px;
+}
+
+.picker-tab {
+  padding: 8px 20px;
+  font-size: 14px;
+  color: var(--text-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: inherit;
+}
+
+.picker-tab.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+  font-weight: 500;
+}
+
+.picker-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.picker-info {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.picker-info span {
+  font-weight: 400;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.picker-tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.picker-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.picker-filter-label {
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* File Table */
+.file-table {
+  width: 100%;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.file-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.file-table th {
+  background: var(--bg);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.file-table td {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-1);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.file-table tr:last-child td { border-bottom: none; }
+.file-table tr:hover td { background: var(--brand-50); }
+.file-table tr.selected td { background: var(--brand-light); }
+
+.file-table .cb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--text-4);
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 10px;
+  color: transparent;
+  vertical-align: middle;
+}
+
+.file-table .cb.checked {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: white;
+}
+
+.file-table .file-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-table .file-icon-sm {
+  width: 20px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.file-table .file-status {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.file-table .file-more {
+  color: var(--text-3);
+  cursor: pointer;
+  letter-spacing: 2px;
+}
+
+.picker-footer {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: flex-end;
+  margin: 16px -20px -20px;
+}
+
+.btn-next {
+  height: 36px;
+  padding: 0 24px;
+  background: var(--brand);
+  color: white;
+  border-radius: var(--radius);
+  font-size: 14px;
+}
+
+.btn-next:disabled {
+  background: var(--text-4);
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   PAGE 4: Quick Capture
+   ========================================================= */
+.capture-page {
+  background: #1a1a1a;
+  padding: 0 !important;
+  display: none;
+  flex-direction: column;
+}
+
+.capture-page.active { display: flex; }
+
+.capture-top {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: rgba(0,0,0,0.5);
+  flex-shrink: 0;
+}
+
+.capture-top .cap-back {
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.capture-top .cap-title {
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.capture-top .cap-count {
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.capture-mode-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 8px 0;
+  background: rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+
+.capture-mode-tab {
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 4px 12px;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.capture-mode-tab.active {
+  color: white;
+  background: rgba(255,255,255,0.15);
+  font-weight: 500;
+}
+
+.capture-viewfinder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.capture-viewfinder .vf-placeholder {
+  text-align: center;
+  color: rgba(255,255,255,0.35);
+}
+
+.vf-placeholder .vf-icon { font-size: 56px; display: block; margin-bottom: 8px; }
+.vf-placeholder .vf-text { font-size: 14px; }
+
+/* Grid overlay */
+.vf-grid {
+  position: absolute;
+  inset: 10%;
+  border: 1px solid rgba(255,255,255,0.08);
+  pointer-events: none;
+}
+
+.vf-grid::before, .vf-grid::after {
+  content: '';
+  position: absolute;
+  background: rgba(255,255,255,0.06);
+}
+
+.vf-grid::before {
+  left: 33.33%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  box-shadow: calc(33.33% * 1) 0 0 rgba(255,255,255,0.06);
+}
+
+.vf-grid::after {
+  top: 33.33%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  box-shadow: 0 calc(33.33% * 1) 0 rgba(255,255,255,0.06);
+}
+
+/* Video timer */
+.vid-timer {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(0,0,0,0.65);
+  border-radius: 20px;
+  color: white;
+  font-family: 'DM Sans', monospace;
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.vid-timer.visible { opacity: 1; }
+
+.vid-timer .rd {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.15; }
+}
+
+/* Thumb strip */
+.cap-thumb-strip {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: rgba(0,0,0,0.5);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.cap-thumb-strip:empty { height: 0; }
+
+.cap-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.25);
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+}
+
+.cap-thumb:hover { border-color: white; }
+
+.cap-thumb .ct-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: white;
+  font-weight: 600;
+}
+
+.cap-thumb .ct-delete {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  background: var(--red);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: white;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.cap-thumb:hover .ct-delete { opacity: 1; }
+
+/* Controls */
+.cap-controls {
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  background: rgba(0,0,0,0.4);
+  flex-shrink: 0;
+}
+
+.cap-switch {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cap-switch:hover { background: rgba(255,255,255,0.2); }
+
+/* Shutter */
+.shutter {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: white;
+  border: 4px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.1s;
+}
+
+.shutter:active { transform: scale(0.88); }
+
+.shutter .shutter-inner {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* Record button */
+.rec-btn {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: transparent;
+  border: 4px solid var(--red);
+  cursor: pointer;
+  position: relative;
+}
+
+.rec-btn .rec-inner {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--red);
+  transition: all 0.25s;
+}
+
+.rec-btn.recording .rec-inner {
+  inset: 18px;
+  border-radius: 4px;
+}
+
+.cap-done {
+  height: 40px;
+  padding: 0 20px;
+  background: var(--brand);
+  border: none;
+  border-radius: var(--radius);
+  color: white;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s;
+}
+
+.cap-done.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cap-done:hover { background: var(--brand-dark); }
+
+/* Video confirmed bar */
+.vid-confirmed {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.vid-confirmed.visible { display: flex; }
+.vid-confirmed .vc-icon { font-size: 24px; }
+
+/* =========================================================
+   PAGE 5: Settings / Publish
+   ========================================================= */
+.settings-section {
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.settings-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-section h4 .req { color: var(--red); }
+
+.selected-files-summary {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sf-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+
+.sf-tag .sf-icon { font-size: 16px; }
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.settings-label {
+  font-size: 13px;
+  color: var(--text-2);
+  min-width: 70px;
+  text-align: right;
+}
+
+.class-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.class-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--brand-light);
+  color: var(--brand);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+
+.class-tag .ct-remove {
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.class-tag .ct-remove:hover { opacity: 1; }
+
+.add-class-btn {
+  padding: 4px 10px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-3);
+  cursor: pointer;
+  background: none;
+  font-family: inherit;
+}
+
+.add-class-btn:hover { border-color: var(--brand); color: var(--brand); }
+
+/* Student Picker (dual column) */
+.student-picker {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.sp-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sp-column + .sp-column { border-left: 1px solid var(--border); }
+
+.sp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.sp-header .sp-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.sp-header .sp-action {
+  font-size: 12px;
+  color: var(--brand);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+.sp-header .sp-action:hover { text-decoration: underline; }
+
+.sp-list {
+  padding: 4px 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.sp-item {
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text-1);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.sp-item:hover { background: var(--brand-50); }
+.sp-item.disabled { color: var(--text-4); cursor: default; }
+
+.sp-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  font-size: 16px;
+  color: var(--text-3);
+}
+
+.settings-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-cancel {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+
+.btn-publish {
+  background: var(--brand);
+  color: white;
+}
+
+.btn-publish:disabled {
+  background: var(--text-4);
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   Toast
+   ========================================================= */
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  padding: 16px 32px;
+  background: rgba(0,0,0,0.75);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* =========================================================
+   Confirm Dialog
+   ========================================================= */
+.confirm-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.confirm-mask.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.confirm-dialog {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 24px;
+  width: 340px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.confirm-dialog p {
+  font-size: 14px;
+  color: var(--text-1);
+  margin-bottom: 20px;
+}
+
+.confirm-dialog .cd-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- ===== Sidebar ===== -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">九</div>
+      <span class="logo-text">九章爱学</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">备课中心</div>
+      <div class="nav-item"><span class="nav-icon">&#128197;</span> 我的课表</div>
+      <div class="nav-item"><span class="nav-icon">&#129302;</span> 智能备课</div>
+      <div class="nav-item"><span class="nav-icon">&#128451;</span> 个人云盘</div>
+      <div class="nav-item"><span class="nav-icon">&#127979;</span> 校本云盘</div>
+      <div class="nav-item"><span class="nav-icon">&#128218;</span> 题库组卷</div>
+      <div class="nav-item"><span class="nav-icon">&#11088;</span> 精品资源</div>
+      <div class="nav-group-label">班级管理</div>
+      <div class="nav-item active"><span class="nav-icon">&#128194;</span> 班级云盘</div>
+      <div class="nav-item"><span class="nav-icon">&#127942;</span> 答题排行榜</div>
+      <div class="nav-item"><span class="nav-icon">&#128203;</span> 学习规划</div>
+      <div class="nav-item"><span class="nav-icon">&#128276;</span> 学生监控预警</div>
+      <div class="nav-group-label">学情中心</div>
+      <div class="nav-item"><span class="nav-icon">&#128202;</span> 学情分析</div>
+      <div class="nav-group-label">学校管理</div>
+      <div class="nav-item"><span class="nav-icon">&#9881;</span> 学校设置</div>
+    </nav>
+  </div>
+
+  <!-- ===== Main Area ===== -->
+  <div class="main-area">
+    <!-- Top Header -->
+    <div class="top-header">
+      <div class="breadcrumb-nav">
+        <a onclick="goToList()">首页</a> <span>/</span>
+        <a onclick="goToList()">班级管理</a> <span>/</span>
+        <span class="current" id="breadcrumbCurrent">班级云盘</span>
+      </div>
+      <div class="user-info">
+        九章爱学·测试 &nbsp; 吴老师
+      </div>
+    </div>
+
+    <!-- ===== Page 1: Resource List ===== -->
+    <div class="page active" id="pageList">
+      <div class="filter-bar">
+        <label>文件名称</label>
+        <input class="filter-input" placeholder="请输入文件夹名称" />
+        <label>班级</label>
+        <select class="filter-select">
+          <option>【班主任】老吴测试</option>
+        </select>
+        <label>类型</label>
+        <select class="filter-select">
+          <option>请选择文件类型</option>
+          <option>课件</option>
+          <option>文件夹</option>
+          <option>MP4</option>
+          <option>课程视频</option>
+        </select>
+        <label>排序</label>
+        <select class="filter-select">
+          <option>请选择排序</option>
+          <option>发布时间</option>
+          <option>更新时间</option>
+        </select>
+        <button class="btn btn-primary btn-sm" style="width:64px">查 询</button>
+        <button class="btn btn-default btn-sm" style="width:64px">重 置</button>
+      </div>
+
+      <div class="page-title-row">
+        <span class="page-title">资源任务列表</span>
+        <button class="btn btn-add" onclick="showMethodModal()">+ 添加文件</button>
+      </div>
+
+      <div class="resource-table">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:22%">文件名称</th>
+              <th>分发班级</th>
+              <th>学员人数</th>
+              <th>资料数量</th>
+              <th>文件类型</th>
+              <th>发布时间</th>
+              <th>更新时间</th>
+              <th style="width:15%">操作</th>
+            </tr>
+          </thead>
+          <tbody id="resourceTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== Page 3: Cloud File Picker ===== -->
+    <div class="page" id="pagePicker">
+      <div class="picker-tabs">
+        <button class="picker-tab active">我的资料</button>
+        <button class="picker-tab">校本资料</button>
+      </div>
+
+      <div class="picker-info-row">
+        <div class="picker-info">个人云盘 <span>(共154个)</span></div>
+        <div class="picker-tools">
+          <input class="filter-input" placeholder="搜索资源" style="width:180px" />
+        </div>
+      </div>
+
+      <div class="picker-filter-row">
+        <span class="picker-filter-label">学科 ▾</span>
+        <span class="picker-filter-label">&#128336; 筛选 (11)</span>
+      </div>
+
+      <div class="file-table">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:30px"></th>
+              <th>名称</th>
+              <th style="width:80px">文件类型</th>
+              <th style="width:110px">更新时间</th>
+              <th style="width:80px">大小</th>
+            </tr>
+          </thead>
+          <tbody id="pickerTbody"></tbody>
+        </table>
+      </div>
+
+      <div class="picker-footer">
+        <button class="btn btn-default" onclick="goToList()" style="margin-right:8px">取消</button>
+        <button class="btn btn-next" id="btnPickerNext" disabled onclick="goToSettings()">确定，下一步 →</button>
+      </div>
+    </div>
+
+    <!-- ===== Page 4: Capture ===== -->
+    <div class="capture-page" id="pageCapture">
+      <div class="capture-top">
+        <button class="cap-back" onclick="exitCapture()">← 返回</button>
+        <span class="cap-title" id="capTitle">拍照</span>
+        <span class="cap-count" id="capCount"></span>
+      </div>
+
+      <div class="capture-mode-tabs">
+        <button class="capture-mode-tab active" data-mode="photo" onclick="switchCaptureMode('photo')">拍照</button>
+        <button class="capture-mode-tab" data-mode="video" onclick="switchCaptureMode('video')">录视频</button>
+      </div>
+
+      <div class="capture-viewfinder">
+        <div class="vf-placeholder" id="vfPlaceholder">
+          <span class="vf-icon" id="vfIcon">&#128247;</span>
+          <span class="vf-text">Pad 后置摄像头取景区</span>
+        </div>
+        <div class="vf-grid"></div>
+        <div class="vid-timer" id="vidTimer">
+          <span class="rd"></span>
+          <span id="vidTimerText">00:00</span>
+          <span style="font-size:12px;color:rgba(255,255,255,0.4);margin-left:2px">/ 05:00</span>
+        </div>
+      </div>
+
+      <div class="cap-thumb-strip" id="capStrip"></div>
+      <div class="vid-confirmed" id="vidConfirmed">
+        <span class="vc-icon">&#127916;</span>
+        <span id="vidConfirmedText">已录制 00:00</span>
+      </div>
+
+      <div class="cap-controls" id="capControls">
+        <button class="cap-switch" title="切换摄像头">&#128260;</button>
+        <button class="shutter" id="shutterBtn" onclick="captureAction()">
+          <div class="shutter-inner" id="shutterInner"></div>
+        </button>
+        <button class="cap-done" id="capDoneBtn" onclick="finishCapture()">完成 →</button>
+      </div>
+    </div>
+
+    <!-- ===== Page 5: Settings ===== -->
+    <div class="page" id="pageSettings">
+      <div class="settings-section">
+        <h4>已选资料</h4>
+        <div class="selected-files-summary" id="settingsFileSummary"></div>
+      </div>
+
+      <div class="settings-section">
+        <h4><span class="req">*</span> 发布设置</h4>
+        <div class="settings-row">
+          <span class="settings-label">发布时间</span>
+          <input class="filter-input" type="text" value="立即发布" style="min-width:200px;cursor:pointer" readonly />
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">选择班级</span>
+          <div class="class-tags" id="classTagsArea">
+            <span class="class-tag">【班主任】老吴测试 <span class="ct-remove" onclick="removeClassTag(this)">&times;</span></span>
+            <button class="add-class-btn" onclick="showToast('选择班级弹窗（原型演示）')">+ 添加班级</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>选择学生</h4>
+        <div class="student-picker">
+          <div class="sp-column">
+            <div class="sp-header">
+              <span class="sp-title">【班主任】老吴测试</span>
+              <button class="sp-action" onclick="addAllStudents()">全部添加</button>
+            </div>
+            <div class="sp-list" id="spLeftList"></div>
+          </div>
+          <div class="sp-arrow">&#9654;</div>
+          <div class="sp-column">
+            <div class="sp-header">
+              <span class="sp-title" id="spSelectedCount">已选择学生: 0人</span>
+              <button class="sp-action" onclick="clearAllStudents()">全部清空</button>
+            </div>
+            <div class="sp-list" id="spRightList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button class="btn btn-cancel" onclick="goToList()" style="height:36px;padding:0 24px">取消</button>
+        <button class="btn btn-publish" id="btnPublish" style="height:36px;padding:0 24px" onclick="doPublish()">确 定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Method Selection Modal ===== -->
+<div class="modal-mask" id="methodModal">
+  <div class="method-modal">
+    <h3>添加文件</h3>
+    <p>选择资料来源方式</p>
+    <div class="method-cards">
+      <div class="method-card" onclick="chooseCloudDrive()">
+        <div class="mc-icon cloud">&#128451;</div>
+        <div class="mc-title">从云盘选择</div>
+        <div class="mc-desc">选择个人云盘中的已有文件</div>
+      </div>
+      <div class="method-card" onclick="chooseCapture()">
+        <div class="mc-icon capture">&#128247;</div>
+        <div class="mc-title">快拍上传</div>
+        <div class="mc-desc">现场拍照或录视频上传</div>
+      </div>
+    </div>
+    <button class="method-modal-close" onclick="hideMethodModal()">取消</button>
+  </div>
+</div>
+
+<!-- ===== Toast ===== -->
+<div class="toast" id="toast"><span id="toastText"></span></div>
+
+<!-- ===== Confirm Dialog ===== -->
+<div class="confirm-mask" id="confirmMask">
+  <div class="confirm-dialog">
+    <p id="confirmText">确定要删除吗？</p>
+    <div class="cd-btns">
+      <button class="btn btn-default" style="height:34px" onclick="hideConfirm()">取消</button>
+      <button class="btn btn-primary" style="height:34px" onclick="confirmAction()">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  Mock Data
+// ============================================================
+const resources = [
+  { name: '未命名课件', icon: '&#128215;', iconClass: 'courseware', cls: '老吴测试', students: 4, count: 1, type: '课件', pubTime: '2026-03-05 11:45:54', updateTime: '2026-03-30 10:32:43', status: 'closed' },
+  { name: '课堂习题', icon: '&#128193;', iconClass: 'folder', cls: '老吴测试', students: 4, count: 5, type: '文件夹', pubTime: '2026-01-08 16:20:38', updateTime: '2026-01-08 16:20:39', status: 'closed' },
+  { name: '布置作业视频.mp4', icon: '&#127916;', iconClass: 'video', cls: '老吴测试', students: 4, count: 1, type: 'MP4', pubTime: '2025-12-09 18:47:35', updateTime: '2026-03-27 16:29:38', status: 'visible' },
+  { name: '物理多题课件', icon: '&#128215;', iconClass: 'courseware', cls: '老吴测试', students: 4, count: 1, type: '课件', pubTime: '2025-12-09 18:42:25', updateTime: '2026-03-27 16:29:36', status: 'visible' },
+  { name: '物质的分类', icon: '&#127916;', iconClass: 'video', cls: '老吴测试', students: 3, count: 1, type: '课程视频', pubTime: '2025-10-10 14:43:57', updateTime: '2025-10-10 14:43:58', status: 'closed' },
+  { name: '电解质', icon: '&#127916;', iconClass: 'video', cls: '老吴测试', students: 3, count: 1, type: '课程视频', pubTime: '2025-10-10 14:43:57', updateTime: '2025-10-10 14:43:58', status: 'closed' },
+  { name: 'Unit 1 Welco...', icon: '&#127916;', iconClass: 'video', cls: '老吴测试', students: 2, count: 1, type: '课程视频', pubTime: '2025-09-17 12:02:00', updateTime: '2025-09-17 11:25:49', status: 'closed' },
+];
+
+const cloudFiles = [
+  { name: '我的作业任务', isFolder: true, icon: '&#128193;', type: '文件夹', time: '2026-03-06', size: '48.49K' },
+  { name: 'AI靶向提升', isFolder: true, icon: '&#128193;', type: '文件夹', time: '2026-01-23', size: '80.17K' },
+  { name: '课堂习题', isFolder: true, icon: '&#128193;', type: '文件夹', time: '2026-01-08', size: '9.13M' },
+  { name: '练习题', isFolder: true, icon: '&#128193;', type: '文件夹', time: '2025-12-11', size: '9.13M' },
+  { name: '试题', isFolder: true, icon: '&#128193;', type: '文件夹', time: '2025-07-03', size: '31.54K' },
+  { name: '未命名课件', isFolder: false, icon: '&#128215;', type: '课件', time: '5天前', size: '242.65K', status: '&#9989;' },
+  { name: '未命名课件', isFolder: false, icon: '&#128215;', type: '课件', time: '2026-03-06', size: '10.1K', status: '&#9989;' },
+  { name: '解答复合', isFolder: false, icon: '&#128215;', type: '课件', time: '2026-03-06', size: '1.17M', status: '&#9989;' },
+  { name: '未命名课件', isFolder: false, icon: '&#128215;', type: '课件', time: '2026-03-06', size: '17.35K', status: '&#9989;' },
+  { name: '光合作用实验报告', isFolder: false, icon: '&#128196;', type: 'PDF', time: '2026-03-05', size: '2.3M' },
+  { name: '学生名单汇总表', isFolder: false, icon: '&#128196;', type: 'Excel', time: '2026-02-28', size: '156K' },
+];
+
+const students = [
+  { name: '小吴同学', code: '2222' },
+  { name: 'w001', code: 'w001' },
+  { name: 'w002', code: 'w002' },
+  { name: 'w003', code: 'w003' },
+];
+
+// ============================================================
+//  State
+// ============================================================
+const state = {
+  currentPage: 'list', // list | picker | capture | settings
+  selectedCloudFiles: new Set(),
+  // Capture
+  captureMode: 'photo', // photo | video
+  photos: [],
+  photoCounter: 0,
+  recording: false,
+  recordSec: 0,
+  recordTimer: null,
+  videoRecorded: false,
+  videoUsed: false,
+  // Settings
+  selectedStudents: new Set(),
+  // Source for settings
+  settingsSource: null, // 'cloud' | 'capture'
+  // Confirm
+  confirmCallback: null,
+};
+
+const photoColors = [
+  '#3b7dd8,#48a472', '#e8853a,#d94f4f', '#48a472,#3b7dd8',
+  '#d94f4f,#e8853a', '#8b5cf6,#3b7dd8', '#e8853a,#48a472'
+];
+
+// ============================================================
+//  Page Navigation
+// ============================================================
+function showPage(pageName) {
+  state.currentPage = pageName;
+  document.querySelectorAll('.page, .capture-page').forEach(p => p.classList.remove('active'));
+  const map = { list: 'pageList', picker: 'pagePicker', capture: 'pageCapture', settings: 'pageSettings' };
+  document.getElementById(map[pageName]).classList.add('active');
+
+  const labels = { list: '班级云盘', picker: '选择资料', capture: '快拍上传', settings: '设置参数' };
+  document.getElementById('breadcrumbCurrent').textContent = labels[pageName];
+}
+
+function goToList() {
+  showPage('list');
+  hideMethodModal();
+  resetCapture();
+}
+
+function goToPicker() {
+  state.selectedCloudFiles.clear();
+  renderPickerTable();
+  showPage('picker');
+  hideMethodModal();
+}
+
+function goToCapture() {
+  resetCapture();
+  showPage('capture');
+  hideMethodModal();
+}
+
+function goToSettings() {
+  state.settingsSource = state.currentPage === 'picker' ? 'cloud' : 'capture';
+  renderSettingsPage();
+  showPage('settings');
+}
+
+// ============================================================
+//  Resource List
+// ============================================================
+function renderResourceList() {
+  const tbody = document.getElementById('resourceTbody');
+  tbody.innerHTML = resources.map((r, i) => {
+    const statusLabel = r.status === 'visible' ? '可见' : '关闭';
+    const hasDetail = r.type === '课程视频';
+    return `
+      <tr>
+        <td>
+          <div class="file-name-cell">
+            <div class="file-type-icon ${r.iconClass}">${r.icon}</div>
+            <span class="file-link">${r.name}</span>
+          </div>
+        </td>
+        <td>${r.cls}</td>
+        <td><span class="student-link">${r.students}人</span></td>
+        <td>${r.count}</td>
+        <td>${r.type}</td>
+        <td style="font-size:12px;color:var(--text-3)">${r.pubTime}</td>
+        <td style="font-size:12px;color:var(--text-3)">${r.updateTime}</td>
+        <td>
+          <div class="action-links">
+            ${hasDetail ? '<span class="action-link">详情</span>' : ''}
+            <span class="action-link">修改</span>
+            <span class="action-link danger" onclick="confirmDelete(${i})">删除</span>
+            <span class="action-link" onclick="toggleVisibility(${i})">${statusLabel}</span>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function toggleVisibility(idx) {
+  resources[idx].status = resources[idx].status === 'visible' ? 'closed' : 'visible';
+  renderResourceList();
+  showToast('已切换可见性');
+}
+
+function confirmDelete(idx) {
+  showConfirm('确定要删除该资源吗？删除后不可恢复。', () => {
+    resources.splice(idx, 1);
+    renderResourceList();
+    showToast('已删除');
+  });
+}
+
+// ============================================================
+//  Method Modal
+// ============================================================
+function showMethodModal() {
+  document.getElementById('methodModal').classList.add('visible');
+}
+
+function hideMethodModal() {
+  document.getElementById('methodModal').classList.remove('visible');
+}
+
+function chooseCloudDrive() { goToPicker(); }
+function chooseCapture() { goToCapture(); }
+
+// ============================================================
+//  Cloud File Picker
+// ============================================================
+function renderPickerTable() {
+  const tbody = document.getElementById('pickerTbody');
+  tbody.innerHTML = cloudFiles.map((f, i) => {
+    const checked = state.selectedCloudFiles.has(i);
+    return `
+      <tr class="${checked ? 'selected' : ''}" onclick="togglePickerFile(${i})">
+        <td>
+          ${!f.isFolder ? `<span class="cb ${checked ? 'checked' : ''}">&#10003;</span>` : ''}
+        </td>
+        <td>
+          <div class="file-cell">
+            <span class="file-icon-sm">${f.icon}</span>
+            <span>${f.name}</span>
+            ${f.status ? `<span class="file-status">${f.status}</span>` : ''}
+            <span class="file-more">···</span>
+          </div>
+        </td>
+        <td style="color:var(--text-3)">${f.type}</td>
+        <td style="color:var(--text-3);font-size:12px">${f.time}</td>
+        <td style="color:var(--text-3);font-size:12px">${f.size}</td>
+      </tr>
+    `;
+  }).join('');
+  updatePickerNextBtn();
+}
+
+function togglePickerFile(idx) {
+  if (cloudFiles[idx].isFolder) return; // folder click = navigate (demo skip)
+  if (state.selectedCloudFiles.has(idx)) {
+    state.selectedCloudFiles.delete(idx);
+  } else {
+    state.selectedCloudFiles.add(idx);
+  }
+  renderPickerTable();
+}
+
+function updatePickerNextBtn() {
+  document.getElementById('btnPickerNext').disabled = state.selectedCloudFiles.size === 0;
+}
+
+// ============================================================
+//  Capture
+// ============================================================
+function resetCapture() {
+  state.captureMode = 'photo';
+  state.photos = [];
+  state.photoCounter = 0;
+  state.recording = false;
+  state.recordSec = 0;
+  state.videoRecorded = false;
+  state.videoUsed = false;
+  clearInterval(state.recordTimer);
+  updateCaptureUI();
+}
+
+function switchCaptureMode(mode) {
+  if (state.recording) return;
+  state.captureMode = mode;
+  document.querySelectorAll('.capture-mode-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.mode === mode);
+  });
+  updateCaptureUI();
+}
+
+function updateCaptureUI() {
+  const isPhoto = state.captureMode === 'photo';
+  document.getElementById('capTitle').textContent = isPhoto ? '拍照' : '录视频';
+  document.getElementById('capCount').textContent = isPhoto ? `已拍 ${state.photos.length}/6` : '';
+  document.getElementById('vfIcon').innerHTML = isPhoto ? '&#128247;' : '&#127909;';
+  document.getElementById('vidTimer').classList.toggle('visible', state.recording);
+  document.getElementById('vidConfirmed').classList.toggle('visible', !isPhoto && state.videoUsed);
+  document.getElementById('capStrip').style.display = isPhoto && state.photos.length > 0 ? 'flex' : 'none';
+
+  // Shutter vs Record
+  const shutterBtn = document.getElementById('shutterBtn');
+  const shutterInner = document.getElementById('shutterInner');
+  if (isPhoto) {
+    shutterBtn.className = 'shutter';
+    shutterBtn.style.borderColor = 'rgba(255,255,255,0.3)';
+    shutterInner.style.background = 'white';
+    shutterInner.style.borderRadius = '50%';
+    shutterInner.style.inset = '4px';
+    if (state.photos.length >= 6) {
+      shutterBtn.style.opacity = '0.3';
+      shutterBtn.style.pointerEvents = 'none';
+    } else {
+      shutterBtn.style.opacity = '1';
+      shutterBtn.style.pointerEvents = 'auto';
+    }
+  } else {
+    shutterBtn.className = state.recording ? 'rec-btn recording' : 'rec-btn';
+    shutterBtn.style.borderColor = 'var(--red)';
+    shutterBtn.style.opacity = '1';
+    shutterBtn.style.pointerEvents = 'auto';
+    shutterInner.style.background = 'var(--red)';
+    shutterInner.style.inset = state.recording ? '18px' : '6px';
+    shutterInner.style.borderRadius = state.recording ? '4px' : '50%';
+  }
+
+  // Done button
+  const doneBtn = document.getElementById('capDoneBtn');
+  const showDone = (isPhoto && state.photos.length > 0) || (!isPhoto && state.videoUsed);
+  doneBtn.classList.toggle('visible', showDone);
+
+  renderCapStrip();
+}
+
+function captureAction() {
+  if (state.captureMode === 'photo') {
+    takePhoto();
+  } else {
+    toggleRecording();
+  }
+}
+
+function takePhoto() {
+  if (state.photos.length >= 6) {
+    showToast('已达拍照上限 6 张');
+    return;
+  }
+  // Flash
+  const vf = document.querySelector('.capture-viewfinder');
+  vf.style.background = 'white';
+  setTimeout(() => vf.style.background = '', 100);
+
+  state.photoCounter++;
+  const c = photoColors[(state.photoCounter - 1) % photoColors.length];
+  state.photos.push({ id: state.photoCounter, colors: c });
+  updateCaptureUI();
+}
+
+function renderCapStrip() {
+  const strip = document.getElementById('capStrip');
+  strip.innerHTML = state.photos.map((p, i) => {
+    const [c1, c2] = p.colors.split(',');
+    return `
+      <div class="cap-thumb">
+        <div class="ct-inner" style="background:linear-gradient(135deg,${c1},${c2})">${p.id}</div>
+        <div class="ct-delete" onclick="event.stopPropagation();removePhoto(${i})">×</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function removePhoto(idx) {
+  state.photos.splice(idx, 1);
+  updateCaptureUI();
+}
+
+function toggleRecording() {
+  if (state.recording) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+function startRecording() {
+  state.recording = true;
+  state.recordSec = 0;
+  state.videoRecorded = false;
+  state.videoUsed = false;
+  updateCaptureUI();
+  state.recordTimer = setInterval(() => {
+    state.recordSec++;
+    document.getElementById('vidTimerText').textContent = fmt(state.recordSec);
+    if (state.recordSec >= 300) {
+      stopRecording();
+      showToast('已达录制上限 5 分钟');
+    }
+  }, 1000);
+}
+
+function stopRecording() {
+  state.recording = false;
+  clearInterval(state.recordTimer);
+  if (state.recordSec > 0) {
+    state.videoRecorded = true;
+    state.videoUsed = true;
+    document.getElementById('vidConfirmedText').textContent = `已录制 ${fmt(state.recordSec)}`;
+  }
+  updateCaptureUI();
+}
+
+function fmt(s) {
+  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+}
+
+function finishCapture() {
+  goToSettings();
+}
+
+function exitCapture() {
+  if (state.photos.length > 0 || state.videoUsed) {
+    showConfirm('退出将丢失已拍摄内容，确定退出？', () => {
+      resetCapture();
+      goToList();
+    });
+  } else {
+    goToList();
+  }
+}
+
+// ============================================================
+//  Settings Page
+// ============================================================
+function renderSettingsPage() {
+  // File summary
+  const summary = document.getElementById('settingsFileSummary');
+  if (state.settingsSource === 'cloud') {
+    const files = Array.from(state.selectedCloudFiles).map(i => cloudFiles[i]);
+    summary.innerHTML = files.map(f => `
+      <span class="sf-tag"><span class="sf-icon">${f.icon}</span>${f.name}</span>
+    `).join('');
+  } else {
+    let tags = '';
+    if (state.photos.length > 0) {
+      tags += `<span class="sf-tag"><span class="sf-icon">&#128247;</span>照片 ×${state.photos.length}</span>`;
+    }
+    if (state.videoUsed) {
+      tags += `<span class="sf-tag"><span class="sf-icon">&#127916;</span>视频 ${fmt(state.recordSec)}</span>`;
+    }
+    summary.innerHTML = tags;
+  }
+
+  // Default: add all students
+  state.selectedStudents = new Set(students.map((_, i) => i));
+  renderStudentPicker();
+}
+
+function renderStudentPicker() {
+  const left = document.getElementById('spLeftList');
+  const right = document.getElementById('spRightList');
+
+  left.innerHTML = students.map((s, i) => {
+    const inRight = state.selectedStudents.has(i);
+    return `<div class="sp-item ${inRight ? 'disabled' : ''}" onclick="addStudent(${i})">${s.name} (${s.code})</div>`;
+  }).join('');
+
+  right.innerHTML = Array.from(state.selectedStudents).map(i => {
+    const s = students[i];
+    return `<div class="sp-item" onclick="removeStudent(${i})">${s.name} (${s.code})</div>`;
+  }).join('');
+
+  document.getElementById('spSelectedCount').textContent = `已选择学生: ${state.selectedStudents.size}人`;
+}
+
+function addStudent(idx) {
+  state.selectedStudents.add(idx);
+  renderStudentPicker();
+}
+
+function removeStudent(idx) {
+  state.selectedStudents.delete(idx);
+  renderStudentPicker();
+}
+
+function addAllStudents() {
+  students.forEach((_, i) => state.selectedStudents.add(i));
+  renderStudentPicker();
+}
+
+function clearAllStudents() {
+  state.selectedStudents.clear();
+  renderStudentPicker();
+}
+
+function removeClassTag(el) {
+  el.parentElement.remove();
+}
+
+function doPublish() {
+  if (state.selectedStudents.size === 0) {
+    showToast('请至少选择 1 名学生');
+    return;
+  }
+
+  const btn = document.getElementById('btnPublish');
+  btn.textContent = '发布中...';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    btn.textContent = '确 定';
+    btn.disabled = false;
+
+    // Add to list
+    const now = new Date();
+    const timeStr = now.toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-');
+    const newResource = {
+      name: state.settingsSource === 'cloud'
+        ? cloudFiles[Array.from(state.selectedCloudFiles)[0]]?.name || '新资料'
+        : (state.photos.length > 0 ? `快拍照片(${state.photos.length}张)` : `快拍视频`),
+      icon: state.settingsSource === 'cloud' ? '&#128215;' : '&#128247;',
+      iconClass: state.settingsSource === 'cloud' ? 'courseware' : 'video',
+      cls: '老吴测试',
+      students: state.selectedStudents.size,
+      count: state.settingsSource === 'cloud' ? state.selectedCloudFiles.size : (state.photos.length || 1),
+      type: state.settingsSource === 'cloud' ? '课件' : (state.photos.length > 0 ? '图片' : 'MP4'),
+      pubTime: timeStr,
+      updateTime: timeStr,
+      status: 'visible'
+    };
+
+    resources.unshift(newResource);
+    goToList();
+    renderResourceList();
+    showToast('&#10003; 发布成功');
+  }, 1200);
+}
+
+// ============================================================
+//  Toast & Confirm
+// ============================================================
+function showToast(html, ms = 2000) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastText').innerHTML = html;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), ms);
+}
+
+function showConfirm(text, cb) {
+  document.getElementById('confirmText').textContent = text;
+  state.confirmCallback = cb;
+  document.getElementById('confirmMask').classList.add('visible');
+}
+
+function hideConfirm() {
+  document.getElementById('confirmMask').classList.remove('visible');
+  state.confirmCallback = null;
+}
+
+function confirmAction() {
+  if (state.confirmCallback) state.confirmCallback();
+  hideConfirm();
+}
+
+// ============================================================
+//  Init
+// ============================================================
+renderResourceList();
+</script>
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教师Pad - 常态模式</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root[data-theme="light"] {
+      --color-bg: #E8E8E8;
+      --color-surface: #FFFFFF;
+      --color-text: #212121;
+      --color-text-muted: #9E9E9E;
+      --color-accent: #1565C0;
+      --color-accent-light: #E3F2FD;
+      --color-border: #E0E0E0;
+      --color-statusbar: #1565C0;
+      --color-success: #4CAF50;
+      --color-warning: #FF8F00;
+      --color-warning-light: #FFF8E1;
+      --color-btn-secondary: #F5F5F5;
+    }
+    :root[data-theme="dark"] {
+      --color-bg: #1A1A2E;
+      --color-surface: #16213E;
+      --color-text: #E0E0E0;
+      --color-text-muted: #78909C;
+      --color-accent: #42A5F5;
+      --color-accent-light: #1A237E;
+      --color-border: #2A2A4A;
+      --color-statusbar: #0D47A1;
+      --color-success: #66BB6A;
+      --color-warning: #FFB300;
+      --color-warning-light: #3E2723;
+      --color-btn-secondary: #2A2A4A;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: 'Noto Sans SC', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .theme-toggle {
+      position: fixed; top: 1rem; right: 1rem; z-index: 1000;
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: 8px; padding: 0.5rem 0.75rem; cursor: pointer;
+      color: var(--color-text); font-size: 1.1rem;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .theme-toggle:hover { border-color: var(--color-accent); }
+    .theme-toggle:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+    .page-label {
+      position: fixed; top: 1rem; left: 1rem; z-index: 1000;
+      background: var(--color-accent); color: #fff; border-radius: 8px;
+      padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500;
+    }
+
+    /* Tablet Frame */
+    .tablet {
+      width: 1200px; height: 810px;
+      background: #111; border-radius: 18px;
+      padding: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative;
+    }
+    .screen {
+      width: 100%; height: 100%;
+      background: var(--color-surface);
+      border-radius: 8px; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+
+    /* Status Bar */
+    .statusbar {
+      height: 42px; background: var(--color-statusbar);
+      display: flex; align-items: center; padding: 0 16px;
+      font-size: 13px; color: #fff; flex-shrink: 0;
+    }
+    .statusbar .left { display: flex; align-items: center; gap: 16px; }
+    .statusbar .center { flex: 1; text-align: center; font-weight: 700; font-size: 14px; }
+    .statusbar .right { text-align: right; color: #BBDEFB; font-size: 13px; }
+    .dot-green { color: #A5D6A7; margin-right: 4px; }
+
+    /* Main Content */
+    .main-content {
+      flex: 1; display: flex; overflow: hidden;
+    }
+
+    /* Preview Area */
+    .preview-area {
+      flex: 1; background: #FAFAFA; border-right: 1px solid var(--color-border);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; position: relative; padding: 30px;
+    }
+    [data-theme="dark"] .preview-area { background: #1a1a2e; }
+
+    .preview-label {
+      font-size: 20px; color: var(--color-text-muted); font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .preview-sublabel { font-size: 13px; color: var(--color-text-muted); margin-bottom: 30px; }
+
+    .course-title {
+      font-size: 22px; font-weight: 700; color: var(--color-text);
+      position: absolute; top: 60px; text-align: center;
+    }
+    .course-img-placeholder {
+      width: 420px; height: 200px; background: var(--color-accent-light);
+      border: 1px solid #90CAF9; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: #64B5F6; position: absolute; bottom: 80px;
+    }
+
+    /* Thumbnail Panel */
+    .thumb-panel {
+      width: 370px; background: #FAFAFA; border-left: 1px solid var(--color-border);
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    [data-theme="dark"] .thumb-panel { background: var(--color-surface); }
+
+    .thumb-header {
+      padding: 10px 16px; font-size: 14px; font-weight: 700;
+      color: var(--color-text-muted); text-align: center; flex-shrink: 0;
+    }
+    .thumb-list {
+      flex: 1; overflow-y: auto; padding: 0 10px 10px;
+      scrollbar-width: thin;
+    }
+    .thumb-item {
+      display: flex; align-items: center; padding: 14px 14px;
+      margin-bottom: 6px; border-radius: 10px; cursor: pointer;
+      border: 2px solid transparent; background: var(--color-surface);
+      transition: all 0.2s ease;
+    }
+    .thumb-item:hover { border-color: var(--color-border); transform: translateX(-2px); }
+    .thumb-item.active {
+      background: var(--color-accent-light); border-color: var(--color-accent);
+    }
+    .thumb-item.active .thumb-num,
+    .thumb-item.active .thumb-name { color: var(--color-accent); font-weight: 700; }
+    .thumb-item.interaction {
+      background: var(--color-warning-light);
+      border-color: transparent;
+    }
+    .thumb-item.interaction .thumb-num,
+    .thumb-item.interaction .thumb-name { color: var(--color-warning); }
+    .thumb-item.interaction .thumb-badge { margin-left: auto; font-size: 16px; }
+    .thumb-num {
+      width: 32px; font-size: 14px; color: var(--color-text-muted);
+      text-align: center; font-weight: 500; flex-shrink: 0;
+    }
+    .thumb-name { font-size: 14px; color: #424242; flex: 1; }
+    [data-theme="dark"] .thumb-name { color: var(--color-text); }
+    .thumb-current {
+      margin-left: auto; font-size: 11px; color: var(--color-accent);
+      font-weight: 500; flex-shrink: 0;
+    }
+
+    /* Bottom Bar */
+    .bottombar {
+      height: 80px; background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 30px; flex-shrink: 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+    }
+
+    .btn {
+      border: none; border-radius: 10px; font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s ease; display: flex;
+      align-items: center; justify-content: center; gap: 6px;
+      font-family: inherit;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+    .btn-prev, .btn-next-secondary {
+      width: 180px; height: 52px;
+      background: var(--color-btn-secondary); color: #616161;
+      border: 1px solid var(--color-border);
+    }
+    .btn-prev:hover, .btn-next-secondary:hover { background: #EEEEEE; }
+    [data-theme="dark"] .btn-prev:hover,
+    [data-theme="dark"] .btn-next-secondary:hover { background: #3A3A5A; }
+
+    .btn-doodle {
+      width: 180px; height: 52px;
+      background: var(--color-accent-light); color: var(--color-accent);
+      border: 2px solid var(--color-accent);
+    }
+    .btn-doodle:hover { background: var(--color-accent); color: #fff; }
+
+    .btn-next {
+      width: 180px; height: 52px;
+      background: var(--color-accent); color: #fff;
+    }
+    .btn-next:hover { opacity: 0.9; }
+
+    /* Scrollbar */
+    .thumb-list::-webkit-scrollbar { width: 4px; }
+    .thumb-list::-webkit-scrollbar-track { background: transparent; }
+    .thumb-list::-webkit-scrollbar-thumb { background: #CCC; border-radius: 4px; }
+
+    /* Ripple effect */
+    @keyframes ripple {
+      to { transform: scale(2.5); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-label">页面1：常态模式 - 课件页</div>
+  <button class="theme-toggle" aria-label="Toggle theme"><span class="theme-icon">☀️</span></button>
+
+  <div class="tablet">
+    <div class="screen">
+      <!-- Status Bar -->
+      <div class="statusbar">
+        <div class="left">
+          <span><span class="dot-green">●</span> 大屏已连接</span>
+          <span>📡 网络正常</span>
+        </div>
+        <div class="center">第 3 / 12 页</div>
+        <div class="right">三年级 · 科学 · 光合作用</div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Left: Preview -->
+        <div class="preview-area" id="previewArea">
+          <div class="course-title">光合作用的过程</div>
+          <div class="preview-label">课件预览区</div>
+          <div class="preview-sublabel">（与大屏实时同步）</div>
+          <div class="course-img-placeholder">🌱 课件图片内容</div>
+        </div>
+
+        <!-- Right: Thumbnails -->
+        <div class="thumb-panel">
+          <div class="thumb-header">课件导航</div>
+          <div class="thumb-list" id="thumbList">
+            <!-- Items injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="bottombar">
+        <button class="btn btn-prev" id="btnPrev" aria-label="上一页">← 上一页</button>
+        <button class="btn btn-doodle" id="btnDoodle" aria-label="涂鸦">✏ 涂鸦</button>
+        <button class="btn btn-next" id="btnNext" aria-label="下一页">下一页 →</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme toggle
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const html = document.documentElement;
+      const isDark = html.dataset.theme === 'dark';
+      html.dataset.theme = isDark ? 'light' : 'dark';
+      document.querySelector('.theme-icon').textContent = isDark ? '☀️' : '🌙';
+    });
+
+    // Slide data
+    const slides = [
+      { num: '01', name: '课程导入', type: 'normal' },
+      { num: '02', name: '光合作用概念', type: 'normal' },
+      { num: '03', name: '光合作用的过程', type: 'normal', active: true },
+      { num: '04', name: '方程式', type: 'normal' },
+      { num: '05', name: '课堂互动 · 选择题', type: 'interaction' },
+      { num: '06', name: '光合作用实验', type: 'normal' },
+      { num: '07', name: '课堂互动 · 判断题', type: 'interaction' },
+      { num: '08', name: '本课小结', type: 'normal' },
+      { num: '09', name: '课后作业', type: 'normal' },
+      { num: '10', name: '拓展阅读', type: 'normal' },
+      { num: '11', name: '知识图谱', type: 'normal' },
+      { num: '12', name: '课程回顾', type: 'normal' },
+    ];
+
+    let currentIndex = 2; // 03 is active
+
+    function renderThumbs() {
+      const list = document.getElementById('thumbList');
+      list.innerHTML = '';
+      slides.forEach((s, i) => {
+        const item = document.createElement('div');
+        let cls = 'thumb-item';
+        if (i === currentIndex) cls += ' active';
+        if (s.type === 'interaction' && i !== currentIndex) cls += ' interaction';
+        item.className = cls;
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+        item.setAttribute('aria-label', `第${s.num}页 ${s.name}`);
+
+        let html = `<span class="thumb-num">${s.num}</span><span class="thumb-name">${s.name}</span>`;
+        if (s.type === 'interaction') html += `<span class="thumb-badge">💬</span>`;
+        if (i === currentIndex) html += `<span class="thumb-current">▶ 当前</span>`;
+
+        item.innerHTML = html;
+        item.addEventListener('click', () => navigateTo(i));
+        item.addEventListener('keydown', (e) => { if (e.key === 'Enter') navigateTo(i); });
+        list.appendChild(item);
+      });
+    }
+
+    function navigateTo(index) {
+      if (index < 0 || index >= slides.length) return;
+      currentIndex = index;
+      const s = slides[currentIndex];
+      document.querySelector('.statusbar .center').textContent = `第 ${currentIndex + 1} / ${slides.length} 页`;
+      document.querySelector('.course-title').textContent = s.name;
+      renderThumbs();
+      // Scroll active into view
+      const activeEl = document.querySelector('.thumb-item.active');
+      if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    document.getElementById('btnPrev').addEventListener('click', () => navigateTo(currentIndex - 1));
+    document.getElementById('btnNext').addEventListener('click', () => navigateTo(currentIndex + 1));
+    document.getElementById('btnDoodle').addEventListener('click', () => {
+      alert('进入涂鸦模式（见页面3原型）');
+    });
+
+    renderThumbs();
+  </script>
+</body>
+</html>

@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1194,initial-scale=1">
+<title>九章爱学 · Pad端课节管理与备课台 · 高保真原型</title>
+<style>
+/* ================================================================
+   Design Tokens — 九章爱学 Pad Light Theme
+   ================================================================ */
+:root{
+  --brand:#2AADEB;--brand-light:#E8F6FD;--brand-dark:#1B8EC5;
+  --bg:#F2F4F8;--card:#FFF;--text:#333;--text2:#666;--text3:#999;
+  --border:#E8ECF0;--danger:#FF5252;--success:#4CAF50;--warning:#FF9800;
+  --radius:16px;--radius-sm:10px;--shadow:0 2px 12px rgba(0,0,0,.06);
+  --sidebar-w:100px;--topbar-h:72px;--statusbar-h:28px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw;font-size:15px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:inherit}
+
+/* ================================================================
+   Status Bar
+   ================================================================ */
+.statusbar{height:var(--statusbar-h);background:#000;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:12px}
+.statusbar-r{display:flex;gap:8px;align-items:center}
+
+/* ================================================================
+   App Shell — Sidebar + Top Bar + Content
+   ================================================================ */
+.app{display:flex;height:calc(100vh - var(--statusbar-h));background:var(--bg)}
+.sidebar{width:var(--sidebar-w);background:var(--card);display:flex;flex-direction:column;align-items:center;padding:18px 0 12px;gap:4px;border-right:1px solid var(--border);flex-shrink:0}
+.sidebar .avatar{width:52px;height:52px;border-radius:50%;background:var(--brand-light);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--brand);margin-bottom:2px}
+.sidebar .hello{font-size:11px;color:var(--text2);margin-bottom:10px;white-space:nowrap}
+.nav-item{width:80px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0;border-radius:12px;font-size:12px;color:var(--text2);transition:.2s}
+.nav-item.on{background:var(--brand-light);color:var(--brand);font-weight:600}
+.nav-item .ni{font-size:18px}
+
+/* main area */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:var(--topbar-h);background:var(--card);display:flex;align-items:center;padding:0 24px;border-bottom:1px solid var(--border);gap:12px}
+.topbar .greeting{font-size:20px;font-weight:700;flex:1}
+.topbar-btn{width:44px;height:44px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text2)}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.topbar-label{font-size:12px;margin-top:2px;color:var(--text3)}
+.topbar-btn-wrap{display:flex;flex-direction:column;align-items:center}
+
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* ================================================================
+   Page — 课表页 (P1)
+   ================================================================ */
+.page{display:none}
+.page.active{display:block}
+
+/* header row */
+.sch-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sch-title{font-size:18px;font-weight:700;color:var(--text)}
+.btn-create{background:var(--brand);color:#fff;border-radius:var(--radius-sm);padding:10px 20px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.btn-create:active{background:var(--brand-dark)}
+
+/* week strip */
+.week-strip{display:flex;align-items:center;gap:4px;margin-bottom:20px;background:var(--card);border-radius:var(--radius);padding:10px 12px;box-shadow:var(--shadow)}
+.ws-arrow{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:16px}
+.ws-day{flex:1;text-align:center;padding:8px 0;border-radius:12px;cursor:pointer;transition:.2s}
+.ws-day .wd{font-size:12px;color:var(--text3)}
+.ws-day .wn{font-size:20px;font-weight:700;color:var(--text);margin-top:2px}
+.ws-day.today .wd{color:var(--brand)}
+.ws-day.today .wn{color:var(--brand)}
+.ws-day.today::after{content:'';display:block;width:20px;height:3px;background:var(--brand);border-radius:2px;margin:4px auto 0}
+.ws-day.sel{background:var(--brand-light)}
+
+/* lesson cards */
+.lesson-list{display:flex;flex-direction:column;gap:12px}
+.lesson-card{background:var(--card);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;min-height:80px;transition:.15s;border-left:4px solid var(--brand-light)}
+.lesson-card:active{transform:scale(.995)}
+.lc-icon{width:44px;height:44px;border-radius:12px;background:var(--brand-light);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--brand);flex-shrink:0}
+.lc-info{flex:1;min-width:0}
+.lc-time{font-size:14px;font-weight:600;color:var(--text)}
+.lc-detail{font-size:13px;color:var(--text2);margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lc-tag{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.lc-tag.ongoing{background:#E3F2FD;color:#1565C0}
+.lc-tag.pending{background:#FFF3E0;color:#E65100}
+.lc-tag.done{background:#E8F5E9;color:#2E7D32}
+.lc-tag.prepped{background:#E8F6FD;color:var(--brand)}
+.lc-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.btn-go{background:var(--brand);color:#fff;border-radius:24px;padding:10px 24px;font-size:14px;font-weight:600}
+.btn-go:active{background:var(--brand-dark)}
+.btn-prep{background:var(--brand-light);color:var(--brand);border-radius:24px;padding:10px 20px;font-size:14px;font-weight:600;border:1.5px solid var(--brand)}
+.btn-prep:active{background:var(--brand);color:#fff}
+.btn-more{width:40px;height:40px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text2)}
+.btn-more:active{background:var(--border)}
+
+.empty-state{text-align:center;padding:60px 0;color:var(--text3);font-size:15px}
+.empty-state .ei{font-size:48px;margin-bottom:12px;display:block}
+
+/* ================================================================
+   Overlay / Modal / Bottom Sheet shared
+   ================================================================ */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:100;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.overlay.bottom{align-items:flex-end;justify-content:center}
+
+/* ================================================================
+   Modal — 创建/编辑课节
+   ================================================================ */
+.modal{background:var(--card);border-radius:20px;width:520px;max-width:90vw;padding:28px 32px;box-shadow:0 8px 40px rgba(0,0,0,.15)}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{width:36px;height:36px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text3)}
+.form-row{display:flex;align-items:center;margin-bottom:20px}
+.form-label{width:100px;font-size:14px;color:var(--text2);text-align:right;padding-right:12px;flex-shrink:0}
+.form-label .req{color:var(--danger)}
+.form-input{flex:1;height:48px;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0 16px;font-size:15px;color:var(--text);background:var(--card);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:.2s}
+.form-input:active{border-color:var(--brand)}
+.form-input.disabled{background:#F5F5F5;color:var(--text3);cursor:default}
+.form-input .fi-arrow{color:var(--text3);font-size:12px}
+.form-time{display:flex;align-items:center;gap:8px;flex:1}
+.form-time .ft-field{flex:1;height:48px;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0 14px;font-size:15px;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s}
+.form-time .ft-field:active{border-color:var(--brand)}
+.form-time .ft-sep{color:var(--text3);font-size:14px}
+.modal-footer{display:flex;justify-content:flex-end;gap:12px;margin-top:28px}
+.btn-cancel{padding:12px 28px;border-radius:var(--radius-sm);border:1.5px solid var(--border);font-size:15px;color:var(--text2)}
+.btn-cancel:active{background:var(--bg)}
+.btn-save{padding:12px 28px;border-radius:var(--radius-sm);background:var(--brand);color:#fff;font-size:15px;font-weight:600}
+.btn-save:active{background:var(--brand-dark)}
+.btn-save:disabled{background:#ccc;color:#fff}
+
+/* ================================================================
+   Bottom Sheet — 编辑/删除
+   ================================================================ */
+.bsheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:12px 0 calc(env(safe-area-inset-bottom,0px) + 12px);animation:sheetUp .25s ease}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.bs-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 12px}
+.bs-item{display:flex;align-items:center;gap:14px;padding:16px 28px;font-size:16px;color:var(--text);transition:.1s}
+.bs-item:active{background:var(--bg)}
+.bs-item .bsi{font-size:20px}
+.bs-item.danger{color:var(--danger)}
+.bs-divider{height:8px;background:var(--bg);margin:4px 0}
+.bs-cancel{text-align:center;padding:16px;font-size:16px;color:var(--text2)}
+
+/* ================================================================
+   Delete Confirm Dialog
+   ================================================================ */
+.confirm-dialog{background:var(--card);border-radius:20px;width:400px;padding:32px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.15)}
+.cd-icon{font-size:48px;margin-bottom:12px;display:block}
+.cd-title{font-size:17px;font-weight:700;margin-bottom:8px}
+.cd-desc{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px}
+.cd-actions{display:flex;gap:12px;justify-content:center}
+.btn-cd-cancel{padding:12px 32px;border-radius:var(--radius-sm);border:1.5px solid var(--border);font-size:15px;color:var(--text2)}
+.btn-cd-confirm{padding:12px 32px;border-radius:var(--radius-sm);background:var(--danger);color:#fff;font-size:15px;font-weight:600}
+.btn-cd-confirm:disabled{background:#ccc;color:#eee}
+
+/* ================================================================
+   Page — 备课工作台 (P2) — Immersive Split View
+   ================================================================ */
+.prep-page{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;z-index:200}
+.prep-page.show{display:flex}
+
+.prep-topbar{height:56px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0}
+.prep-back{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--text2);padding:8px 12px;border-radius:8px}
+.prep-back:active{background:var(--bg)}
+.prep-info{flex:1;text-align:center;font-size:14px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prep-info span{color:var(--text3);margin:0 6px}
+.btn-finish{background:var(--brand);color:#fff;border-radius:var(--radius-sm);padding:10px 20px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.btn-finish:active{background:var(--brand-dark)}
+
+.prep-body{flex:1;display:flex;overflow:hidden}
+
+/* Left panel — file browser */
+.prep-left{width:60%;border-right:1px solid var(--border);background:var(--card);display:flex;flex-direction:column;overflow:hidden}
+.pl-tabs{display:flex;padding:0 20px;border-bottom:1px solid var(--border)}
+.pl-tab{padding:14px 20px;font-size:14px;color:var(--text2);position:relative;cursor:pointer}
+.pl-tab.on{color:var(--brand);font-weight:600}
+.pl-tab.on::after{content:'';position:absolute;bottom:0;left:20px;right:20px;height:2.5px;background:var(--brand);border-radius:2px}
+
+.pl-toolbar{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.pl-search{flex:1;min-width:160px;height:38px;border:1.5px solid var(--border);border-radius:8px;padding:0 12px;font-size:13px;color:var(--text);outline:none}
+.pl-search:focus{border-color:var(--brand)}
+.pl-filter{display:flex;align-items:center;gap:4px;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:13px;color:var(--text2);cursor:pointer}
+.pl-filter:active{background:var(--bg)}
+
+/* breadcrumb */
+.pl-breadcrumb{display:flex;align-items:center;gap:4px;padding:10px 20px;font-size:13px;color:var(--text3);border-bottom:1px solid var(--border);flex-shrink:0}
+.pl-bc-item{cursor:pointer;color:var(--brand)}
+.pl-bc-item:last-child{color:var(--text);cursor:default}
+.pl-bc-sep{margin:0 2px}
+
+.pl-list{flex:1;overflow-y:auto;padding:0}
+.pl-row{display:flex;align-items:center;padding:12px 20px;gap:12px;border-bottom:1px solid #f0f0f0;min-height:56px;transition:.1s;cursor:pointer}
+.pl-row:active{background:#FAFBFC}
+.pl-row.checked{background:var(--brand-light)}
+.pl-chk{width:22px;height:22px;border:2px solid #ccc;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;flex-shrink:0;transition:.2s}
+.pl-row.checked .pl-chk{background:var(--brand);border-color:var(--brand)}
+.pl-row.folder .pl-chk{visibility:hidden}
+.pl-icon{font-size:24px;flex-shrink:0}
+.pl-name{flex:1;font-size:14px;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-meta{font-size:12px;color:var(--text3);white-space:nowrap}
+.pl-type{font-size:12px;color:var(--text3);width:50px}
+.pl-size{font-size:12px;color:var(--text3);width:60px;text-align:right}
+.pl-go{color:var(--text3);font-size:14px}
+
+/* Right panel — bound resources */
+.prep-right{width:40%;background:#F5F7FA;display:flex;flex-direction:column;overflow:hidden}
+.pr-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pr-title{font-size:15px;font-weight:600;color:var(--text)}
+.pr-count{font-size:13px;color:var(--brand);font-weight:600}
+.pr-list{flex:1;overflow-y:auto;padding:8px 12px}
+.pr-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border-radius:12px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.pr-item-icon{font-size:22px;flex-shrink:0}
+.pr-item-info{flex:1;min-width:0}
+.pr-item-name{font-size:14px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr-item-meta{font-size:12px;color:var(--text3);margin-top:2px}
+.btn-unbind{padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:12px;color:var(--text3);flex-shrink:0;transition:.15s}
+.btn-unbind:active{border-color:var(--danger);color:var(--danger);background:#FFF5F5}
+.pr-empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:14px;line-height:1.8}
+.pr-empty .pei{font-size:40px;display:block;margin-bottom:8px}
+
+.pr-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--card)}
+.pr-footer-count{font-size:14px;color:var(--text2)}
+.pr-footer-count b{color:var(--brand)}
+
+/* ================================================================
+   Picker (滚轮模拟)
+   ================================================================ */
+.picker-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:300;align-items:flex-end;justify-content:center}
+.picker-overlay.show{display:flex}
+.picker-box{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:520px;overflow:hidden;animation:sheetUp .25s ease}
+.picker-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border)}
+.picker-cancel{font-size:15px;color:var(--text3)}
+.picker-title{font-size:16px;font-weight:600}
+.picker-confirm{font-size:15px;color:var(--brand);font-weight:600}
+.picker-body{max-height:260px;overflow-y:auto;padding:8px 0}
+.picker-option{padding:14px 28px;font-size:16px;color:var(--text);text-align:center;transition:.1s}
+.picker-option:active{background:var(--bg)}
+.picker-option.sel{color:var(--brand);font-weight:600;background:var(--brand-light)}
+
+/* ================================================================
+   Toast
+   ================================================================ */
+.toast-wrap{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:999;pointer-events:none}
+.toast{background:rgba(0,0,0,.78);color:#fff;padding:12px 28px;border-radius:24px;font-size:14px;white-space:nowrap;animation:toastIn .3s ease}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ================================================================
+   Unsaved Changes Dialog
+   ================================================================ */
+
+/* animate */
+.fadein{animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     Status Bar
+     ============================================================ -->
+<div class="statusbar">
+  <span>16:16</span>
+  <div class="statusbar-r">
+    <span>WiFi</span>
+    <span>83%🔋</span>
+  </div>
+</div>
+
+<!-- ============================================================
+     App Shell
+     ============================================================ -->
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="avatar">👤</div>
+    <div class="hello">Hello, 吴老师</div>
+    <div class="nav-item on" onclick="navTo(this)"><span class="ni">📅</span>我的课表</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">📝</span>作业任务</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">📊</span>考试报告</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">📚</span>课程资源</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">🎯</span>靶向任务</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">📈</span>学情管理</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">☁️</span>班级云盘</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="greeting">Hello, 吴老师</div>
+      <div class="topbar-actions">
+        <div class="topbar-btn-wrap"><div class="topbar-btn">📷</div><div class="topbar-label">扫一扫</div></div>
+        <div class="topbar-btn-wrap"><div class="topbar-btn">🖥</div><div class="topbar-label">投屏</div></div>
+        <div class="topbar-btn-wrap"><div class="topbar-btn">🔄</div></div>
+        <div class="topbar-btn-wrap"><div class="topbar-btn">🖨</div></div>
+        <div class="topbar-btn-wrap"><div class="topbar-btn">⚙️</div></div>
+      </div>
+    </div>
+
+    <!-- Content: 课表页 -->
+    <div class="content">
+      <div class="page active" id="p1">
+        <!-- Header -->
+        <div class="sch-header">
+          <div class="sch-title">2026年04月09日 · 课表</div>
+          <button class="btn-create" onclick="openCreateModal()">➕ 新建课节</button>
+        </div>
+
+        <!-- Week Strip -->
+        <div class="week-strip">
+          <button class="ws-arrow" onclick="toast('切换上一周')">◂</button>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周日</div><div class="wn">5</div></div>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周一</div><div class="wn">6</div></div>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周二</div><div class="wn">7</div></div>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周三</div><div class="wn">8</div></div>
+          <div class="ws-day today sel" onclick="selDay(this)"><div class="wd">今天</div><div class="wn">9</div></div>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周五</div><div class="wn">10</div></div>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周六</div><div class="wn">11</div></div>
+          <button class="ws-arrow" onclick="toast('切换下一周')">▸</button>
+        </div>
+
+        <!-- Lesson List -->
+        <div class="lesson-list" id="lessonList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     Modal — 创建/编辑课节
+     ============================================================ -->
+<div class="overlay" id="modalOverlay" onclick="closeModal()">
+  <div class="modal fadein" onclick="event.stopPropagation()">
+    <div class="modal-title">
+      <span id="modalTitle">创建课节</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-label"><span class="req">*</span> 班级：</div>
+      <div class="form-input" id="fClass" onclick="openPicker('class')">
+        <span id="fClassVal">请选择班级</span>
+        <span class="fi-arrow">▾</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label"><span class="req">*</span> 教室：</div>
+      <div class="form-input" id="fRoom" onclick="openPicker('room')">
+        <span id="fRoomVal">请选择教室</span>
+        <span class="fi-arrow">▾</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label"><span class="req">*</span> 上课日期：</div>
+      <div class="form-input" onclick="openPicker('date')">
+        <span id="fDateVal">2026-04-09</span>
+        <span class="fi-arrow">📅</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label"><span class="req">*</span> 上课时间：</div>
+      <div class="form-time">
+        <div class="ft-field" onclick="openPicker('timeStart')"><span id="fTimeS">16:10</span></div>
+        <span class="ft-sep">→</span>
+        <div class="ft-field" onclick="openPicker('timeEnd')"><span id="fTimeE">17:10</span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">取 消</button>
+      <button class="btn-save" id="btnSave" onclick="saveLesson()">保 存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     Bottom Sheet — 编辑/删除
+     ============================================================ -->
+<div class="overlay bottom" id="sheetOverlay" onclick="closeSheet()">
+  <div class="bsheet" onclick="event.stopPropagation()">
+    <div class="bs-handle"></div>
+    <div class="bs-item" onclick="closeSheet();openEditModal()"><span class="bsi">✏️</span> 编辑课节</div>
+    <div class="bs-item danger" onclick="closeSheet();openDeleteConfirm()"><span class="bsi">🗑️</span> 删除课节</div>
+    <div class="bs-divider"></div>
+    <div class="bs-cancel" onclick="closeSheet()">取消</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     Delete Confirm Dialog
+     ============================================================ -->
+<div class="overlay" id="deleteOverlay" onclick="closeDelete()">
+  <div class="confirm-dialog fadein" onclick="event.stopPropagation()">
+    <span class="cd-icon">⚠️</span>
+    <div class="cd-title">确定删除该课节吗？</div>
+    <div class="cd-desc">删除后，相关的备课与课堂数据将一并失效且无法恢复。</div>
+    <div class="cd-actions">
+      <button class="btn-cd-cancel" onclick="closeDelete()">取消</button>
+      <button class="btn-cd-confirm" id="btnDelConfirm" disabled onclick="doDelete()">确认删除 (3s)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     Picker Overlay (模拟滚轮选择)
+     ============================================================ -->
+<div class="picker-overlay" id="pickerOverlay" onclick="closePicker()">
+  <div class="picker-box" onclick="event.stopPropagation()">
+    <div class="picker-header">
+      <button class="picker-cancel" onclick="closePicker()">取消</button>
+      <span class="picker-title" id="pickerTitle">选择班级</span>
+      <button class="picker-confirm" onclick="confirmPicker()">确定</button>
+    </div>
+    <div class="picker-body" id="pickerBody"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     备课工作台 (Full Screen Immersive)
+     ============================================================ -->
+<div class="prep-page" id="prepPage">
+  <div class="prep-topbar">
+    <button class="prep-back" onclick="exitPrep()">← 返回课表</button>
+    <div class="prep-info" id="prepInfo">
+      高一·语文 <span>|</span> 2026-04-09 <span>|</span> 17:08-19:00 <span>|</span> 老吴物理 <span>|</span> 老吴测试专用教室
+    </div>
+    <button class="btn-finish" onclick="finishPrep()">✅ 完成备课</button>
+  </div>
+
+  <div class="prep-body">
+    <!-- Left: File Browser (60%) -->
+    <div class="prep-left">
+      <div class="pl-tabs">
+        <div class="pl-tab on" onclick="switchPrepTab(this,0)">我的资料</div>
+        <div class="pl-tab" onclick="switchPrepTab(this,1)">校本资料</div>
+      </div>
+      <div class="pl-toolbar">
+        <input class="pl-search" placeholder="搜索资料名称..." />
+        <button class="pl-filter" onclick="toast('筛选面板')">🔽 学科</button>
+        <button class="pl-filter" onclick="toast('筛选面板')">📂 筛选(10)</button>
+      </div>
+      <div class="pl-breadcrumb" id="plBreadcrumb">
+        <span class="pl-bc-item" onclick="navFolder(-1)">个人云盘</span>
+      </div>
+      <div class="pl-list" id="plList"></div>
+    </div>
+
+    <!-- Right: Bound Resources (40%) -->
+    <div class="prep-right">
+      <div class="pr-header">
+        <div class="pr-title">已添加资料</div>
+        <div class="pr-count" id="prCount">(0)</div>
+      </div>
+      <div class="pr-list" id="prList">
+        <div class="pr-empty" id="prEmpty">
+          <span class="pei">📋</span>
+          暂无已绑定资料<br>点击左侧文件即可添加
+        </div>
+      </div>
+      <div class="pr-footer">
+        <div class="pr-footer-count">已添加资料: <b id="prFooterN">0</b> 个</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     Unsaved Changes Confirm
+     ============================================================ -->
+<div class="overlay" id="unsavedOverlay" onclick="">
+  <div class="confirm-dialog fadein" onclick="event.stopPropagation()">
+    <span class="cd-icon">💾</span>
+    <div class="cd-title">有未保存的变动</div>
+    <div class="cd-desc">备课内容已修改但尚未保存，确定要退出吗？</div>
+    <div class="cd-actions">
+      <button class="btn-cd-cancel" onclick="closeUnsaved()">继续备课</button>
+      <button class="btn-save" onclick="closeUnsaved();closePrepForce()">不保存，退出</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ================================================================
+   Data
+   ================================================================ */
+const LESSONS = [
+  {id:1, time:'16:08-17:08', room:'老吴测试专用教室', cls:'老吴测试', subj:'语文', status:'ongoing', prepped:true},
+  {id:2, time:'17:08-19:00', room:'老吴测试专用教室', cls:'老吴物理', subj:'语文', status:'pending', prepped:false},
+  {id:3, time:'19:30-20:30', room:'老吴测试专用教室', cls:'老吴测试', subj:'数学', status:'pending', prepped:true},
+];
+
+const CLASSES = ['老吴测试','老吴物理','高一(1)班','高一(2)班','高二实验班'];
+const ROOMS = ['老吴测试专用教室(2022)','多媒体教室A','多媒体教室B','实验室301'];
+const DATES = ['2026-04-08','2026-04-09','2026-04-10','2026-04-11','2026-04-12'];
+const TIMES = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00'];
+
+// Cloud drive files (for prep)
+const FOLDERS = [
+  {id:'f1',name:'我的作业任务',type:'folder',icon:'📁',date:'2026-03-06',size:'48.49K'},
+  {id:'f2',name:'AI靶向提升',type:'folder',icon:'📁',date:'2026-01-23',size:'80.17K'},
+  {id:'f3',name:'课堂习题',type:'folder',icon:'📁',date:'2026-01-08',size:'9.13M'},
+  {id:'f4',name:'练习题',type:'folder',icon:'📁',date:'2025-12-11',size:'9.13M'},
+  {id:'f5',name:'试题',type:'folder',icon:'📁',date:'2025-07-03',size:'31.54K'},
+];
+const FILES = [
+  {id:'r1',name:'未命名课件',type:'课件',icon:'📗',date:'6天前',size:'242.65K',status:'✅'},
+  {id:'r2',name:'未命名课件',type:'课件',icon:'📗',date:'2026-03-06',size:'10.1K',status:'✅'},
+  {id:'r3',name:'解答复合',type:'课件',icon:'📗',date:'2026-03-06',size:'1.17M',status:'✅'},
+  {id:'r4',name:'未命名课件',type:'课件',icon:'📗',date:'2026-03-06',size:'17.35K',status:'✅'},
+  {id:'r5',name:'未命名课件',type:'课件',icon:'📗',date:'2026-03-06',size:'25.92K',status:'✅'},
+  {id:'r6',name:'数学期中复习',type:'课件',icon:'📗',date:'2026-02-20',size:'3.2M',status:'✅'},
+  {id:'r7',name:'古文鉴赏PPT',type:'课件',icon:'📗',date:'2026-03-15',size:'5.8M',status:'✅'},
+  {id:'r8',name:'实验操作视频',type:'视频',icon:'🎬',date:'2026-01-12',size:'128M',status:'✅'},
+];
+const SUBFOLDER_FILES = [
+  {id:'sf1',name:'第一单元练习',type:'课件',icon:'📗',date:'2026-03-01',size:'1.5M',status:'✅'},
+  {id:'sf2',name:'第二单元练习',type:'课件',icon:'📗',date:'2026-03-05',size:'2.1M',status:'✅'},
+  {id:'sf3',name:'综合测试题',type:'课件',icon:'📗',date:'2026-03-10',size:'0.8M',status:'✅'},
+];
+
+/* ================================================================
+   State
+   ================================================================ */
+let S = {
+  editId: null,
+  currentPicker: null,
+  pickerSel: null,
+  // modal form values
+  fClass: '', fRoom: '', fDate: '2026-04-09', fTimeS: '16:10', fTimeE: '17:10',
+  // prep state
+  boundRes: new Set(),
+  prepDirty: false,
+  inSubfolder: false,
+  prepLessonId: null,
+};
+
+/* ================================================================
+   Render Lesson List
+   ================================================================ */
+function renderLessons(){
+  const box = document.getElementById('lessonList');
+  if(!LESSONS.length){
+    box.innerHTML = '<div class="empty-state"><span class="ei">📅</span>今日暂无课节<br>点击右上角「新建课节」创建</div>';
+    return;
+  }
+  box.innerHTML = LESSONS.map(l => {
+    const statusMap = {ongoing:{label:'进行中',cls:'ongoing'},pending:{label:'未开课',cls:'pending'},done:{label:'已结束',cls:'done'}};
+    const st = statusMap[l.status];
+    let actions = '';
+    if(l.status === 'ongoing'){
+      actions = '<button class="btn-go" onclick="toast(\'进入上课页面\')">去上课</button>';
+    } else if(l.status === 'pending'){
+      const prepLabel = l.prepped ? '修改备课' : '备课';
+      actions = `
+        <button class="btn-prep" onclick="openPrep(${l.id})">${prepLabel}</button>
+        <button class="btn-more" onclick="openSheet(${l.id})">⋮</button>`;
+    } else {
+      actions = '<button class="btn-prep" style="opacity:.5;pointer-events:none">已结束</button>';
+    }
+    const preppedTag = l.prepped && l.status==='pending' ? '<span class="lc-tag prepped">已备课</span>' : '';
+    return `
+    <div class="lesson-card" data-id="${l.id}">
+      <div class="lc-icon">📅</div>
+      <div class="lc-info">
+        <div class="lc-time">${l.time}  ${l.room}</div>
+        <div class="lc-detail">
+          <span>${l.cls} · ${l.subj}</span>
+          <span class="lc-tag ${st.cls}">${st.label}</span>
+          ${preppedTag}
+        </div>
+      </div>
+      <div class="lc-actions">${actions}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ================================================================
+   Week Day Selection
+   ================================================================ */
+function selDay(el){
+  document.querySelectorAll('.ws-day').forEach(d => d.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+/* ================================================================
+   Nav
+   ================================================================ */
+function navTo(el){
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('on'));
+  el.classList.add('on');
+  toast(el.textContent.trim());
+}
+
+/* ================================================================
+   Create/Edit Modal
+   ================================================================ */
+function openCreateModal(){
+  S.editId = null;
+  document.getElementById('modalTitle').textContent = '创建课节';
+  document.getElementById('fClass').classList.remove('disabled');
+  S.fClass = ''; S.fRoom = ''; S.fDate = '2026-04-09'; S.fTimeS = '16:10'; S.fTimeE = '17:10';
+  document.getElementById('fClassVal').textContent = '请选择班级';
+  document.getElementById('fRoomVal').textContent = '请选择教室';
+  document.getElementById('fDateVal').textContent = '2026-04-09';
+  document.getElementById('fTimeS').textContent = '16:10';
+  document.getElementById('fTimeE').textContent = '17:10';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function openEditModal(){
+  const l = LESSONS.find(x => x.id === S.editId);
+  if(!l) return;
+  document.getElementById('modalTitle').textContent = '编辑课节';
+  document.getElementById('fClass').classList.add('disabled');
+  S.fClass = l.cls; S.fRoom = l.room; S.fDate = '2026-04-09';
+  const [ts,te] = l.time.split('-');
+  S.fTimeS = ts; S.fTimeE = te;
+  document.getElementById('fClassVal').textContent = l.cls;
+  document.getElementById('fRoomVal').textContent = l.room;
+  document.getElementById('fDateVal').textContent = '2026-04-09';
+  document.getElementById('fTimeS').textContent = ts;
+  document.getElementById('fTimeE').textContent = te;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+function saveLesson(){
+  if(!S.fClass && !S.editId){toast('请选择班级');return;}
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true; btn.textContent = '保存中...';
+  setTimeout(()=>{
+    btn.disabled = false; btn.textContent = '保 存';
+    if(!S.editId){
+      // create new
+      LESSONS.push({
+        id: Date.now(), time:`${S.fTimeS}-${S.fTimeE}`, room: S.fRoom||'老吴测试专用教室(2022)',
+        cls: S.fClass, subj:'语文', status:'pending', prepped:false
+      });
+    } else {
+      const l = LESSONS.find(x=>x.id===S.editId);
+      if(l){ l.room = S.fRoom||l.room; const[ts,te]=[S.fTimeS,S.fTimeE]; l.time=`${ts}-${te}`; }
+    }
+    closeModal(); renderLessons(); toast('✅ 保存成功');
+  }, 800);
+}
+
+/* ================================================================
+   Picker
+   ================================================================ */
+function openPicker(type){
+  if(type==='class' && S.editId) return; // disabled in edit
+  S.currentPicker = type;
+  S.pickerSel = null;
+  const title = {class:'选择班级',room:'选择教室',date:'选择日期',timeStart:'选择开始时间',timeEnd:'选择结束时间'}[type];
+  document.getElementById('pickerTitle').textContent = title;
+  let items = [];
+  if(type==='class') items = CLASSES;
+  else if(type==='room') items = ROOMS;
+  else if(type==='date') items = DATES;
+  else items = TIMES;
+  const curVal = {class:S.fClass, room:S.fRoom, date:S.fDate, timeStart:S.fTimeS, timeEnd:S.fTimeE}[type];
+  document.getElementById('pickerBody').innerHTML = items.map(it =>
+    `<div class="picker-option ${it===curVal?'sel':''}" onclick="pickOption(this,'${it}')">${it}</div>`
+  ).join('');
+  document.getElementById('pickerOverlay').classList.add('show');
+}
+function pickOption(el, val){
+  document.querySelectorAll('.picker-option').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  S.pickerSel = val;
+}
+function confirmPicker(){
+  const val = S.pickerSel;
+  if(!val){closePicker();return;}
+  const t = S.currentPicker;
+  if(t==='class'){S.fClass=val;document.getElementById('fClassVal').textContent=val;}
+  else if(t==='room'){S.fRoom=val;document.getElementById('fRoomVal').textContent=val;}
+  else if(t==='date'){S.fDate=val;document.getElementById('fDateVal').textContent=val;}
+  else if(t==='timeStart'){S.fTimeS=val;document.getElementById('fTimeS').textContent=val;}
+  else if(t==='timeEnd'){S.fTimeE=val;document.getElementById('fTimeE').textContent=val;}
+  closePicker();
+}
+function closePicker(){
+  document.getElementById('pickerOverlay').classList.remove('show');
+}
+
+/* ================================================================
+   Bottom Sheet
+   ================================================================ */
+function openSheet(id){
+  S.editId = id;
+  document.getElementById('sheetOverlay').classList.add('show');
+}
+function closeSheet(){
+  document.getElementById('sheetOverlay').classList.remove('show');
+}
+
+/* ================================================================
+   Delete Confirm (with 3s countdown)
+   ================================================================ */
+let delTimer = null;
+function openDeleteConfirm(){
+  document.getElementById('deleteOverlay').classList.add('show');
+  const btn = document.getElementById('btnDelConfirm');
+  btn.disabled = true;
+  let sec = 3;
+  btn.textContent = `确认删除 (${sec}s)`;
+  delTimer = setInterval(()=>{
+    sec--;
+    if(sec <= 0){
+      clearInterval(delTimer);
+      btn.disabled = false;
+      btn.textContent = '确认删除';
+    } else {
+      btn.textContent = `确认删除 (${sec}s)`;
+    }
+  }, 1000);
+}
+function closeDelete(){
+  document.getElementById('deleteOverlay').classList.remove('show');
+  if(delTimer) clearInterval(delTimer);
+}
+function doDelete(){
+  const idx = LESSONS.findIndex(l=>l.id===S.editId);
+  if(idx>=0) LESSONS.splice(idx,1);
+  closeDelete(); renderLessons(); toast('✅ 已删除');
+}
+
+/* ================================================================
+   备课工作台 (Prep Workbench)
+   ================================================================ */
+function openPrep(id){
+  S.prepLessonId = id;
+  const l = LESSONS.find(x=>x.id===id);
+  if(l){
+    document.getElementById('prepInfo').innerHTML =
+      `${l.cls} · ${l.subj} <span>|</span> 2026-04-09 <span>|</span> ${l.time} <span>|</span> ${l.room}`;
+  }
+  // reset state
+  S.boundRes = new Set();
+  S.prepDirty = false;
+  S.inSubfolder = false;
+  // if already prepped, pre-bind some resources
+  if(l && l.prepped){
+    S.boundRes.add('r1');
+    S.boundRes.add('r3');
+  }
+  renderPrepFiles();
+  renderBound();
+  document.getElementById('prepPage').classList.add('show');
+}
+function exitPrep(){
+  if(S.prepDirty){
+    document.getElementById('unsavedOverlay').classList.add('show');
+    return;
+  }
+  closePrepForce();
+}
+function closePrepForce(){
+  document.getElementById('prepPage').classList.remove('show');
+}
+function closeUnsaved(){
+  document.getElementById('unsavedOverlay').classList.remove('show');
+}
+function finishPrep(){
+  const btn = document.querySelector('.btn-finish');
+  btn.textContent = '保存中...';btn.disabled=true;
+  setTimeout(()=>{
+    btn.textContent = '✅ 完成备课';btn.disabled=false;
+    const l = LESSONS.find(x=>x.id===S.prepLessonId);
+    if(l) l.prepped = true;
+    S.prepDirty = false;
+    closePrepForce();
+    renderLessons();
+    toast('✅ 备课已保存');
+  }, 800);
+}
+
+function switchPrepTab(el, idx){
+  document.querySelectorAll('.pl-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  S.inSubfolder = false;
+  renderPrepFiles();
+}
+
+function renderPrepFiles(){
+  const bc = document.getElementById('plBreadcrumb');
+  const list = document.getElementById('plList');
+
+  if(S.inSubfolder){
+    bc.innerHTML = `<span class="pl-bc-item" onclick="navFolder(-1)">个人云盘</span><span class="pl-bc-sep">/</span><span class="pl-bc-item">${S.inSubfolder}</span>`;
+    list.innerHTML = SUBFOLDER_FILES.map(f => {
+      const checked = S.boundRes.has(f.id);
+      return `<div class="pl-row ${checked?'checked':''}" onclick="toggleFile('${f.id}')">
+        <div class="pl-chk">${checked?'✓':''}</div>
+        <span class="pl-icon">${f.icon}</span>
+        <span class="pl-name">${f.name} ${f.status||''}</span>
+        <span class="pl-type">${f.type}</span>
+        <span class="pl-meta">${f.date}</span>
+        <span class="pl-size">${f.size}</span>
+      </div>`;
+    }).join('');
+  } else {
+    bc.innerHTML = '<span class="pl-bc-item">个人云盘</span>';
+    let html = '';
+    // folders
+    html += FOLDERS.map(f => `
+      <div class="pl-row folder" onclick="navFolder('${f.name}')">
+        <div class="pl-chk"></div>
+        <span class="pl-icon">${f.icon}</span>
+        <span class="pl-name">${f.name}</span>
+        <span class="pl-type">文件夹</span>
+        <span class="pl-meta">${f.date}</span>
+        <span class="pl-size">${f.size}</span>
+        <span class="pl-go">▸</span>
+      </div>`).join('');
+    // files
+    html += FILES.map(f => {
+      const checked = S.boundRes.has(f.id);
+      return `<div class="pl-row ${checked?'checked':''}" onclick="toggleFile('${f.id}')">
+        <div class="pl-chk">${checked?'✓':''}</div>
+        <span class="pl-icon">${f.icon}</span>
+        <span class="pl-name">${f.name} ${f.status||''}</span>
+        <span class="pl-type">${f.type}</span>
+        <span class="pl-meta">${f.date}</span>
+        <span class="pl-size">${f.size}</span>
+      </div>`;
+    }).join('');
+    list.innerHTML = html;
+  }
+}
+
+function navFolder(name){
+  if(name === -1){
+    S.inSubfolder = false;
+  } else {
+    S.inSubfolder = name;
+  }
+  renderPrepFiles();
+}
+
+function toggleFile(id){
+  if(S.boundRes.has(id)){
+    S.boundRes.delete(id);
+  } else {
+    S.boundRes.add(id);
+    // mini "fly-in" feedback
+  }
+  S.prepDirty = true;
+  renderPrepFiles();
+  renderBound();
+}
+
+function unbindFile(id){
+  S.boundRes.delete(id);
+  S.prepDirty = true;
+  renderPrepFiles();
+  renderBound();
+}
+
+function renderBound(){
+  const allFiles = [...FILES, ...SUBFOLDER_FILES];
+  const bound = [...S.boundRes].map(id => allFiles.find(f=>f.id===id)).filter(Boolean);
+  const list = document.getElementById('prList');
+  const empty = document.getElementById('prEmpty');
+
+  document.getElementById('prCount').textContent = `(${bound.length})`;
+  document.getElementById('prFooterN').textContent = bound.length;
+
+  if(!bound.length){
+    list.innerHTML = '<div class="pr-empty" id="prEmpty"><span class="pei">📋</span>暂无已绑定资料<br>点击左侧文件即可添加</div>';
+    return;
+  }
+  list.innerHTML = bound.map(f => `
+    <div class="pr-item">
+      <span class="pr-item-icon">${f.icon}</span>
+      <div class="pr-item-info">
+        <div class="pr-item-name">${f.name}</div>
+        <div class="pr-item-meta">${f.type} · ${f.size}</div>
+      </div>
+      <button class="btn-unbind" onclick="unbindFile('${f.id}')">✕ 解绑</button>
+    </div>`).join('');
+}
+
+/* ================================================================
+   Toast
+   ================================================================ */
+function toast(msg){
+  const w = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = msg;
+  w.appendChild(t);
+  setTimeout(()=>t.remove(), 2500);
+}
+
+/* ================================================================
+   Init
+   ================================================================ */
+renderLessons();
+</script>
+</body>
+</html>

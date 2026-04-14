@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教师Pad - 互动页待发起</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root[data-theme="light"] {
+      --color-bg: #E8E8E8;
+      --color-surface: #FFFFFF;
+      --color-text: #212121;
+      --color-text-muted: #9E9E9E;
+      --color-accent: #1565C0;
+      --color-accent-light: #E3F2FD;
+      --color-border: #E0E0E0;
+      --color-statusbar: #1565C0;
+      --color-success: #4CAF50;
+      --color-warning: #FF8F00;
+      --color-warning-bg: #FFF8E1;
+      --color-warning-border: #FFB300;
+      --color-warning-text: #E65100;
+      --color-btn-secondary: #F5F5F5;
+      --color-option-bg: #FFFFFF;
+      --color-option-border: #E0E0E0;
+      --color-option-circle: #F5F5F5;
+      --color-option-circle-border: #BDBDBD;
+    }
+    :root[data-theme="dark"] {
+      --color-bg: #1A1A2E;
+      --color-surface: #16213E;
+      --color-text: #E0E0E0;
+      --color-text-muted: #78909C;
+      --color-accent: #42A5F5;
+      --color-accent-light: #1A237E;
+      --color-border: #2A2A4A;
+      --color-statusbar: #0D47A1;
+      --color-success: #66BB6A;
+      --color-warning: #FFB300;
+      --color-warning-bg: #3E2723;
+      --color-warning-border: #FF8F00;
+      --color-warning-text: #FFD54F;
+      --color-btn-secondary: #2A2A4A;
+      --color-option-bg: #1E1E3A;
+      --color-option-border: #2A2A4A;
+      --color-option-circle: #2A2A4A;
+      --color-option-circle-border: #546E7A;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: 'Noto Sans SC', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .theme-toggle {
+      position: fixed; top: 1rem; right: 1rem; z-index: 1000;
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: 8px; padding: 0.5rem 0.75rem; cursor: pointer;
+      color: var(--color-text); font-size: 1.1rem;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .theme-toggle:hover { border-color: var(--color-accent); }
+    .theme-toggle:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+    .page-label {
+      position: fixed; top: 1rem; left: 1rem; z-index: 1000;
+      background: var(--color-warning); color: #fff; border-radius: 8px;
+      padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500;
+    }
+
+    .tablet {
+      width: 1200px; height: 810px;
+      background: #111; border-radius: 18px;
+      padding: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .screen {
+      width: 100%; height: 100%;
+      background: var(--color-surface);
+      border-radius: 8px; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+
+    /* Status Bar */
+    .statusbar {
+      height: 42px; background: var(--color-statusbar);
+      display: flex; align-items: center; padding: 0 16px;
+      font-size: 13px; color: #fff; flex-shrink: 0;
+    }
+    .statusbar .left { display: flex; align-items: center; gap: 16px; }
+    .statusbar .center { flex: 1; text-align: center; font-weight: 700; font-size: 14px; }
+    .statusbar .right-info { text-align: right; color: #BBDEFB; font-size: 13px; }
+    .dot-green { color: #A5D6A7; }
+    .badge-interaction {
+      background: rgba(255,213,79,0.2); color: #FFD54F;
+      padding: 2px 10px; border-radius: 10px; font-size: 12px; font-weight: 700;
+      margin-left: 8px;
+    }
+
+    .main-content { flex: 1; display: flex; overflow: hidden; }
+
+    /* Question Preview */
+    .question-area {
+      flex: 1; background: var(--color-warning-bg);
+      border: 2px solid var(--color-warning-border);
+      margin: 8px; border-radius: 12px;
+      display: flex; flex-direction: column; padding: 24px 30px;
+      overflow-y: auto;
+    }
+
+    .q-type-badge {
+      display: inline-block; background: var(--color-warning);
+      color: #fff; font-size: 13px; font-weight: 700;
+      padding: 4px 16px; border-radius: 6px; align-self: flex-start;
+      margin-bottom: 20px;
+    }
+    .q-title {
+      font-size: 22px; font-weight: 700; color: var(--color-text);
+      margin-bottom: 24px; line-height: 1.5;
+    }
+
+    .option {
+      display: flex; align-items: center; padding: 16px;
+      background: var(--color-option-bg); border: 1px solid var(--color-option-border);
+      border-radius: 10px; margin-bottom: 10px; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .option:hover { border-color: var(--color-warning); transform: translateX(4px); }
+    .option-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--color-option-circle);
+      border: 2px solid var(--color-option-circle-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; color: #616161;
+      flex-shrink: 0; margin-right: 16px;
+    }
+    [data-theme="dark"] .option-circle { color: var(--color-text-muted); }
+    .option-text { font-size: 18px; color: var(--color-text); }
+
+    .hint-text {
+      margin-top: auto; padding-top: 16px;
+      text-align: center; font-size: 14px;
+      color: var(--color-warning); font-weight: 500;
+    }
+
+    /* Thumbnail Panel */
+    .thumb-panel {
+      width: 370px; background: #FAFAFA;
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    [data-theme="dark"] .thumb-panel { background: var(--color-surface); }
+
+    .thumb-header {
+      padding: 10px 16px; font-size: 14px; font-weight: 700;
+      color: var(--color-text-muted); text-align: center; flex-shrink: 0;
+    }
+    .thumb-list {
+      flex: 1; overflow-y: auto; padding: 0 10px 10px;
+      scrollbar-width: thin;
+    }
+    .thumb-item {
+      display: flex; align-items: center; padding: 14px;
+      margin-bottom: 6px; border-radius: 10px; cursor: pointer;
+      border: 2px solid transparent; background: var(--color-surface);
+      transition: all 0.2s ease;
+    }
+    .thumb-item:hover { border-color: var(--color-border); }
+    .thumb-item.active {
+      background: var(--color-warning-bg); border-color: var(--color-warning);
+    }
+    .thumb-item.active .thumb-num,
+    .thumb-item.active .thumb-name { color: var(--color-warning); font-weight: 700; }
+    .thumb-item.interaction {
+      background: var(--color-warning-bg); border-color: transparent;
+    }
+    .thumb-item.interaction .thumb-num,
+    .thumb-item.interaction .thumb-name { color: var(--color-warning); }
+    .thumb-num { width: 32px; font-size: 14px; color: var(--color-text-muted); text-align: center; flex-shrink: 0; }
+    .thumb-name { font-size: 14px; color: #424242; flex: 1; }
+    [data-theme="dark"] .thumb-name { color: var(--color-text); }
+    .thumb-badge { margin-left: auto; font-size: 16px; }
+    .thumb-current { margin-left: auto; font-size: 11px; color: var(--color-warning); font-weight: 500; flex-shrink: 0; }
+
+    .thumb-list::-webkit-scrollbar { width: 4px; }
+    .thumb-list::-webkit-scrollbar-track { background: transparent; }
+    .thumb-list::-webkit-scrollbar-thumb { background: #CCC; border-radius: 4px; }
+
+    /* Bottom Bar */
+    .bottombar {
+      height: 86px; background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; flex-shrink: 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+    }
+
+    .btn {
+      border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s ease;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-family: inherit;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+    .btn-prev, .btn-next-side {
+      width: 150px; height: 52px;
+      background: var(--color-btn-secondary); color: #616161;
+      border: 1px solid var(--color-border);
+    }
+    .btn-prev:hover, .btn-next-side:hover { background: #EEE; }
+    [data-theme="dark"] .btn-prev:hover,
+    [data-theme="dark"] .btn-next-side:hover { background: #3A3A5A; }
+
+    .btn-launch {
+      width: 440px; height: 60px;
+      background: var(--color-warning); color: #fff;
+      font-size: 22px; border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(255,143,0,0.35);
+      position: relative; overflow: hidden;
+    }
+    .btn-launch:hover { box-shadow: 0 6px 24px rgba(255,143,0,0.5); }
+
+    /* Pulse animation for launch button */
+    .btn-launch::after {
+      content: '';
+      position: absolute; inset: -2px;
+      border-radius: 16px;
+      border: 2px solid var(--color-warning);
+      animation: pulse-ring 2s ease-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pulse-ring {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.05); }
+    }
+
+    /* Launch success animation */
+    .launch-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none; align-items: center; justify-content: center;
+      z-index: 100; border-radius: 8px;
+    }
+    .launch-overlay.show { display: flex; }
+    .launch-msg {
+      background: #fff; border-radius: 16px; padding: 30px 50px;
+      text-align: center; animation: popIn 0.3s ease;
+    }
+    .launch-msg .icon { font-size: 48px; margin-bottom: 12px; }
+    .launch-msg .text { font-size: 18px; font-weight: 700; color: #212121; }
+    .launch-msg .sub { font-size: 14px; color: #757575; margin-top: 6px; }
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-label">页面2：互动页 - 待发起</div>
+  <button class="theme-toggle" aria-label="Toggle theme"><span class="theme-icon">☀️</span></button>
+
+  <div class="tablet">
+    <div class="screen" style="position:relative;">
+      <!-- Status Bar -->
+      <div class="statusbar">
+        <div class="left">
+          <span><span class="dot-green">●</span> 大屏已连接</span>
+          <span>📡 网络正常</span>
+        </div>
+        <div class="center">
+          第 5 / 12 页
+          <span class="badge-interaction">💬 互动页</span>
+        </div>
+        <div class="right-info">三年级 · 科学 · 光合作用</div>
+      </div>
+
+      <!-- Main -->
+      <div class="main-content">
+        <!-- Question Preview -->
+        <div class="question-area">
+          <span class="q-type-badge">单选题</span>
+          <div class="q-title">下列哪个是光合作用的产物？</div>
+
+          <div class="option" data-opt="A">
+            <div class="option-circle">A</div>
+            <div class="option-text">二氧化碳（CO₂）</div>
+          </div>
+          <div class="option" data-opt="B">
+            <div class="option-circle">B</div>
+            <div class="option-text">氧气（O₂）</div>
+          </div>
+          <div class="option" data-opt="C">
+            <div class="option-circle">C</div>
+            <div class="option-text">水（H₂O）</div>
+          </div>
+          <div class="option" data-opt="D">
+            <div class="option-circle">D</div>
+            <div class="option-text">氮气（N₂）</div>
+          </div>
+
+          <div class="hint-text">⏳ 点击下方按钮发起互动，学生将收到此题</div>
+        </div>
+
+        <!-- Thumbnails -->
+        <div class="thumb-panel">
+          <div class="thumb-header">课件导航</div>
+          <div class="thumb-list" id="thumbList"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="bottombar">
+        <button class="btn btn-prev" aria-label="上一页">← 上一页</button>
+        <button class="btn btn-launch" id="btnLaunch" aria-label="发起互动">💬  发起互动</button>
+        <button class="btn btn-next-side" aria-label="下一页">下一页 →</button>
+      </div>
+
+      <!-- Launch Overlay -->
+      <div class="launch-overlay" id="launchOverlay">
+        <div class="launch-msg">
+          <div class="icon">✅</div>
+          <div class="text">互动已发起</div>
+          <div class="sub">学生端已收到题目，大屏展示互动状态</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const html = document.documentElement;
+      const isDark = html.dataset.theme === 'dark';
+      html.dataset.theme = isDark ? 'light' : 'dark';
+      document.querySelector('.theme-icon').textContent = isDark ? '☀️' : '🌙';
+    });
+
+    // Thumbnails
+    const slides = [
+      { num: '03', name: '光合作用的过程' },
+      { num: '04', name: '方程式' },
+      { num: '05', name: '课堂互动 · 选择题', type: 'interaction', active: true },
+      { num: '06', name: '光合作用实验' },
+      { num: '07', name: '课堂互动 · 判断题', type: 'interaction' },
+      { num: '08', name: '本课小结' },
+    ];
+
+    const list = document.getElementById('thumbList');
+    slides.forEach(s => {
+      const item = document.createElement('div');
+      let cls = 'thumb-item';
+      if (s.active) cls += ' active';
+      else if (s.type === 'interaction') cls += ' interaction';
+      item.className = cls;
+      item.setAttribute('role', 'button');
+      item.setAttribute('tabindex', '0');
+
+      let html = `<span class="thumb-num">${s.num}</span><span class="thumb-name">${s.name}</span>`;
+      if (s.type === 'interaction') html += `<span class="thumb-badge">💬</span>`;
+      if (s.active) html += `<span class="thumb-current">▶ 当前</span>`;
+      item.innerHTML = html;
+      list.appendChild(item);
+    });
+
+    // Launch interaction
+    document.getElementById('btnLaunch').addEventListener('click', () => {
+      const overlay = document.getElementById('launchOverlay');
+      overlay.classList.add('show');
+      setTimeout(() => overlay.classList.remove('show'), 2500);
+    });
+
+    // Option hover effect
+    document.querySelectorAll('.option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.option').forEach(o => o.style.borderColor = '');
+        opt.style.borderColor = 'var(--color-warning)';
+      });
+    });
+  </script>
+</body>
+</html>

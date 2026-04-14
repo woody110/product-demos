@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教师Pad - 涂鸦模式</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root[data-theme="light"] {
+      --color-bg: #E8E8E8;
+      --color-surface: #FFFFFF;
+      --color-text: #212121;
+      --color-text-muted: #9E9E9E;
+      --color-accent: #1565C0;
+      --color-border: #E0E0E0;
+      --color-toolbar: #37474F;
+      --color-toolbar-item: #546E7A;
+      --color-toolbar-active: #546E7A;
+      --color-toolbar-text: #FFFFFF;
+      --color-toolbar-muted: #90A4AE;
+      --color-canvas: #FAFAFA;
+      --color-sync: #A5D6A7;
+      --color-clear: #EF5350;
+    }
+    :root[data-theme="dark"] {
+      --color-bg: #1A1A2E;
+      --color-surface: #16213E;
+      --color-text: #E0E0E0;
+      --color-text-muted: #78909C;
+      --color-accent: #42A5F5;
+      --color-border: #2A2A4A;
+      --color-toolbar: #1A1A2E;
+      --color-toolbar-item: #2A2A4A;
+      --color-toolbar-active: #3A3A5A;
+      --color-toolbar-text: #E0E0E0;
+      --color-toolbar-muted: #546E7A;
+      --color-canvas: #0F0F23;
+      --color-sync: #66BB6A;
+      --color-clear: #EF5350;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: 'Noto Sans SC', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .theme-toggle {
+      position: fixed; top: 1rem; right: 1rem; z-index: 1000;
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: 8px; padding: 0.5rem 0.75rem; cursor: pointer;
+      color: var(--color-text); font-size: 1.1rem;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .theme-toggle:hover { border-color: var(--color-accent); }
+    .theme-toggle:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+    .page-label {
+      position: fixed; top: 1rem; left: 1rem; z-index: 1000;
+      background: var(--color-toolbar); color: #fff; border-radius: 8px;
+      padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500;
+    }
+
+    .tablet {
+      width: 1200px; height: 810px;
+      background: #111; border-radius: 18px;
+      padding: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    .screen {
+      width: 100%; height: 100%;
+      background: var(--color-surface);
+      border-radius: 8px; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      height: 56px; background: var(--color-toolbar);
+      display: flex; align-items: center; padding: 0 16px; gap: 4px;
+      flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .tool-btn {
+      height: 38px; padding: 0 16px; border: none; border-radius: 8px;
+      background: transparent; color: var(--color-toolbar-muted);
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      font-family: inherit; transition: all 0.2s ease;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .tool-btn:hover { background: var(--color-toolbar-item); color: var(--color-toolbar-text); }
+    .tool-btn.active {
+      background: var(--color-toolbar-active);
+      color: var(--color-toolbar-text); font-weight: 700;
+      border: 1px solid #78909C;
+    }
+    .tool-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+    .separator {
+      width: 1px; height: 32px; background: var(--color-toolbar-item);
+      margin: 0 8px; flex-shrink: 0;
+    }
+
+    .color-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid var(--color-toolbar-item);
+      cursor: pointer; transition: all 0.15s ease; flex-shrink: 0;
+    }
+    .color-dot:hover { transform: scale(1.15); }
+    .color-dot.active { border: 3px solid #FFFFFF; transform: scale(1.1); }
+    .color-dot:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+    .color-red { background: #F44336; }
+    .color-blue { background: #1E88E5; }
+    .color-white { background: #FFFFFF; }
+
+    .colors-group { display: flex; gap: 10px; align-items: center; }
+
+    .tool-clear { color: var(--color-clear) !important; }
+    .tool-clear:hover { background: rgba(239,83,80,0.15); }
+
+    .sync-indicator {
+      margin-left: auto; font-size: 13px; color: var(--color-sync);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .sync-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--color-sync);
+      animation: syncPulse 2s ease infinite;
+    }
+    @keyframes syncPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Canvas */
+    .canvas-wrap {
+      flex: 1; position: relative; overflow: hidden;
+      background: var(--color-canvas);
+    }
+
+    .canvas-content {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+
+    .course-title-overlay {
+      font-size: 26px; font-weight: 700; color: var(--color-text);
+      margin-bottom: 20px; position: absolute; top: 40px;
+    }
+    .course-img {
+      width: 600px; height: 260px;
+      background: #E3F2FD; border: 1px solid #90CAF9; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #64B5F6;
+      position: absolute; top: 120px;
+    }
+    [data-theme="dark"] .course-img { background: #1A237E; border-color: #283593; }
+
+    /* Drawing canvas */
+    #drawCanvas {
+      position: absolute; inset: 0;
+      cursor: crosshair; z-index: 10;
+    }
+
+    /* Bottom Bar */
+    .bottombar {
+      height: 80px; background: var(--color-toolbar);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; flex-direction: column; gap: 4px;
+    }
+
+    .btn-exit {
+      width: 280px; height: 50px; border: none; border-radius: 12px;
+      background: #FFFFFF; color: var(--color-toolbar);
+      font-size: 18px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: all 0.2s ease;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-exit:hover { background: #F5F5F5; transform: scale(1.02); }
+    .btn-exit:active { transform: scale(0.98); }
+    .btn-exit:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+    .stylus-hint {
+      font-size: 12px; color: #78909C;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-label">页面3：涂鸦模式</div>
+  <button class="theme-toggle" aria-label="Toggle theme"><span class="theme-icon">☀️</span></button>
+
+  <div class="tablet">
+    <div class="screen">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <button class="tool-btn active" id="toolPen" aria-label="画笔">🖊 画笔</button>
+        <div class="separator"></div>
+
+        <div class="colors-group">
+          <div class="color-dot color-red active" data-color="#F44336" role="button" tabindex="0" aria-label="红色"></div>
+          <div class="color-dot color-blue" data-color="#1E88E5" role="button" tabindex="0" aria-label="蓝色"></div>
+          <div class="color-dot color-white" data-color="#FFFFFF" role="button" tabindex="0" aria-label="白色"></div>
+        </div>
+        <div class="separator"></div>
+
+        <button class="tool-btn active" id="btnThick" aria-label="粗">粗</button>
+        <button class="tool-btn" id="btnThin" aria-label="细">细</button>
+        <div class="separator"></div>
+
+        <button class="tool-btn" id="btnUndo" aria-label="撤销">↩ 撤销</button>
+        <button class="tool-btn tool-clear" id="btnClear" aria-label="清除">🗑 清除</button>
+
+        <div class="sync-indicator">
+          <span class="sync-dot"></span>
+          涂鸦实时同步到大屏
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div class="canvas-wrap">
+        <div class="canvas-content">
+          <div class="course-title-overlay">光合作用的过程</div>
+          <div class="course-img">🌱 课件图片内容</div>
+        </div>
+        <canvas id="drawCanvas"></canvas>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="bottombar">
+        <button class="btn-exit" id="btnExit" aria-label="退出涂鸦">✅ 退出涂鸦</button>
+        <div class="stylus-hint">✏ 触控笔模式：放下笔自动退出涂鸦</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const html = document.documentElement;
+      const isDark = html.dataset.theme === 'dark';
+      html.dataset.theme = isDark ? 'light' : 'dark';
+      document.querySelector('.theme-icon').textContent = isDark ? '☀️' : '🌙';
+    });
+
+    // Canvas setup
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    let currentColor = '#F44336';
+    let lineWidth = 4;
+    let strokes = []; // array of stroke arrays for undo
+    let currentStroke = [];
+
+    function resizeCanvas() {
+      const wrap = canvas.parentElement;
+      canvas.width = wrap.clientWidth;
+      canvas.height = wrap.clientHeight;
+      redraw();
+    }
+
+    function redraw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      strokes.forEach(stroke => {
+        if (stroke.length < 2) return;
+        ctx.beginPath();
+        ctx.strokeStyle = stroke[0].color;
+        ctx.lineWidth = stroke[0].width;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.moveTo(stroke[0].x, stroke[0].y);
+        for (let i = 1; i < stroke.length; i++) {
+          ctx.lineTo(stroke[i].x, stroke[i].y);
+        }
+        ctx.stroke();
+      });
+    }
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top, color: currentColor, width: lineWidth };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      drawing = true;
+      currentStroke = [getPos(e)];
+    });
+    canvas.addEventListener('mousemove', (e) => {
+      if (!drawing) return;
+      const pos = getPos(e);
+      currentStroke.push(pos);
+      // Draw current stroke
+      ctx.beginPath();
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      if (currentStroke.length >= 2) {
+        const prev = currentStroke[currentStroke.length - 2];
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(pos.x, pos.y);
+      }
+      ctx.stroke();
+    });
+    canvas.addEventListener('mouseup', () => {
+      if (drawing && currentStroke.length > 0) {
+        strokes.push(currentStroke);
+        currentStroke = [];
+      }
+      drawing = false;
+    });
+    canvas.addEventListener('mouseleave', () => {
+      if (drawing && currentStroke.length > 0) {
+        strokes.push(currentStroke);
+        currentStroke = [];
+      }
+      drawing = false;
+    });
+
+    // Touch support
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      drawing = true;
+      currentStroke = [getPos(e)];
+    }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (!drawing) return;
+      const pos = getPos(e);
+      currentStroke.push(pos);
+      ctx.beginPath();
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      if (currentStroke.length >= 2) {
+        const prev = currentStroke[currentStroke.length - 2];
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(pos.x, pos.y);
+      }
+      ctx.stroke();
+    }, { passive: false });
+    canvas.addEventListener('touchend', () => {
+      if (drawing && currentStroke.length > 0) {
+        strokes.push(currentStroke);
+        currentStroke = [];
+      }
+      drawing = false;
+    });
+
+    // Color selection
+    document.querySelectorAll('.color-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+        dot.classList.add('active');
+        currentColor = dot.dataset.color;
+      });
+      dot.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') dot.click();
+      });
+    });
+
+    // Thickness
+    document.getElementById('btnThick').addEventListener('click', () => {
+      lineWidth = 4;
+      document.getElementById('btnThick').classList.add('active');
+      document.getElementById('btnThin').classList.remove('active');
+    });
+    document.getElementById('btnThin').addEventListener('click', () => {
+      lineWidth = 2;
+      document.getElementById('btnThin').classList.add('active');
+      document.getElementById('btnThick').classList.remove('active');
+    });
+
+    // Undo
+    document.getElementById('btnUndo').addEventListener('click', () => {
+      strokes.pop();
+      redraw();
+    });
+
+    // Clear
+    document.getElementById('btnClear').addEventListener('click', () => {
+      if (strokes.length === 0) return;
+      strokes = [];
+      redraw();
+    });
+
+    // Exit
+    document.getElementById('btnExit').addEventListener('click', () => {
+      alert('退出涂鸦模式，返回常态模式（见页面1）');
+    });
+
+    // Draw some demo strokes on load
+    function drawDemoAnnotations() {
+      // Circle annotation
+      const cx = canvas.width * 0.38, cy = canvas.height * 0.52;
+      const circle = [];
+      for (let a = 0; a <= Math.PI * 2.1; a += 0.08) {
+        circle.push({
+          x: cx + Math.cos(a) * 100 + (Math.random() - 0.5) * 3,
+          y: cy + Math.sin(a) * 60 + (Math.random() - 0.5) * 3,
+          color: '#F44336', width: 4
+        });
+      }
+      strokes.push(circle);
+
+      // Arrow
+      const arrow = [];
+      for (let t = 0; t <= 1; t += 0.02) {
+        arrow.push({
+          x: cx + 110 + t * 140 + (Math.random() - 0.5) * 2,
+          y: cy - 20 - t * 60 + Math.sin(t * 3) * 10 + (Math.random() - 0.5) * 2,
+          color: '#F44336', width: 4
+        });
+      }
+      // Arrowhead
+      const ax = arrow[arrow.length - 1].x, ay = arrow[arrow.length - 1].y;
+      arrow.push({ x: ax - 12, y: ay - 8, color: '#F44336', width: 4 });
+      strokes.push(arrow);
+
+      // Underline under title
+      const underline = [];
+      for (let t = 0; t <= 1; t += 0.01) {
+        underline.push({
+          x: canvas.width * 0.3 + t * canvas.width * 0.4 + (Math.random() - 0.5) * 2,
+          y: canvas.height * 0.14 + (Math.random() - 0.5) * 2,
+          color: '#F44336', width: 4
+        });
+      }
+      strokes.push(underline);
+
+      // "重点!" text simulation with strokes
+      const textX = canvas.width * 0.64, textY = canvas.height * 0.38;
+      const excl = [];
+      for (let t = 0; t <= 1; t += 0.05) {
+        excl.push({ x: textX + 60, y: textY - 20 + t * 30, color: '#F44336', width: 3 });
+      }
+      strokes.push(excl);
+
+      redraw();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    // Slight delay to ensure layout is ready
+    setTimeout(drawDemoAnnotations, 100);
+  </script>
+</body>
+</html>

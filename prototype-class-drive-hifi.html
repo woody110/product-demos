@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>教师Pad · 班级云盘 · 高保真原型</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ===========================================================
+   DESIGN TOKENS — 九章爱学 Pad Light Theme
+   =========================================================== */
+:root {
+  /* Brand */
+  --brand: #2AADEB;
+  --brand-d: #1E95D0;
+  --brand-l: #E8F7FE;
+  --brand-l2: #F2FBFF;
+  --brand-glow: rgba(42,173,235,0.15);
+
+  /* Neutral */
+  --bg-body: #F0F2F5;
+  --bg-sidebar: #FAFBFC;
+  --bg-card: #FFFFFF;
+  --bg-hover: #F5F7FA;
+  --bg-active: #EDF8FE;
+  --bg-input: #F5F6F8;
+  --bg-dark: #111318;
+
+  /* Text */
+  --c1: #1A1D24;
+  --c2: #4A5060;
+  --c3: #8B92A0;
+  --c4: #BFC5D0;
+  --c5: #DFE2E8;
+
+  /* Accents */
+  --green: #34C759;
+  --green-bg: #EAFBEF;
+  --red: #FF3B30;
+  --red-bg: #FFF0EF;
+  --orange: #FF9500;
+  --orange-bg: #FFF6E8;
+  --yellow: #FFD60A;
+
+  /* Shape */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-xl: 24px;
+  --r-pill: 100px;
+
+  /* Shadow */
+  --sh-card: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03);
+  --sh-elevated: 0 4px 24px rgba(0,0,0,0.08);
+  --sh-modal: 0 12px 48px rgba(0,0,0,0.16);
+}
+
+/* ===========================================================
+   RESET + BASE
+   =========================================================== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Noto Sans SC','DM Sans',-apple-system,sans-serif;
+  background:var(--bg-body);color:var(--c1);
+  overflow:hidden;height:100vh;width:100vw;
+  user-select:none;font-size:15px;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ===========================================================
+   STATUS BAR
+   =========================================================== */
+.statusbar{
+  height:26px;background:var(--bg-body);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;font-size:12px;font-weight:600;color:var(--c2);
+  font-family:'DM Sans','Noto Sans SC',sans-serif;
+}
+.statusbar .sb-r{display:flex;align-items:center;gap:6px}
+
+/* ===========================================================
+   TOP BAR
+   =========================================================== */
+.topbar{
+  height:72px;background:var(--bg-card);
+  display:flex;align-items:center;padding:0 28px;
+  border-bottom:1px solid rgba(0,0,0,0.04);
+}
+.tb-avatar{
+  width:50px;height:50px;border-radius:50%;
+  background:linear-gradient(145deg,#9AE0FF 0%,#56C4F5 100%);
+  display:flex;align-items:center;justify-content:center;
+  margin-right:16px;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(42,173,235,0.25);
+}
+.tb-avatar svg{width:28px;height:28px;fill:white}
+.tb-hello{font-size:24px;font-weight:700;color:var(--c1);flex:1;letter-spacing:-0.3px}
+.tb-actions{display:flex;gap:10px}
+.tb-pill{
+  height:40px;padding:0 18px;border-radius:var(--r-pill);
+  border:1.5px solid var(--c5);background:var(--bg-card);
+  font-family:inherit;font-size:14px;font-weight:500;color:var(--c2);
+  cursor:pointer;display:flex;align-items:center;gap:6px;
+  transition:all .15s;
+}
+.tb-pill:hover{border-color:var(--brand);color:var(--brand)}
+.tb-circ{
+  width:40px;height:40px;border-radius:50%;border:1.5px solid var(--c5);
+  background:var(--bg-card);display:flex;align-items:center;justify-content:center;
+  font-size:17px;color:var(--c3);cursor:pointer;transition:all .15s;
+}
+.tb-circ:hover{border-color:var(--brand);color:var(--brand)}
+
+/* ===========================================================
+   BODY FRAME
+   =========================================================== */
+.frame{display:flex;height:calc(100vh - 98px)}
+
+/* SIDEBAR */
+.sidebar{
+  width:148px;background:var(--bg-sidebar);
+  border-right:1px solid rgba(0,0,0,0.04);
+  padding:14px 0;flex-shrink:0;display:flex;flex-direction:column;gap:2px;
+}
+.nav{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 18px;font-size:15px;color:var(--c3);
+  cursor:pointer;transition:all .15s;border-left:3px solid transparent;
+  font-weight:500;
+}
+.nav:hover{background:var(--bg-hover);color:var(--c2)}
+.nav.on{
+  background:var(--bg-active);color:var(--brand);
+  border-left-color:var(--brand);font-weight:600;
+}
+.nav .ni{width:22px;text-align:center;font-size:17px;flex-shrink:0}
+.nav .nb{
+  width:8px;height:8px;background:var(--red);border-radius:50%;
+  margin-left:auto;flex-shrink:0;
+}
+
+/* MAIN */
+.main{flex:1;overflow:hidden;position:relative}
+
+/* ===========================================================
+   PAGE SYSTEM
+   =========================================================== */
+.pg{position:absolute;inset:0;overflow-y:auto;padding:24px 28px;display:none}
+.pg.on{display:block}
+.pg-full{position:absolute;inset:0;display:none;flex-direction:column;z-index:10;background:var(--bg-dark)}
+.pg-full.on{display:flex}
+
+/* ===========================================================
+   P1 — RESOURCE LIST
+   =========================================================== */
+.pg-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.pg-title{font-size:22px;font-weight:700;letter-spacing:-0.3px}
+
+.btn{
+  height:42px;padding:0 22px;border:none;border-radius:var(--r-md);
+  font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:all .15s;
+}
+.btn-brand{background:var(--brand);color:#fff;box-shadow:0 2px 8px var(--brand-glow)}
+.btn-brand:hover{background:var(--brand-d);box-shadow:0 4px 16px var(--brand-glow)}
+.btn-outline{background:var(--bg-card);color:var(--c2);border:1.5px solid var(--c5)}
+.btn-outline:hover{border-color:var(--brand);color:var(--brand)}
+.btn-sm{height:36px;padding:0 14px;font-size:14px}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* Filter Row */
+.flt{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:14px 18px;background:var(--bg-card);border-radius:var(--r-lg);
+  box-shadow:var(--sh-card);margin-bottom:16px;
+}
+.flt label{font-size:13px;color:var(--c3);font-weight:500}
+.flt-input{
+  height:38px;padding:0 14px;border:1.5px solid var(--c5);
+  border-radius:var(--r-sm);font-size:14px;font-family:inherit;
+  color:var(--c1);outline:none;min-width:140px;background:var(--bg-input);
+  transition:border .15s;
+}
+.flt-input:focus{border-color:var(--brand);background:#fff}
+.flt-sel{
+  height:38px;padding:0 10px;border:1.5px solid var(--c5);
+  border-radius:var(--r-sm);font-size:14px;font-family:inherit;
+  background:var(--bg-input);color:var(--c1);outline:none;min-width:120px;
+}
+
+/* Resource Cards */
+.rlist{display:flex;flex-direction:column;gap:8px}
+.rcard{
+  background:var(--bg-card);border-radius:var(--r-lg);
+  padding:16px 20px;box-shadow:var(--sh-card);
+  display:flex;align-items:center;gap:16px;
+  transition:transform .1s,box-shadow .15s;min-height:72px;
+}
+.rcard:active{transform:scale(.998);box-shadow:var(--sh-elevated)}
+
+.rcard .ri{
+  width:46px;height:46px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.ri-cw{background:#E8F5E9} .ri-fold{background:#FFF8E1}
+.ri-vid{background:#FCE4EC} .ri-img{background:#E3F2FD}
+.ri-snap{background:linear-gradient(135deg,#E3F2FD,#F3E5F5)}
+
+.rcard .rinfo{flex:1;min-width:0}
+.rcard .rname{font-size:16px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcard .rmeta{font-size:13px;color:var(--c3);display:flex;gap:14px;flex-wrap:wrap}
+
+.rtag{
+  font-size:12px;font-weight:500;padding:4px 12px;
+  border-radius:var(--r-pill);flex-shrink:0;
+}
+.rtag-vis{background:var(--green-bg);color:var(--green)}
+.rtag-cls{background:var(--bg-body);color:var(--c3)}
+.rtag-sched{background:var(--orange-bg);color:var(--orange)}
+
+.racts{display:flex;gap:6px;flex-shrink:0}
+.ract{
+  height:36px;padding:0 14px;border-radius:var(--r-pill);
+  border:1.5px solid var(--c5);background:#fff;
+  font-size:13px;font-weight:500;color:var(--c2);cursor:pointer;font-family:inherit;
+  transition:all .15s;
+}
+.ract:hover{border-color:var(--brand);color:var(--brand)}
+.ract.del:hover{border-color:var(--red);color:var(--red)}
+
+/* ===========================================================
+   MODAL SYSTEM
+   =========================================================== */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,0.32);backdrop-filter:blur(2px);
+  z-index:50;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.modal-bg.on{opacity:1;pointer-events:auto}
+.modal-box{
+  background:var(--bg-card);border-radius:var(--r-xl);
+  box-shadow:var(--sh-modal);transform:scale(.92);
+  transition:transform .35s cubic-bezier(.22,1,.36,1);
+}
+.modal-bg.on .modal-box{transform:scale(1)}
+
+/* Method Selection Modal */
+.meth-modal{padding:36px 40px;width:480px;text-align:center}
+.meth-modal h3{font-size:20px;font-weight:700;margin-bottom:4px}
+.meth-modal .msub{font-size:14px;color:var(--c3);margin-bottom:28px}
+.meth-grid{display:flex;gap:16px;justify-content:center}
+.meth-card{
+  width:190px;padding:30px 16px 26px;border:2px solid var(--c5);
+  border-radius:var(--r-lg);cursor:pointer;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.meth-card:hover{border-color:var(--brand);background:var(--brand-l2);transform:translateY(-2px)}
+.meth-card:active{transform:translateY(0)}
+.meth-card .mci{
+  width:60px;height:60px;border-radius:18px;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+}
+.mci-cloud{background:var(--brand-l)}
+.mci-snap{background:var(--orange-bg)}
+.meth-card .mct{font-size:16px;font-weight:600;color:var(--c1)}
+.meth-card .mcd{font-size:12px;color:var(--c3);line-height:1.4}
+.meth-close{
+  margin-top:24px;font-size:14px;color:var(--c3);
+  cursor:pointer;background:none;border:none;font-family:inherit;
+}
+
+/* ===========================================================
+   P2 — CLOUD PICKER
+   =========================================================== */
+.pk-tabs{display:flex;gap:0;border-bottom:2px solid var(--c5);margin-bottom:18px}
+.pk-tab{
+  padding:10px 26px;font-size:15px;font-weight:500;color:var(--c3);
+  cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;
+  background:none;border-top:none;border-left:none;border-right:none;
+  font-family:inherit;transition:all .15s;
+}
+.pk-tab.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+
+.pk-info{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.pk-info .pkl{font-size:17px;font-weight:600}
+.pk-info .pkl span{font-weight:400;color:var(--c3);font-size:14px}
+
+.ftable{
+  background:var(--bg-card);border-radius:var(--r-lg);
+  box-shadow:var(--sh-card);overflow:hidden;
+}
+.ftable table{width:100%;border-collapse:collapse}
+.ftable th{
+  background:var(--bg-body);padding:10px 16px;font-size:13px;
+  font-weight:600;color:var(--c3);text-align:left;
+  border-bottom:1px solid var(--c5);
+}
+.ftable td{
+  padding:13px 16px;font-size:14px;color:var(--c1);
+  border-bottom:1px solid rgba(0,0,0,0.03);
+}
+.ftable tr:last-child td{border-bottom:none}
+.ftable tr:hover td{background:var(--bg-hover)}
+.ftable tr.sel td{background:var(--brand-l)}
+
+.fcb{
+  width:22px;height:22px;border:2px solid var(--c4);border-radius:6px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:13px;color:transparent;transition:all .12s;cursor:pointer;
+  vertical-align:middle;
+}
+.fcb.ck{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 1px 4px var(--brand-glow)}
+
+.ftable .fn{display:flex;align-items:center;gap:10px}
+.ftable .fi{font-size:20px}
+.ftable .fst{color:var(--green);font-size:14px}
+.ftable .far{color:var(--c4);font-size:16px}
+
+.pk-foot{
+  position:sticky;bottom:0;background:var(--bg-card);
+  border-top:1px solid rgba(0,0,0,0.05);
+  margin:20px -28px -24px;padding:14px 28px;
+  display:flex;justify-content:flex-end;gap:10px;
+}
+
+/* ===========================================================
+   P3 — SNAP CAPTURE
+   =========================================================== */
+.snap-hd{
+  height:54px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;background:rgba(0,0,0,0.6);flex-shrink:0;
+}
+.snap-hd .sh-back{
+  color:#fff;font-size:15px;cursor:pointer;
+  background:none;border:none;font-family:inherit;
+  display:flex;align-items:center;gap:6px;font-weight:500;
+}
+.snap-hd .sh-title{color:#fff;font-size:17px;font-weight:700}
+.snap-hd .sh-count{
+  color:rgba(255,255,255,.5);font-size:14px;
+  font-family:'DM Sans','Noto Sans SC',sans-serif;font-weight:600;
+}
+
+.snap-warn{
+  display:none;align-items:center;justify-content:center;
+  gap:6px;padding:8px;background:rgba(255,149,0,0.15);
+  color:var(--orange);font-size:13px;font-weight:600;flex-shrink:0;
+}
+.snap-warn.on{display:flex}
+
+.snap-modes{
+  display:flex;justify-content:center;gap:28px;
+  padding:10px 0;background:rgba(0,0,0,0.35);flex-shrink:0;
+}
+.snap-mode{
+  color:rgba(255,255,255,.4);font-size:15px;cursor:pointer;
+  background:none;border:none;font-family:inherit;
+  padding:7px 18px;border-radius:var(--r-pill);transition:all .2s;font-weight:500;
+}
+.snap-mode.on{color:#fff;background:rgba(255,255,255,.12)}
+
+.snap-vf{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.snap-vf .vf-ph{text-align:center;color:rgba(255,255,255,.2)}
+.vf-ph .vf-i{font-size:72px;display:block;margin-bottom:10px}
+.vf-ph .vf-t{font-size:15px;font-weight:500}
+
+.snap-grid{position:absolute;inset:8%;pointer-events:none}
+.snap-grid::before{
+  content:'';position:absolute;left:33.33%;top:0;bottom:0;width:1px;
+  background:rgba(255,255,255,.06);box-shadow:calc(33.33%) 0 0 rgba(255,255,255,.06);
+}
+.snap-grid::after{
+  content:'';position:absolute;top:33.33%;left:0;right:0;height:1px;
+  background:rgba(255,255,255,.06);box-shadow:0 calc(33.33%) 0 rgba(255,255,255,.06);
+}
+
+.snap-timer{
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:8px;
+  padding:8px 20px;background:rgba(0,0,0,.65);border-radius:var(--r-pill);
+  color:#fff;font-size:18px;font-weight:700;
+  font-family:'DM Sans',monospace;opacity:0;transition:opacity .3s;
+}
+.snap-timer.on{opacity:1}
+.snap-timer .rdot{width:10px;height:10px;border-radius:50%;background:var(--red);animation:bk 1s infinite}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:.12}}
+
+.snap-strip{
+  min-height:0;display:flex;align-items:center;gap:10px;
+  padding:0 20px;background:rgba(0,0,0,.45);overflow-x:auto;flex-shrink:0;
+  transition:padding .2s,min-height .2s;
+}
+.snap-strip.has{padding:12px 20px;min-height:76px}
+.snap-th{
+  width:58px;height:58px;border-radius:10px;flex-shrink:0;
+  border:2.5px solid rgba(255,255,255,.2);overflow:hidden;position:relative;
+  transition:border-color .15s;
+}
+.snap-th:hover{border-color:#fff}
+.snap-th .sti{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:#fff;font-weight:700;
+}
+.snap-th .stx{
+  position:absolute;top:-2px;right:-2px;width:20px;height:20px;
+  background:var(--red);border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:11px;color:#fff;cursor:pointer;
+  opacity:0;transition:opacity .12s;
+}
+.snap-th:hover .stx{opacity:1}
+
+.snap-vid-done{
+  display:none;align-items:center;justify-content:center;gap:10px;
+  padding:14px;background:rgba(0,0,0,.45);color:#fff;font-size:14px;
+  font-weight:500;flex-shrink:0;
+}
+.snap-vid-done.on{display:flex}
+
+.snap-ctrls{
+  height:100px;display:flex;align-items:center;justify-content:center;
+  gap:48px;background:rgba(0,0,0,.45);flex-shrink:0;
+}
+.sc-flip{
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(255,255,255,.1);border:none;
+  color:#fff;font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .15s;
+}
+.sc-flip:hover{background:rgba(255,255,255,.18)}
+
+.sc-shutter{
+  width:76px;height:76px;border-radius:50%;
+  border:4px solid rgba(255,255,255,.35);
+  cursor:pointer;position:relative;background:transparent;transition:transform .08s;
+}
+.sc-shutter:active{transform:scale(.88)}
+.sc-shutter .ss-in{
+  position:absolute;inset:5px;border-radius:50%;background:#fff;transition:all .25s;
+}
+
+.sc-done{
+  height:44px;padding:0 24px;background:var(--brand);border:none;
+  border-radius:var(--r-pill);color:#fff;font-family:inherit;
+  font-size:15px;font-weight:600;cursor:pointer;
+  opacity:0;pointer-events:none;transition:all .2s;
+  box-shadow:0 2px 12px var(--brand-glow);
+}
+.sc-done.on{opacity:1;pointer-events:auto}
+.sc-done:hover{background:var(--brand-d)}
+
+/* ===========================================================
+   P4 — SETTINGS (Publish)
+   =========================================================== */
+.ss{
+  background:var(--bg-card);border-radius:var(--r-lg);
+  box-shadow:var(--sh-card);padding:22px 24px;margin-bottom:14px;
+}
+.ss h4{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:4px}
+.ss h4 .req{color:var(--red);font-size:14px}
+
+/* File chips */
+.sf-chips{display:flex;gap:8px;flex-wrap:wrap}
+.sf-chip{
+  display:flex;align-items:center;gap:7px;padding:8px 14px;
+  background:var(--bg-body);border-radius:var(--r-sm);font-size:14px;font-weight:500;
+}
+.sf-chip .sfi{font-size:18px}
+
+/* Publish time */
+.pub-opts{display:flex;gap:10px}
+.pub-opt{
+  height:46px;padding:0 22px;border:2px solid var(--c5);
+  border-radius:var(--r-md);background:#fff;cursor:pointer;
+  font-family:inherit;font-size:14px;font-weight:500;color:var(--c2);
+  transition:all .15s;display:flex;align-items:center;gap:8px;
+}
+.pub-opt.sel{border-color:var(--brand);color:var(--brand);background:var(--brand-l2)}
+.pub-opt:hover{border-color:var(--brand)}
+
+/* Class tags */
+.cls-tags{display:flex;gap:8px;flex-wrap:wrap}
+.cls-tag{
+  display:flex;align-items:center;gap:5px;
+  padding:8px 14px;background:var(--brand-l);
+  color:var(--brand);border-radius:var(--r-sm);
+  font-size:14px;font-weight:600;
+}
+.cls-tag .ctx{cursor:pointer;opacity:.5;font-size:13px}
+.cls-tag .ctx:hover{opacity:1}
+.cls-add{
+  padding:8px 14px;border:2px dashed var(--c5);
+  border-radius:var(--r-sm);font-size:14px;font-weight:500;
+  color:var(--c3);cursor:pointer;background:none;font-family:inherit;
+  transition:all .15s;
+}
+.cls-add:hover{border-color:var(--brand);color:var(--brand)}
+
+/* ========================
+   STUDENT TAG GRID (Core Redesign)
+   ======================== */
+.stu-panel{display:flex;border:1.5px solid var(--c5);border-radius:var(--r-lg);overflow:hidden}
+
+/* Left: Class list (30%) */
+.stu-left{
+  width:30%;border-right:1.5px solid var(--c5);
+  display:flex;flex-direction:column;background:var(--bg-body);
+}
+.stu-left-hd{
+  padding:14px 16px;font-size:14px;font-weight:600;
+  color:var(--c2);border-bottom:1px solid var(--c5);
+  background:var(--bg-card);
+}
+.stu-cls-item{
+  padding:14px 16px;font-size:14px;color:var(--c2);
+  cursor:pointer;transition:all .12s;border-left:3px solid transparent;
+}
+.stu-cls-item:hover{background:var(--bg-card)}
+.stu-cls-item.on{
+  background:var(--bg-card);color:var(--brand);
+  font-weight:600;border-left-color:var(--brand);
+}
+
+/* Right: Student tags (70%) */
+.stu-right{
+  width:70%;display:flex;flex-direction:column;background:var(--bg-card);
+}
+.stu-right-hd{
+  padding:12px 18px;display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid rgba(0,0,0,0.04);
+}
+.stu-right-hd .srt{font-size:14px;font-weight:600;color:var(--c1)}
+.stu-right-hd .sra{
+  display:flex;gap:12px;font-size:13px;
+}
+.sra-btn{
+  color:var(--brand);cursor:pointer;background:none;border:none;
+  font-family:inherit;font-size:13px;font-weight:500;
+}
+.sra-btn:hover{text-decoration:underline}
+
+.stu-grid{
+  padding:16px 18px;display:flex;flex-wrap:wrap;gap:10px;
+  max-height:240px;overflow-y:auto;
+}
+
+/* Each student tag — ≥44px height, touch-friendly */
+.stu-tag{
+  min-height:46px;padding:0 18px;
+  border:2px solid var(--c5);border-radius:var(--r-md);
+  background:var(--bg-card);cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+  font-size:14px;font-weight:500;color:var(--c1);
+  transition:all .15s;
+}
+.stu-tag:hover{border-color:var(--brand-d);background:var(--brand-l2)}
+.stu-tag.on{
+  border-color:var(--brand);background:var(--brand-l);color:var(--brand);
+  box-shadow:0 1px 4px var(--brand-glow);
+}
+.stu-tag .stck{
+  width:18px;height:18px;border:2px solid var(--c4);border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:transparent;transition:all .12s;flex-shrink:0;
+}
+.stu-tag.on .stck{background:var(--brand);border-color:var(--brand);color:#fff}
+
+.ss-foot{display:flex;justify-content:flex-end;gap:12px;padding-top:8px}
+
+/* ===========================================================
+   TOAST / CONFIRM
+   =========================================================== */
+.toast{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.88);
+  padding:16px 36px;background:rgba(26,29,36,.82);backdrop-filter:blur(8px);
+  color:#fff;border-radius:var(--r-lg);font-size:15px;font-weight:500;
+  z-index:200;opacity:0;pointer-events:none;
+  transition:all .35s cubic-bezier(.22,1,.36,1);
+  display:flex;align-items:center;gap:8px;
+}
+.toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+.cfm-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,0.32);backdrop-filter:blur(2px);
+  z-index:100;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.cfm-bg.on{opacity:1;pointer-events:auto}
+.cfm-box{
+  background:var(--bg-card);border-radius:var(--r-lg);padding:28px 32px;
+  width:380px;text-align:center;box-shadow:var(--sh-modal);
+}
+.cfm-box p{font-size:15px;line-height:1.6;margin-bottom:24px;color:var(--c1)}
+.cfm-btns{display:flex;gap:12px;justify-content:center}
+</style>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <span>17:53</span>
+  <div class="sb-r">
+    <span style="font-size:14px">&#x1F4F6;</span>
+    <span>95%</span>
+    <span style="font-size:14px">&#128267;</span>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-avatar">
+    <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+  </div>
+  <div class="tb-hello">Hello, 吴老师</div>
+  <div class="tb-actions">
+    <div class="tb-pill">&#128260; 扫一扫</div>
+    <div class="tb-pill">&#128250; 投屏</div>
+    <div class="tb-circ">&#10227;</div>
+    <div class="tb-circ">&#9113;</div>
+    <div class="tb-circ">&#9881;</div>
+  </div>
+</div>
+
+<!-- FRAME -->
+<div class="frame">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="nav" data-n="sch" onclick="navTo('sch')"><span class="ni">&#128197;</span>我的课表</div>
+    <div class="nav" data-n="hw" onclick="navTo('hw')"><span class="ni">&#128203;</span>作业任务</div>
+    <div class="nav" data-n="ex" onclick="navTo('ex')"><span class="ni">&#128221;</span>考试报告</div>
+    <div class="nav" data-n="res" onclick="navTo('res')"><span class="ni">&#127909;</span>课程资源</div>
+    <div class="nav" data-n="tgt" onclick="navTo('tgt')"><span class="ni">&#127919;</span>靶向任务</div>
+    <div class="nav" data-n="ana" onclick="navTo('ana')"><span class="ni">&#128200;</span>学情管理</div>
+    <div class="nav on" data-n="drv" onclick="navTo('drv')"><span class="ni">&#128194;</span>班级云盘<div class="nb"></div></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- P1: Resource List -->
+    <div class="pg on" id="p1">
+      <div class="pg-hd">
+        <span class="pg-title">班级云盘</span>
+        <button class="btn btn-brand" onclick="showMeth()">&#10133; 添加资料</button>
+      </div>
+      <div class="flt">
+        <label>文件名称</label><input class="flt-input" placeholder="搜索文件名"/>
+        <label>班级</label><select class="flt-sel"><option>【班主任】老吴测试</option></select>
+        <label>类型</label><select class="flt-sel"><option>全部类型</option><option>课件</option><option>文件夹</option><option>视频</option></select>
+        <button class="btn btn-brand btn-sm" style="min-width:56px">查询</button>
+        <button class="btn btn-outline btn-sm" style="min-width:56px">重置</button>
+      </div>
+      <div class="rlist" id="rlist"></div>
+    </div>
+
+    <!-- P2: Cloud Picker -->
+    <div class="pg" id="p2">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <button class="btn btn-outline btn-sm" onclick="go('p1')" style="gap:4px">← 返回</button>
+        <span style="font-size:18px;font-weight:700">选择资料</span>
+      </div>
+      <div class="pk-tabs">
+        <button class="pk-tab on">我的资料</button>
+        <button class="pk-tab">校本资料</button>
+      </div>
+      <div class="pk-info">
+        <div class="pkl">个人云盘 <span>(共154个)</span></div>
+        <input class="flt-input" placeholder="&#128269; 搜索资源" style="width:200px"/>
+      </div>
+      <div class="ftable"><table>
+        <thead><tr><th style="width:36px"></th><th>名称</th><th style="width:80px">类型</th><th style="width:100px">更新时间</th><th style="width:80px">大小</th></tr></thead>
+        <tbody id="ftbody"></tbody>
+      </table></div>
+      <div class="pk-foot">
+        <button class="btn btn-outline btn-sm" onclick="go('p1')">取消</button>
+        <button class="btn btn-brand" id="btnNxt" disabled onclick="go('p4')">确定，下一步 →</button>
+      </div>
+    </div>
+
+    <!-- P4: Settings / Publish -->
+    <div class="pg" id="p4">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <button class="btn btn-outline btn-sm" onclick="goBack4()" style="gap:4px">← 返回</button>
+        <span style="font-size:18px;font-weight:700">设置参数</span>
+      </div>
+
+      <div class="ss">
+        <h4>已选资料</h4>
+        <div class="sf-chips" id="sfChips"></div>
+      </div>
+
+      <div class="ss" id="ssResName" style="display:none">
+        <h4><span class="req">*</span> 资料名称</h4>
+        <input type="text" id="resNameInput" style="width:100%;max-width:480px;height:44px;border:1.5px solid #ddd;border-radius:10px;padding:0 14px;font-size:15px;color:#333;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--brand)'" onblur="this.style.borderColor='#ddd'" />
+        <div style="font-size:12px;color:#999;margin-top:6px">默认按拍摄时间生成，可自定义修改</div>
+      </div>
+
+      <div class="ss">
+        <h4><span class="req">*</span> 发布时间</h4>
+        <div class="pub-opts">
+          <button class="pub-opt sel" onclick="selPub(this)">&#9201; 立即发布</button>
+          <button class="pub-opt" onclick="selPub(this)">&#128197; 定时发布</button>
+        </div>
+      </div>
+
+      <div class="ss">
+        <h4><span class="req">*</span> 选择班级</h4>
+        <div class="cls-tags" id="clsTags">
+          <span class="cls-tag">【班主任】老吴测试 <span class="ctx" onclick="this.parentElement.remove()">×</span></span>
+          <button class="cls-add" onclick="toast('选择班级弹窗')">+ 添加班级</button>
+        </div>
+      </div>
+
+      <div class="ss">
+        <h4><span class="req">*</span> 分发对象</h4>
+        <div class="stu-panel">
+          <div class="stu-left">
+            <div class="stu-left-hd">班级列表</div>
+            <div class="stu-cls-item on">【班主任】老吴测试</div>
+          </div>
+          <div class="stu-right">
+            <div class="stu-right-hd">
+              <span class="srt" id="stuCnt">已选 4 / 4 人</span>
+              <div class="sra">
+                <button class="sra-btn" onclick="allStu(true)">全选</button>
+                <button class="sra-btn" onclick="allStu(false)">全部取消</button>
+              </div>
+            </div>
+            <div class="stu-grid" id="stuGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ss-foot">
+        <button class="btn btn-outline" onclick="go('p1')" style="height:44px;padding:0 28px">取消</button>
+        <button class="btn btn-brand" id="btnPub" onclick="publish()" style="height:44px;padding:0 28px">确认发布</button>
+      </div>
+    </div>
+
+    <!-- P3: Snap Capture (Full Screen) -->
+    <div class="pg-full" id="p3">
+      <div class="snap-hd">
+        <button class="sh-back" onclick="exitSnap()">← 返回</button>
+        <span class="sh-title" id="shTitle">拍照</span>
+        <span class="sh-count" id="shCnt"></span>
+      </div>
+      <div class="snap-warn" id="snapWarn">&#9888; 照片已达上限 6 张</div>
+      <div class="snap-modes">
+        <button class="snap-mode on" data-m="p" onclick="snapMode('p')">&#128247; 拍照</button>
+        <button class="snap-mode" data-m="v" onclick="snapMode('v')">&#127909; 录视频</button>
+      </div>
+      <div class="snap-vf">
+        <div class="vf-ph" id="vfPh"><span class="vf-i" id="vfI">&#128247;</span><span class="vf-t">Pad 后置摄像头取景区</span></div>
+        <div class="snap-grid"></div>
+        <div class="snap-timer" id="sTimer"><span class="rdot"></span><span id="sTxt">00:00</span><span style="font-size:13px;color:rgba(255,255,255,.3);margin-left:2px">/ 05:00</span></div>
+      </div>
+      <div class="snap-strip" id="sStrip"></div>
+      <div class="snap-vid-done" id="sVidDone"><span style="font-size:24px">&#127916;</span><span id="sVidTxt">已录制 00:00</span></div>
+      <div class="snap-ctrls">
+        <button class="sc-flip" title="切换摄像头">&#128260;</button>
+        <button class="sc-shutter" id="shutBtn" onclick="snapAct()"><div class="ss-in" id="ssIn"></div></button>
+        <button class="sc-done" id="scDone" onclick="snapFinish()">完成 →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- METHOD MODAL -->
+<div class="modal-bg" id="methModal">
+  <div class="modal-box meth-modal">
+    <h3>添加资料</h3>
+    <p class="msub">选择资料来源方式</p>
+    <div class="meth-grid">
+      <div class="meth-card" onclick="pickCloud()">
+        <div class="mci mci-cloud">&#9729;&#65039;</div>
+        <div class="mct">从云盘选择</div>
+        <div class="mcd">选择个人云盘中的已有文件</div>
+      </div>
+      <div class="meth-card" onclick="pickSnap()">
+        <div class="mci mci-snap">&#128247;</div>
+        <div class="mct">临场快拍</div>
+        <div class="mcd">现场拍照或录视频上传</div>
+      </div>
+    </div>
+    <button class="meth-close" onclick="hideMeth()">取消</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- CONFIRM -->
+<div class="cfm-bg" id="cfmBg">
+  <div class="cfm-box"><p id="cfmTxt"></p><div class="cfm-btns">
+    <button class="btn btn-outline btn-sm" onclick="cfmHide()">取消</button>
+    <button class="btn btn-brand btn-sm" onclick="cfmOk()">确定</button>
+  </div></div>
+</div>
+
+<script>
+/* ================================================================
+   DATA
+   ================================================================ */
+const RES=[
+  {n:'未命名课件',ic:'&#128215;',t:'ri-cw',cls:'老吴测试',stu:4,cnt:1,ft:'课件',pt:'2026-03-05 11:45',st:'closed'},
+  {n:'课堂习题',ic:'&#128193;',t:'ri-fold',cls:'老吴测试',stu:4,cnt:5,ft:'文件夹',pt:'2026-01-08 16:20',st:'closed'},
+  {n:'布置作业视频.mp4',ic:'&#127916;',t:'ri-vid',cls:'老吴测试',stu:4,cnt:1,ft:'MP4',pt:'2025-12-09 18:47',st:'visible'},
+  {n:'物理多题课件',ic:'&#128215;',t:'ri-cw',cls:'老吴测试',stu:4,cnt:1,ft:'课件',pt:'2025-12-09 18:42',st:'visible'},
+  {n:'物质的分类',ic:'&#127916;',t:'ri-vid',cls:'老吴测试',stu:3,cnt:1,ft:'课程视频',pt:'2025-10-10 14:43',st:'closed'},
+  {n:'电解质',ic:'&#127916;',t:'ri-vid',cls:'老吴测试',stu:3,cnt:1,ft:'课程视频',pt:'2025-10-10 14:43',st:'closed'},
+];
+
+const FILES=[
+  {n:'我的作业任务',d:1,ic:'&#128193;',ft:'文件夹',tm:'2026-03-06',sz:'48.49K'},
+  {n:'AI靶向提升',d:1,ic:'&#128193;',ft:'文件夹',tm:'2026-01-23',sz:'80.17K'},
+  {n:'课堂习题',d:1,ic:'&#128193;',ft:'文件夹',tm:'2026-01-08',sz:'9.13M'},
+  {n:'练习题',d:1,ic:'&#128193;',ft:'文件夹',tm:'2025-12-11',sz:'9.13M'},
+  {n:'试题',d:1,ic:'&#128193;',ft:'文件夹',tm:'2025-07-03',sz:'31.54K'},
+  {n:'未命名课件',d:0,ic:'&#128215;',ft:'课件',tm:'5天前',sz:'242.65K',ok:1},
+  {n:'未命名课件',d:0,ic:'&#128215;',ft:'课件',tm:'2026-03-06',sz:'10.1K',ok:1},
+  {n:'解答复合',d:0,ic:'&#128215;',ft:'课件',tm:'2026-03-06',sz:'1.17M',ok:1},
+  {n:'未命名课件',d:0,ic:'&#128215;',ft:'课件',tm:'2026-03-06',sz:'17.35K',ok:1},
+  {n:'光合作用实验报告',d:0,ic:'&#128196;',ft:'PDF',tm:'2026-03-05',sz:'2.3M'},
+];
+
+const STUS=[
+  {n:'小吴同学',c:'2222'},{n:'王志远',c:'0031'},{n:'李梦琪',c:'0042'},
+  {n:'张浩然',c:'0053'},{n:'陈思雨',c:'0064'},{n:'刘子墨',c:'0075'},
+  {n:'赵雨萱',c:'0086'},{n:'孙浩宇',c:'0097'},{n:'周诗涵',c:'0108'},
+  {n:'吴逸飞',c:'0119'},{n:'郑嘉琪',c:'0120'},{n:'黄思源',c:'0131'},
+];
+
+/* ================================================================ */
+const S={sel:new Set(),capM:'p',photos:[],pCnt:0,rec:false,rSec:0,rTmr:null,vUsed:false,stuSel:new Set(),src:null,cfCb:null};
+const COLS=['#2AADEB,#34C759','#FF9500,#FF3B30','#34C759,#2AADEB','#FF3B30,#FF9500','#AF52DE,#2AADEB','#FF9500,#34C759'];
+
+/* NAV */
+function navTo(k){document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.n===k));k==='drv'?go('p1'):go('p0')}
+
+function go(id){
+  document.querySelectorAll('.pg,.pg-full').forEach(p=>p.classList.remove('on'));
+  if(id==='p0'){/* empty placeholder */return}
+  document.getElementById(id).classList.add('on');
+  if(id==='p4')renderP4();
+}
+
+/* ================================================================
+   P1: RESOURCE LIST
+   ================================================================ */
+function renderList(){
+  document.getElementById('rlist').innerHTML=RES.map((r,i)=>{
+    const stCls=r.st==='visible'?'rtag-vis':r.st==='scheduled'?'rtag-sched':'rtag-cls';
+    const stLbl=r.st==='visible'?'可见':r.st==='scheduled'?'定时中':'已关闭';
+    const togLbl=r.st==='visible'?'关闭':'开启';
+    return `<div class="rcard">
+      <div class="ri ${r.t}">${r.ic}</div>
+      <div class="rinfo">
+        <div class="rname">${r.n}</div>
+        <div class="rmeta"><span>${r.cls} · ${r.stu}人</span><span>${r.cnt}份 · ${r.ft}</span><span>${r.pt}</span></div>
+      </div>
+      <span class="rtag ${stCls}">${stLbl}</span>
+      <div class="racts">
+        <button class="ract" onclick="toast('修改')">修改</button>
+        <button class="ract del" onclick="cfmShow('确定删除该资源？',()=>{RES.splice(${i},1);renderList();toast('已删除')})">删除</button>
+        <button class="ract" onclick="togVis(${i})">${togLbl}</button>
+      </div>
+    </div>`}).join('');
+}
+function togVis(i){RES[i].st=RES[i].st==='visible'?'closed':'visible';renderList();toast('已切换')}
+
+/* ================================================================
+   METHOD MODAL
+   ================================================================ */
+function showMeth(){document.getElementById('methModal').classList.add('on')}
+function hideMeth(){document.getElementById('methModal').classList.remove('on')}
+function pickCloud(){hideMeth();S.sel.clear();renderFT();go('p2')}
+function pickSnap(){hideMeth();resetSnap();go('p3')}
+
+/* ================================================================
+   P2: FILE PICKER
+   ================================================================ */
+function renderFT(){
+  document.getElementById('ftbody').innerHTML=FILES.map((f,i)=>{
+    const ck=S.sel.has(i);
+    return `<tr class="${ck?'sel':''}" onclick="togF(${i})" style="cursor:pointer">
+      <td>${f.d?'':`<span class="fcb ${ck?'ck':''}">&#10003;</span>`}</td>
+      <td><div class="fn"><span class="fi">${f.ic}</span><span>${f.n}</span>${f.ok?'<span class="fst">&#9989;</span>':''}</div></td>
+      <td style="color:var(--c3)">${f.ft}</td>
+      <td style="color:var(--c3);font-size:13px">${f.tm}</td>
+      <td style="color:var(--c3);font-size:13px">${f.sz}</td>
+    </tr>`}).join('');
+  document.getElementById('btnNxt').disabled=S.sel.size===0;
+}
+function togF(i){if(FILES[i].d)return;S.sel.has(i)?S.sel.delete(i):S.sel.add(i);renderFT()}
+
+/* ================================================================
+   P3: SNAP CAPTURE
+   ================================================================ */
+function resetSnap(){S.capM='p';S.photos=[];S.pCnt=0;S.rec=false;S.rSec=0;S.vUsed=false;clearInterval(S.rTmr);updSnap()}
+function snapMode(m){if(S.rec)return;S.capM=m;document.querySelectorAll('.snap-mode').forEach(b=>b.classList.toggle('on',b.dataset.m===m));updSnap()}
+
+function updSnap(){
+  const ph=S.capM==='p';
+  document.getElementById('shTitle').textContent=ph?'拍照':'录视频';
+  document.getElementById('shCnt').textContent=ph?`已拍 ${S.photos.length}/6`:'';
+  document.getElementById('vfI').innerHTML=ph?'&#128247;':'&#127909;';
+  document.getElementById('sTimer').classList.toggle('on',S.rec);
+  document.getElementById('sVidDone').classList.toggle('on',!ph&&S.vUsed);
+  document.getElementById('snapWarn').classList.toggle('on',ph&&S.photos.length>=6);
+
+  const strip=document.getElementById('sStrip');
+  strip.classList.toggle('has',ph&&S.photos.length>0);
+  strip.innerHTML=S.photos.map((p,i)=>{const[a,b]=p.c.split(',');
+    return `<div class="snap-th"><div class="sti" style="background:linear-gradient(135deg,${a},${b})">${p.id}</div><div class="stx" onclick="event.stopPropagation();rmPh(${i})">×</div></div>`}).join('');
+
+  const inn=document.getElementById('ssIn'),btn=document.getElementById('shutBtn');
+  if(ph){btn.style.borderColor='rgba(255,255,255,.35)';inn.style.background='#fff';inn.style.borderRadius='50%';inn.style.inset='5px';
+    btn.style.opacity=S.photos.length>=6?'.25':'1';btn.style.pointerEvents=S.photos.length>=6?'none':'auto';
+  }else{btn.style.borderColor='var(--red)';inn.style.background='var(--red)';
+    inn.style.borderRadius=S.rec?'6px':'50%';inn.style.inset=S.rec?'20px':'6px';
+    btn.style.opacity='1';btn.style.pointerEvents='auto';
+  }
+  document.getElementById('scDone').classList.toggle('on',(ph&&S.photos.length>0)||(!ph&&S.vUsed));
+}
+
+function snapAct(){S.capM==='p'?doPhoto():togRec()}
+function doPhoto(){
+  if(S.photos.length>=6){toast('已达拍照上限 6 张');return}
+  const vf=document.querySelector('.snap-vf');vf.style.background='#fff';setTimeout(()=>vf.style.background='',80);
+  S.pCnt++;S.photos.push({id:S.pCnt,c:COLS[(S.pCnt-1)%COLS.length]});updSnap();
+}
+function rmPh(i){S.photos.splice(i,1);updSnap()}
+function togRec(){S.rec?stopRec():startRec()}
+function startRec(){S.rec=true;S.rSec=0;S.vUsed=false;updSnap();
+  S.rTmr=setInterval(()=>{S.rSec++;document.getElementById('sTxt').textContent=fm(S.rSec);
+    if(S.rSec>=300){stopRec();toast('已达录制上限 5 分钟')}},1000)}
+function stopRec(){S.rec=false;clearInterval(S.rTmr);if(S.rSec>0){S.vUsed=true;document.getElementById('sVidTxt').textContent=`已录制 ${fm(S.rSec)}`}updSnap()}
+function fm(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function snapFinish(){S.src='snap';go('p4')}
+function exitSnap(){
+  if(S.photos.length>0||S.vUsed){cfmShow('退出将丢失已拍摄内容，确定？',()=>{resetSnap();go('p1')})}
+  else go('p1');
+}
+
+/* ================================================================
+   P4: SETTINGS / PUBLISH
+   ================================================================ */
+function goBack4(){S.src==='snap'?go('p3'):go('p2')}
+
+function genSnapName(){
+  const d=new Date(),p=v=>String(v).padStart(2,'0');
+  return `课堂快拍_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
+}
+
+function renderP4(){
+  S.src=S.src||(S.sel.size>0?'cloud':'snap');
+  const box=document.getElementById('sfChips');
+  const nameBlock=document.getElementById('ssResName');
+  const nameInput=document.getElementById('resNameInput');
+  if(S.src==='cloud'){
+    box.innerHTML=[...S.sel].map(i=>`<span class="sf-chip"><span class="sfi">${FILES[i].ic}</span>${FILES[i].n}</span>`).join('');
+    nameBlock.style.display='none';
+  }else{
+    let h='';
+    if(S.photos.length)h+=`<span class="sf-chip"><span class="sfi">&#128247;</span>课堂快拍_照片×${S.photos.length}</span>`;
+    if(S.vUsed)h+=`<span class="sf-chip"><span class="sfi">&#127916;</span>课堂快拍_视频 ${fm(S.rSec)}</span>`;
+    box.innerHTML=h;
+    nameBlock.style.display='block';
+    if(!nameInput.value)nameInput.value=genSnapName();
+  }
+  S.stuSel=new Set(STUS.map((_,i)=>i));
+  renderStu();
+}
+
+function renderStu(){
+  document.getElementById('stuGrid').innerHTML=STUS.map((s,i)=>{
+    const on=S.stuSel.has(i);
+    return `<div class="stu-tag ${on?'on':''}" onclick="togStu(${i})">
+      <span class="stck">&#10003;</span>${s.n} (${s.c})</div>`}).join('');
+  document.getElementById('stuCnt').textContent=`已选 ${S.stuSel.size} / ${STUS.length} 人`;
+}
+function togStu(i){S.stuSel.has(i)?S.stuSel.delete(i):S.stuSel.add(i);renderStu()}
+function allStu(v){if(v)STUS.forEach((_,i)=>S.stuSel.add(i));else S.stuSel.clear();renderStu()}
+
+function selPub(el){document.querySelectorAll('.pub-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel')}
+
+function publish(){
+  if(S.stuSel.size===0){toast('请至少选择 1 名学生');return}
+  const btn=document.getElementById('btnPub');btn.textContent='发布中...';btn.disabled=true;
+  setTimeout(()=>{
+    btn.textContent='确认发布';btn.disabled=false;
+    const now=new Date().toLocaleString('zh-CN',{hour12:false}).replace(/\//g,'-');
+    RES.unshift({
+      n:S.src==='cloud'?(FILES[[...S.sel][0]]?.n||'新资料'):(document.getElementById('resNameInput').value||genSnapName()),
+      ic:S.src==='cloud'?'&#128215;':'&#128247;',
+      t:S.src==='cloud'?'ri-cw':'ri-snap',
+      cls:'老吴测试',stu:S.stuSel.size,
+      cnt:S.src==='cloud'?S.sel.size:(S.photos.length||1),
+      ft:S.src==='cloud'?'课件':(S.photos.length?'课堂快拍·图片':'课堂快拍·视频'),
+      pt:now,st:'visible'
+    });
+    go('p1');renderList();toast('&#10003; 发布成功');
+  },1200);
+}
+
+/* ================================================================
+   UTILS
+   ================================================================ */
+function toast(msg,ms=2200){const t=document.getElementById('toast');t.innerHTML=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),ms)}
+function cfmShow(txt,cb){document.getElementById('cfmTxt').textContent=txt;S.cfCb=cb;document.getElementById('cfmBg').classList.add('on')}
+function cfmHide(){document.getElementById('cfmBg').classList.remove('on');S.cfCb=null}
+function cfmOk(){if(S.cfCb)S.cfCb();cfmHide()}
+
+/* INIT */
+renderList();
+</script>
+</body>
+</html>

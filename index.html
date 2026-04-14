@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产品原型 Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;500;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: #0a0a0f;
+    color: #e8e8ed;
+    min-height: 100vh;
+    padding: 60px 40px;
+  }
+  h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    color: #6b7280;
+    font-size: 1rem;
+    margin-bottom: 48px;
+    font-weight: 300;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+  }
+  a.card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: #16161e;
+    border: 1px solid #1e1e2a;
+    border-radius: 12px;
+    padding: 28px 24px;
+    transition: all 0.25s ease;
+  }
+  a.card:hover {
+    border-color: #60a5fa;
+    background: #1a1a26;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(96, 165, 250, 0.1);
+  }
+  .card .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .tag.proto { background: #1e3a5f; color: #60a5fa; }
+  .tag.mockup { background: #3b1f4e; color: #c084fc; }
+  .card h2 {
+    font-size: 1.15rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .card p {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+  <h1>产品原型 Demo</h1>
+  <p class="subtitle">九章爱学 - 教师端产品原型合集</p>
+  <div class="grid">
+    <a class="card" href="prototype-teacher-pad-v3.html">
+      <span class="tag proto">PROTOTYPE</span>
+      <h2>教师 Pad V3</h2>
+      <p>教师端 Pad 大小屏互动中枢系统原型</p>
+    </a>
+    <a class="card" href="prototype-class-drive-hifi.html">
+      <span class="tag proto">PROTOTYPE</span>
+      <h2>班级云盘 Hi-Fi</h2>
+      <p>班级云盘高保真原型</p>
+    </a>
+    <a class="card" href="prototype-class-drive-v1.html">
+      <span class="tag proto">PROTOTYPE</span>
+      <h2>班级云盘 V1</h2>
+      <p>班级云盘 Pad 端第一版原型</p>
+    </a>
+    <a class="card" href="prototype-class-drive-v2.html">
+      <span class="tag proto">PROTOTYPE</span>
+      <h2>班级云盘 V2</h2>
+      <p>班级云盘 Pad 端第二版原型</p>
+    </a>
+    <a class="card" href="prototype-class-drive-v3.html">
+      <span class="tag proto">PROTOTYPE</span>
+      <h2>班级云盘 V3</h2>
+      <p>班级云盘 Pad 端第三版原型</p>
+    </a>
+    <a class="card" href="prototype-lesson-prep.html">
+      <span class="tag proto">PROTOTYPE</span>
+      <h2>备课台 V1</h2>
+      <p>课节管理与备课台 Pad 端原型</p>
+    </a>
+    <a class="card" href="prototype-lesson-prep-v2.html">
+      <span class="tag proto">PROTOTYPE</span>
+      <h2>备课台 V2</h2>
+      <p>课节管理与备课台 Pad 端第二版</p>
+    </a>
+    <a class="card" href="prototype-quick-lesson.html">
+      <span class="tag proto">PROTOTYPE</span>
+      <h2>快速建课</h2>
+      <p>快速建课功能原型</p>
+    </a>
+    <a class="card" href="mockup-teacher-pad-normal.html">
+      <span class="tag mockup">MOCKUP</span>
+      <h2>常态模式</h2>
+      <p>教师 Pad 常态教学模式</p>
+    </a>
+    <a class="card" href="mockup-teacher-pad-interaction.html">
+      <span class="tag mockup">MOCKUP</span>
+      <h2>互动模式</h2>
+      <p>教师 Pad 课堂互动模式</p>
+    </a>
+    <a class="card" href="mockup-teacher-pad-doodle.html">
+      <span class="tag mockup">MOCKUP</span>
+      <h2>涂鸦模式</h2>
+      <p>教师 Pad 涂鸦批注模式</p>
+    </a>
+  </div>
+</body>
+</html>

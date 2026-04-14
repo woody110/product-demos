@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1194,initial-scale=1">
+<title>九章爱学 · Pad端课节管理与备课台 V2</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   Design Tokens — 九章爱学 Refined Educational Theme
+   ================================================================ */
+:root {
+  --brand: #2AADEB;
+  --brand-hover: #1E9AD6;
+  --brand-active: #1889C2;
+  --brand-light: #E6F5FD;
+  --brand-ghost: #F0F9FE;
+  --brand-10: rgba(42, 173, 235, 0.10);
+  --brand-20: rgba(42, 173, 235, 0.20);
+
+  --bg: #F0F2F7;
+  --bg-warm: #F5F6FA;
+  --card: #FFFFFF;
+  --card-hover: #FAFBFF;
+
+  --text: #1A2233;
+  --text-2: #5A6578;
+  --text-3: #8F99A8;
+  --text-4: #B8C0CC;
+
+  --border: #E4E8F0;
+  --border-light: #EEF1F6;
+  --divider: #F2F4F8;
+
+  --success: #22C55E;
+  --success-bg: #ECFDF5;
+  --warning: #F59E0B;
+  --warning-bg: #FFFBEB;
+  --danger: #EF4444;
+  --danger-bg: #FEF2F2;
+  --info-bg: #EFF6FF;
+
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-pill: 100px;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.03);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.04);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.06);
+  --shadow-brand: 0 4px 16px rgba(42,173,235,.25);
+
+  --sidebar-w: 88px;
+  --topbar-h: 68px;
+  --statusbar-h: 26px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans SC', 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; font-size: inherit; transition: all 0.2s var(--ease-out); }
+button:active { transform: scale(0.97); }
+input { font-family: inherit; }
+
+/* ================================================================
+   Status Bar
+   ================================================================ */
+.statusbar {
+  height: var(--statusbar-h);
+  background: #1A1A2E;
+  color: rgba(255,255,255,.85);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  font-family: 'DM Sans', sans-serif;
+}
+.statusbar-r { display: flex; gap: 10px; align-items: center; }
+
+/* ================================================================
+   App Shell
+   ================================================================ */
+.app {
+  display: flex;
+  height: calc(100vh - var(--statusbar-h));
+  background: var(--bg);
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0 12px;
+  gap: 2px;
+  border-right: 1px solid var(--border-light);
+  flex-shrink: 0;
+  box-shadow: 1px 0 8px rgba(0,0,0,.02);
+}
+.sidebar .avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-light), var(--brand-ghost));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 2px 8px var(--brand-10);
+  margin-bottom: 4px;
+}
+.sidebar .hello {
+  font-size: 10px;
+  color: var(--text-3);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.nav-item {
+  width: 72px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 8px 0;
+  border-radius: var(--radius-sm);
+  font-size: 10.5px;
+  color: var(--text-3);
+  font-weight: 500;
+  transition: all 0.25s var(--ease-out);
+  cursor: pointer;
+  position: relative;
+}
+.nav-item:hover { color: var(--text-2); background: var(--bg-warm); }
+.nav-item.on {
+  background: var(--brand-light);
+  color: var(--brand);
+  font-weight: 600;
+}
+.nav-item.on::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 20px;
+  background: var(--brand);
+  border-radius: 0 3px 3px 0;
+}
+.nav-item .ni { font-size: 18px; line-height: 1; }
+
+/* Main area */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Top Bar */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--card);
+  display: flex; align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border-light);
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.02);
+}
+.topbar .greeting {
+  font-size: 19px;
+  font-weight: 700;
+  flex: 1;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+.topbar-actions { display: flex; gap: 6px; align-items: center; }
+.topbar-btn-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.topbar-btn {
+  width: 42px; height: 42px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-warm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  color: var(--text-2);
+  transition: all 0.2s var(--ease-out);
+}
+.topbar-btn:hover { background: var(--brand-light); color: var(--brand); }
+.topbar-label { font-size: 9px; color: var(--text-4); font-weight: 500; }
+
+.content { flex: 1; overflow-y: auto; padding: 20px 24px; scroll-behavior: smooth; }
+
+/* ================================================================
+   Page Visibility
+   ================================================================ */
+.page { display: none; }
+.page.active { display: block; animation: pageIn 0.4s var(--ease-out); }
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================================================================
+   课表页 Header
+   ================================================================ */
+.sch-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.sch-title {
+  font-size: 18px; font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+.btn-create {
+  background: var(--brand);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+  box-shadow: var(--shadow-brand);
+  letter-spacing: 0.2px;
+}
+.btn-create:hover { background: var(--brand-hover); box-shadow: 0 6px 20px rgba(42,173,235,.3); }
+.btn-create:active { background: var(--brand-active); }
+
+/* ================================================================
+   Week Strip
+   ================================================================ */
+.week-strip {
+  display: flex; align-items: center; gap: 2px;
+  margin-bottom: 20px;
+  background: var(--card);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  box-shadow: var(--shadow-sm);
+}
+.ws-arrow {
+  width: 30px; height: 30px;
+  border-radius: var(--radius-xs);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-4);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.ws-arrow:hover { color: var(--brand); background: var(--brand-ghost); }
+.ws-day {
+  flex: 1; text-align: center;
+  padding: 8px 0 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+  position: relative;
+}
+.ws-day:hover { background: var(--bg-warm); }
+.ws-day .wd { font-size: 11px; color: var(--text-4); font-weight: 500; }
+.ws-day .wn { font-size: 19px; font-weight: 700; color: var(--text-2); margin-top: 1px; font-family: 'DM Sans', sans-serif; }
+.ws-day.today .wd { color: var(--brand); font-weight: 600; }
+.ws-day.today .wn { color: var(--brand); }
+.ws-day.today::after {
+  content: '';
+  display: block;
+  width: 18px; height: 3px;
+  background: var(--brand);
+  border-radius: 2px;
+  margin: 4px auto 0;
+}
+.ws-day.sel { background: var(--brand-light); }
+
+/* ================================================================
+   Lesson Cards
+   ================================================================ */
+.lesson-list { display: flex; flex-direction: column; gap: 10px; }
+.lesson-card {
+  background: var(--card);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; gap: 16px;
+  min-height: 78px;
+  transition: all 0.25s var(--ease-out);
+  border-left: 3.5px solid transparent;
+  position: relative;
+  overflow: hidden;
+  animation: cardSlideIn 0.4s var(--ease-out) both;
+}
+.lesson-card:nth-child(1) { animation-delay: 0.05s; }
+.lesson-card:nth-child(2) { animation-delay: 0.1s; }
+.lesson-card:nth-child(3) { animation-delay: 0.15s; }
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.lesson-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.lesson-card.border-blue { border-left-color: var(--brand); }
+.lesson-card.border-orange { border-left-color: var(--warning); }
+.lesson-card.border-gray { border-left-color: var(--text-4); }
+
+.lc-icon {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.lc-icon.blue { background: var(--brand-light); color: var(--brand); }
+.lc-icon.orange { background: var(--warning-bg); color: var(--warning); }
+.lc-icon.gray { background: var(--divider); color: var(--text-4); }
+
+.lc-info { flex: 1; min-width: 0; }
+.lc-time { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.1px; }
+.lc-detail {
+  font-size: 13px; color: var(--text-2); margin-top: 3px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.lc-tag {
+  display: inline-flex; align-items: center;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.lc-tag.ongoing { background: var(--brand-light); color: var(--brand); }
+.lc-tag.pending { background: var(--warning-bg); color: #D97706; }
+.lc-tag.done { background: var(--divider); color: var(--text-3); }
+.lc-tag.prepped { background: var(--success-bg); color: #16A34A; }
+
+.lc-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.btn-go {
+  background: var(--brand);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 10px 24px;
+  font-size: 14px; font-weight: 600;
+  box-shadow: var(--shadow-brand);
+}
+.btn-go:hover { background: var(--brand-hover); }
+.btn-prep {
+  background: var(--card);
+  color: var(--brand);
+  border-radius: var(--radius-pill);
+  padding: 10px 20px;
+  font-size: 14px; font-weight: 600;
+  border: 1.5px solid var(--brand);
+}
+.btn-prep:hover { background: var(--brand-ghost); }
+.btn-prep:active { background: var(--brand-light); }
+.btn-more {
+  width: 38px; height: 38px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-warm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--text-3);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.btn-more:hover { background: var(--brand-light); color: var(--brand); }
+
+.empty-state {
+  text-align: center; padding: 60px 0;
+  color: var(--text-3); font-size: 15px; line-height: 1.8;
+}
+.empty-state .ei { font-size: 48px; margin-bottom: 8px; display: block; }
+
+/* ================================================================
+   Overlays (shared)
+   ================================================================ */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(20, 25, 40, 0.5);
+  backdrop-filter: blur(4px);
+  display: none; z-index: 100;
+  align-items: center; justify-content: center;
+}
+.overlay.show { display: flex; animation: overlayIn 0.25s var(--ease-out); }
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+.overlay.bottom { align-items: flex-end; justify-content: center; }
+
+/* ================================================================
+   Modal — 创建/编辑课节
+   ================================================================ */
+.modal {
+  background: var(--card);
+  border-radius: var(--radius-xl);
+  width: 500px; max-width: 90vw;
+  padding: 28px 32px 24px;
+  box-shadow: var(--shadow-xl);
+  animation: modalPop 0.35s var(--ease-spring);
+}
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-title {
+  font-size: 18px; font-weight: 700;
+  margin-bottom: 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  letter-spacing: -0.2px;
+}
+.modal-close {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--bg-warm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--text-3);
+}
+.modal-close:hover { background: var(--danger-bg); color: var(--danger); }
+
+.form-row { display: flex; align-items: center; margin-bottom: 18px; }
+.form-label {
+  width: 90px; font-size: 14px; color: var(--text-2);
+  text-align: right; padding-right: 14px;
+  flex-shrink: 0; font-weight: 500;
+}
+.form-label .req { color: var(--danger); margin-right: 2px; }
+.form-input {
+  flex: 1; height: 48px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 16px;
+  font-size: 14px; color: var(--text);
+  background: var(--card);
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+}
+.form-input:hover { border-color: var(--brand-20); }
+.form-input:active { border-color: var(--brand); background: var(--brand-ghost); }
+.form-input.disabled { background: var(--bg-warm); color: var(--text-3); cursor: default; border-color: var(--border-light); }
+.form-input .fi-arrow { color: var(--text-4); font-size: 11px; }
+.form-time { display: flex; align-items: center; gap: 8px; flex: 1; }
+.form-time .ft-field {
+  flex: 1; height: 48px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 14px;
+  font-size: 14px; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  transition: all 0.2s var(--ease-out);
+}
+.form-time .ft-field:hover { border-color: var(--brand-20); }
+.form-time .ft-field:active { border-color: var(--brand); }
+.form-time .ft-sep { color: var(--text-4); font-size: 13px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 28px; }
+.btn-cancel {
+  padding: 11px 26px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--border);
+  font-size: 14px; color: var(--text-2); font-weight: 500;
+}
+.btn-cancel:hover { background: var(--bg-warm); }
+.btn-save {
+  padding: 11px 26px;
+  border-radius: var(--radius-pill);
+  background: var(--brand); color: #fff;
+  font-size: 14px; font-weight: 600;
+  box-shadow: var(--shadow-brand);
+}
+.btn-save:hover { background: var(--brand-hover); }
+.btn-save:disabled { background: var(--text-4); box-shadow: none; color: #fff; cursor: not-allowed; }
+
+/* ================================================================
+   Bottom Sheet
+   ================================================================ */
+.bsheet {
+  background: var(--card);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  width: 100%; max-width: 440px;
+  padding: 10px 0 16px;
+  animation: sheetUp 0.3s var(--ease-out);
+}
+@keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.bs-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 10px; }
+.bs-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 15px 28px;
+  font-size: 16px; color: var(--text); font-weight: 500;
+  transition: all 0.15s;
+}
+.bs-item:active { background: var(--bg-warm); }
+.bs-item .bsi { font-size: 20px; }
+.bs-item.danger { color: var(--danger); }
+.bs-divider { height: 8px; background: var(--bg); }
+.bs-cancel { text-align: center; padding: 15px; font-size: 16px; color: var(--text-3); font-weight: 500; }
+
+/* ================================================================
+   Confirm Dialog
+   ================================================================ */
+.confirm-dialog {
+  background: var(--card);
+  border-radius: var(--radius-xl);
+  width: 380px; padding: 32px;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  animation: modalPop 0.35s var(--ease-spring);
+}
+.cd-icon { font-size: 44px; margin-bottom: 12px; display: block; }
+.cd-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+.cd-desc { font-size: 13px; color: var(--text-2); line-height: 1.7; margin-bottom: 24px; }
+.cd-actions { display: flex; gap: 10px; justify-content: center; }
+.btn-cd-cancel {
+  padding: 11px 28px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--border);
+  font-size: 14px; color: var(--text-2); font-weight: 500;
+}
+.btn-cd-confirm {
+  padding: 11px 28px;
+  border-radius: var(--radius-pill);
+  background: var(--danger); color: #fff;
+  font-size: 14px; font-weight: 600;
+}
+.btn-cd-confirm:disabled { background: var(--text-4); cursor: not-allowed; }
+
+/* ================================================================
+   Picker
+   ================================================================ */
+.picker-overlay {
+  position: fixed; inset: 0;
+  background: rgba(20,25,40,.45);
+  backdrop-filter: blur(3px);
+  display: none; z-index: 300;
+  align-items: flex-end; justify-content: center;
+}
+.picker-overlay.show { display: flex; animation: overlayIn 0.2s var(--ease-out); }
+.picker-box {
+  background: var(--card);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  width: 100%; max-width: 500px;
+  overflow: hidden;
+  animation: sheetUp 0.3s var(--ease-out);
+}
+.picker-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+.picker-cancel { font-size: 15px; color: var(--text-3); font-weight: 500; }
+.picker-title { font-size: 15px; font-weight: 600; }
+.picker-confirm { font-size: 15px; color: var(--brand); font-weight: 600; }
+.picker-body { max-height: 280px; overflow-y: auto; padding: 4px 0; }
+.picker-option {
+  padding: 14px 28px;
+  font-size: 15px; color: var(--text-2);
+  text-align: center;
+  transition: all 0.15s;
+  border-radius: var(--radius-xs);
+  margin: 2px 8px;
+}
+.picker-option:active { background: var(--bg-warm); }
+.picker-option.sel {
+  color: var(--brand); font-weight: 600;
+  background: var(--brand-light);
+}
+
+/* ================================================================
+   备课工作台 (全屏沉浸)
+   ================================================================ */
+.prep-page {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: none; flex-direction: column;
+  z-index: 200;
+}
+.prep-page.show { display: flex; animation: prepIn 0.4s var(--ease-out); }
+@keyframes prepIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.prep-topbar {
+  height: 54px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.03);
+}
+.prep-back {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 14px; color: var(--text-2);
+  padding: 8px 14px; border-radius: var(--radius-xs);
+  font-weight: 500;
+}
+.prep-back:hover { background: var(--bg-warm); color: var(--brand); }
+.prep-info {
+  flex: 1; text-align: center;
+  font-size: 13px; color: var(--text-2); font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.prep-info b { color: var(--text); font-weight: 600; }
+.prep-info .sep { color: var(--text-4); margin: 0 8px; }
+.btn-finish {
+  background: var(--brand); color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 9px 20px;
+  font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 5px;
+  box-shadow: var(--shadow-brand);
+}
+.btn-finish:hover { background: var(--brand-hover); }
+
+.prep-body { flex: 1; display: flex; overflow: hidden; }
+
+/* Left — File Browser (60%) */
+.prep-left {
+  width: 60%;
+  border-right: 1px solid var(--border-light);
+  background: var(--card);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.pl-tabs {
+  display: flex; padding: 0 20px;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--card);
+}
+.pl-tab {
+  padding: 13px 18px;
+  font-size: 14px; color: var(--text-3);
+  position: relative; cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.pl-tab:hover { color: var(--text-2); }
+.pl-tab.on { color: var(--brand); font-weight: 600; }
+.pl-tab.on::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 18px; right: 18px;
+  height: 2.5px;
+  background: var(--brand);
+  border-radius: 2px;
+}
+.pl-toolbar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+.pl-search {
+  flex: 1; min-width: 140px; height: 36px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 0 12px;
+  font-size: 13px; color: var(--text);
+  outline: none;
+  transition: all 0.2s;
+}
+.pl-search:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-10); }
+.pl-search::placeholder { color: var(--text-4); }
+.pl-filter {
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 12px;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--border);
+  font-size: 12px; color: var(--text-3);
+  cursor: pointer; font-weight: 500;
+}
+.pl-filter:hover { border-color: var(--brand-20); color: var(--brand); }
+.pl-breadcrumb {
+  display: flex; align-items: center; gap: 4px;
+  padding: 9px 20px;
+  font-size: 12px; color: var(--text-3);
+  border-bottom: 1px solid var(--border-light);
+  font-weight: 500;
+}
+.pl-bc-item { cursor: pointer; color: var(--brand); }
+.pl-bc-item:last-child { color: var(--text-2); cursor: default; }
+.pl-bc-sep { margin: 0 1px; color: var(--text-4); }
+
+.pl-list { flex: 1; overflow-y: auto; }
+.pl-row {
+  display: flex; align-items: center;
+  padding: 11px 20px; gap: 12px;
+  border-bottom: 1px solid var(--divider);
+  min-height: 52px;
+  transition: all 0.15s var(--ease-out);
+  cursor: pointer;
+}
+.pl-row:hover { background: var(--bg-warm); }
+.pl-row.checked { background: var(--brand-ghost); }
+.pl-chk {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: transparent;
+  flex-shrink: 0;
+  transition: all 0.2s var(--ease-spring);
+}
+.pl-row.checked .pl-chk {
+  background: var(--brand); border-color: var(--brand);
+  color: #fff;
+  transform: scale(1.05);
+}
+.pl-row.folder .pl-chk { visibility: hidden; }
+.pl-icon { font-size: 22px; flex-shrink: 0; }
+.pl-name { flex: 1; font-size: 13px; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.pl-status { font-size: 14px; flex-shrink: 0; }
+.pl-type { font-size: 12px; color: var(--text-3); width: 44px; }
+.pl-meta { font-size: 12px; color: var(--text-4); white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+.pl-size { font-size: 12px; color: var(--text-4); width: 60px; text-align: right; font-family: 'DM Sans', sans-serif; }
+.pl-go { color: var(--text-4); font-size: 13px; }
+
+/* Right — Bound Resources (40%) */
+.prep-right {
+  width: 40%;
+  background: #F5F7FA;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.pr-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.pr-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.pr-count { font-size: 13px; color: var(--brand); font-weight: 600; font-family: 'DM Sans', sans-serif; }
+.pr-list { flex: 1; overflow-y: auto; padding: 10px 14px; }
+.pr-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s var(--ease-out);
+  animation: itemFlyIn 0.3s var(--ease-spring);
+}
+@keyframes itemFlyIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.pr-item:hover { box-shadow: var(--shadow-md); }
+.pr-item-icon { font-size: 20px; flex-shrink: 0; }
+.pr-item-info { flex: 1; min-width: 0; }
+.pr-item-name { font-size: 13px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.pr-item-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.btn-unbind {
+  padding: 5px 12px;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--border);
+  font-size: 12px; color: var(--text-3);
+  flex-shrink: 0; font-weight: 500;
+}
+.btn-unbind:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+
+.pr-empty {
+  text-align: center; padding: 40px 20px;
+  color: var(--text-3); font-size: 13px; line-height: 1.8;
+}
+.pr-empty .pei { font-size: 36px; display: block; margin-bottom: 8px; opacity: .6; }
+.pr-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-light);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--card);
+}
+.pr-footer-count { font-size: 13px; color: var(--text-2); font-weight: 500; }
+.pr-footer-count b { color: var(--brand); font-family: 'DM Sans', sans-serif; }
+
+/* ================================================================
+   Toast
+   ================================================================ */
+.toast-wrap { position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 999; pointer-events: none; }
+.toast {
+  background: rgba(26,34,51,.88);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 11px 26px;
+  border-radius: var(--radius-pill);
+  font-size: 14px; font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+  animation: toastPop 0.35s var(--ease-spring);
+}
+@keyframes toastPop {
+  from { opacity: 0; transform: scale(0.9) translateY(-8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- Status Bar -->
+<div class="statusbar">
+  <span>16:16</span>
+  <div class="statusbar-r"><span>Wi-Fi</span><span>83% ⚡</span></div>
+</div>
+
+<!-- App Shell -->
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="avatar">👤</div>
+    <div class="hello">Hello, 吴老师</div>
+    <div class="nav-item on" onclick="navTo(this)"><span class="ni">📅</span>我的课表</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">📝</span>作业任务</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">📊</span>考试报告</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">📚</span>课程资源</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">🎯</span>靶向任务</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">📈</span>学情管理</div>
+    <div class="nav-item" onclick="navTo(this)"><span class="ni">☁️</span>班级云盘</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="greeting">Hello, 吴老师</div>
+      <div class="topbar-actions">
+        <div class="topbar-btn-wrap"><div class="topbar-btn">📷</div><div class="topbar-label">扫一扫</div></div>
+        <div class="topbar-btn-wrap"><div class="topbar-btn">🖥</div><div class="topbar-label">投屏</div></div>
+        <div class="topbar-btn-wrap"><div class="topbar-btn">🔄</div></div>
+        <div class="topbar-btn-wrap"><div class="topbar-btn">🖨</div></div>
+        <div class="topbar-btn-wrap"><div class="topbar-btn">⚙️</div></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="page active" id="p1">
+        <div class="sch-header">
+          <div class="sch-title">2026年04月09日 · 课表</div>
+          <button class="btn-create" onclick="openCreateModal()">＋ 新建课节</button>
+        </div>
+        <div class="week-strip">
+          <button class="ws-arrow" onclick="toast('上一周')">◂</button>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周日</div><div class="wn">5</div></div>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周一</div><div class="wn">6</div></div>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周二</div><div class="wn">7</div></div>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周三</div><div class="wn">8</div></div>
+          <div class="ws-day today sel" onclick="selDay(this)"><div class="wd">今天</div><div class="wn">9</div></div>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周五</div><div class="wn">10</div></div>
+          <div class="ws-day" onclick="selDay(this)"><div class="wd">周六</div><div class="wn">11</div></div>
+          <button class="ws-arrow" onclick="toast('下一周')">▸</button>
+        </div>
+        <div class="lesson-list" id="lessonList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 创建/编辑课节 -->
+<div class="overlay" id="modalOverlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">
+      <span id="modalTitle">创建课节</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-label"><span class="req">*</span> 班级：</div>
+      <div class="form-input" id="fClass" onclick="openPicker('class')">
+        <span id="fClassVal">请选择班级</span><span class="fi-arrow">▾</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label"><span class="req">*</span> 教室：</div>
+      <div class="form-input" onclick="openPicker('room')">
+        <span id="fRoomVal">请选择教室</span><span class="fi-arrow">▾</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label"><span class="req">*</span> 上课日期：</div>
+      <div class="form-input" onclick="openPicker('date')">
+        <span id="fDateVal">2026-04-09</span><span class="fi-arrow">📅</span>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-label"><span class="req">*</span> 上课时间：</div>
+      <div class="form-time">
+        <div class="ft-field" onclick="openPicker('timeStart')"><span id="fTimeS">16:10</span></div>
+        <span class="ft-sep">→</span>
+        <div class="ft-field" onclick="openPicker('timeEnd')"><span id="fTimeE">17:10</span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">取 消</button>
+      <button class="btn-save" id="btnSave" onclick="saveLesson()">保 存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Sheet -->
+<div class="overlay bottom" id="sheetOverlay" onclick="closeSheet()">
+  <div class="bsheet" onclick="event.stopPropagation()">
+    <div class="bs-handle"></div>
+    <div class="bs-item" onclick="closeSheet();openEditModal()"><span class="bsi">✏️</span> 编辑课节</div>
+    <div class="bs-item danger" onclick="closeSheet();openDeleteConfirm()"><span class="bsi">🗑️</span> 删除课节</div>
+    <div class="bs-divider"></div>
+    <div class="bs-cancel" onclick="closeSheet()">取消</div>
+  </div>
+</div>
+
+<!-- Delete Confirm -->
+<div class="overlay" id="deleteOverlay" onclick="closeDelete()">
+  <div class="confirm-dialog" onclick="event.stopPropagation()">
+    <span class="cd-icon">⚠️</span>
+    <div class="cd-title">确定删除该课节吗？</div>
+    <div class="cd-desc">删除后，相关的备课与课堂数据将一并失效<br>且无法恢复。</div>
+    <div class="cd-actions">
+      <button class="btn-cd-cancel" onclick="closeDelete()">取消</button>
+      <button class="btn-cd-confirm" id="btnDelConfirm" disabled onclick="doDelete()">确认删除 (3s)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Picker -->
+<div class="picker-overlay" id="pickerOverlay" onclick="closePicker()">
+  <div class="picker-box" onclick="event.stopPropagation()">
+    <div class="picker-header">
+      <button class="picker-cancel" onclick="closePicker()">取消</button>
+      <span class="picker-title" id="pickerTitle">选择</span>
+      <button class="picker-confirm" onclick="confirmPicker()">确定</button>
+    </div>
+    <div class="picker-body" id="pickerBody"></div>
+  </div>
+</div>
+
+<!-- 备课工作台 -->
+<div class="prep-page" id="prepPage">
+  <div class="prep-topbar">
+    <button class="prep-back" onclick="exitPrep()">← 返回课表</button>
+    <div class="prep-info" id="prepInfo"></div>
+    <button class="btn-finish" onclick="finishPrep()">✅ 完成备课</button>
+  </div>
+  <div class="prep-body">
+    <div class="prep-left">
+      <div class="pl-tabs">
+        <div class="pl-tab on" onclick="switchTab(this)">我的资料</div>
+        <div class="pl-tab" onclick="switchTab(this)">校本资料</div>
+      </div>
+      <div class="pl-toolbar">
+        <input class="pl-search" placeholder="搜索资料名称…" />
+        <button class="pl-filter">📂 学科 ▾</button>
+        <button class="pl-filter">🔽 筛选(10)</button>
+      </div>
+      <div class="pl-breadcrumb" id="plBreadcrumb"><span class="pl-bc-item">个人云盘</span></div>
+      <div class="pl-list" id="plList"></div>
+    </div>
+    <div class="prep-right">
+      <div class="pr-header">
+        <div class="pr-title">已添加资料</div>
+        <div class="pr-count" id="prCount">(0)</div>
+      </div>
+      <div class="pr-list" id="prList"></div>
+      <div class="pr-footer">
+        <div class="pr-footer-count">已添加资料: <b id="prFooterN">0</b> 个</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Unsaved Confirm -->
+<div class="overlay" id="unsavedOverlay">
+  <div class="confirm-dialog" onclick="event.stopPropagation()">
+    <span class="cd-icon">💾</span>
+    <div class="cd-title">有未保存的变动</div>
+    <div class="cd-desc">备课内容已修改但尚未保存，确定退出吗？</div>
+    <div class="cd-actions">
+      <button class="btn-cd-cancel" onclick="closeUnsaved()">继续备课</button>
+      <button class="btn-save" onclick="closeUnsaved();closePrepForce()" style="background:var(--text-3)">不保存，退出</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ================================================================
+   Data
+   ================================================================ */
+const LESSONS=[
+  {id:1,time:'16:08-17:08',room:'老吴测试专用教室',cls:'老吴测试',subj:'语文',status:'ongoing',prepped:true},
+  {id:2,time:'17:08-19:00',room:'老吴测试专用教室',cls:'老吴物理',subj:'语文',status:'pending',prepped:false},
+  {id:3,time:'19:30-20:30',room:'老吴测试专用教室',cls:'老吴测试',subj:'数学',status:'pending',prepped:true},
+];
+const CLASSES=['老吴测试','老吴物理','高一(1)班','高一(2)班','高二实验班'];
+const ROOMS=['老吴测试专用教室(2022)','多媒体教室A','多媒体教室B','实验室301'];
+const DATES=['2026-04-08','2026-04-09','2026-04-10','2026-04-11','2026-04-12'];
+const TIMES=['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00'];
+
+const FOLDERS=[
+  {id:'f1',name:'我的作业任务',icon:'📁',date:'2026-03-06',size:'48.49K'},
+  {id:'f2',name:'AI靶向提升',icon:'📁',date:'2026-01-23',size:'80.17K'},
+  {id:'f3',name:'课堂习题',icon:'📁',date:'2026-01-08',size:'9.13M'},
+  {id:'f4',name:'练习题',icon:'📁',date:'2025-12-11',size:'9.13M'},
+  {id:'f5',name:'试题',icon:'📁',date:'2025-07-03',size:'31.54K'},
+];
+const FILES=[
+  {id:'r1',name:'未命名课件',type:'课件',icon:'📗',date:'6天前',size:'242.65K',ok:true},
+  {id:'r2',name:'未命名课件',type:'课件',icon:'📗',date:'2026-03-06',size:'10.1K',ok:true},
+  {id:'r3',name:'解答复合',type:'课件',icon:'📗',date:'2026-03-06',size:'1.17M',ok:true},
+  {id:'r4',name:'未命名课件',type:'课件',icon:'📗',date:'2026-03-06',size:'17.35K',ok:true},
+  {id:'r5',name:'未命名课件',type:'课件',icon:'📗',date:'2026-03-06',size:'25.92K',ok:true},
+  {id:'r6',name:'数学期中复习',type:'课件',icon:'📗',date:'2026-02-20',size:'3.2M',ok:true},
+  {id:'r7',name:'古文鉴赏PPT',type:'课件',icon:'📗',date:'2026-03-15',size:'5.8M',ok:true},
+  {id:'r8',name:'实验操作视频',type:'视频',icon:'🎬',date:'2026-01-12',size:'128M',ok:true},
+];
+const SUBFILES=[
+  {id:'sf1',name:'第一单元练习',type:'课件',icon:'📗',date:'2026-03-01',size:'1.5M',ok:true},
+  {id:'sf2',name:'第二单元练习',type:'课件',icon:'📗',date:'2026-03-05',size:'2.1M',ok:true},
+  {id:'sf3',name:'综合测试题',type:'课件',icon:'📗',date:'2026-03-10',size:'0.8M',ok:true},
+];
+const ALL_FILES=[...FILES,...SUBFILES];
+
+/* ================================================================
+   State
+   ================================================================ */
+let S={editId:null,currentPicker:null,pickerSel:null,fClass:'',fRoom:'',fDate:'2026-04-09',fTimeS:'16:10',fTimeE:'17:10',boundRes:new Set(),prepDirty:false,inSub:false,prepId:null};
+
+/* ================================================================
+   Render Lessons
+   ================================================================ */
+function renderLessons(){
+  const box=document.getElementById('lessonList');
+  if(!LESSONS.length){box.innerHTML='<div class="empty-state"><span class="ei">📅</span>今日暂无课节<br>点击右上角「新建课节」创建</div>';return;}
+  box.innerHTML=LESSONS.map(l=>{
+    const sm={ongoing:{label:'进行中',cls:'ongoing',ic:'blue',bc:'border-blue'},pending:{label:'未开课',cls:'pending',ic:'orange',bc:'border-orange'},done:{label:'已结束',cls:'done',ic:'gray',bc:'border-gray'}};
+    const s=sm[l.status];
+    let act='';
+    if(l.status==='ongoing') act=`<button class="btn-go" onclick="toast('进入上课页面')">去上课</button>`;
+    else if(l.status==='pending'){
+      const pl=l.prepped?'修改备课':'备课';
+      act=`<button class="btn-prep" onclick="openPrep(${l.id})">${pl}</button><button class="btn-more" onclick="openSheet(${l.id})">⋮</button>`;
+    }
+    const pt=l.prepped&&l.status==='pending'?'<span class="lc-tag prepped">已备课</span>':'';
+    return `<div class="lesson-card ${s.bc}">
+      <div class="lc-icon ${s.ic}">📅</div>
+      <div class="lc-info">
+        <div class="lc-time">${l.time} &nbsp;${l.room}</div>
+        <div class="lc-detail"><span>${l.cls} · ${l.subj}</span><span class="lc-tag ${s.cls}">${s.label}</span>${pt}</div>
+      </div>
+      <div class="lc-actions">${act}</div>
+    </div>`;
+  }).join('');
+}
+
+function selDay(el){document.querySelectorAll('.ws-day').forEach(d=>d.classList.remove('sel'));el.classList.add('sel');}
+function navTo(el){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));el.classList.add('on');toast(el.textContent.trim());}
+
+/* ================================================================
+   Create/Edit Modal
+   ================================================================ */
+function openCreateModal(){
+  S.editId=null;
+  document.getElementById('modalTitle').textContent='创建课节';
+  document.getElementById('fClass').classList.remove('disabled');
+  S.fClass='';S.fRoom='';S.fDate='2026-04-09';S.fTimeS='16:10';S.fTimeE='17:10';
+  document.getElementById('fClassVal').textContent='请选择班级';
+  document.getElementById('fRoomVal').textContent='请选择教室';
+  document.getElementById('fDateVal').textContent='2026-04-09';
+  document.getElementById('fTimeS').textContent='16:10';
+  document.getElementById('fTimeE').textContent='17:10';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function openEditModal(){
+  const l=LESSONS.find(x=>x.id===S.editId);if(!l)return;
+  document.getElementById('modalTitle').textContent='编辑课节';
+  document.getElementById('fClass').classList.add('disabled');
+  S.fClass=l.cls;S.fRoom=l.room;S.fDate='2026-04-09';
+  const[ts,te]=l.time.split('-');S.fTimeS=ts;S.fTimeE=te;
+  document.getElementById('fClassVal').textContent=l.cls;
+  document.getElementById('fRoomVal').textContent=l.room;
+  document.getElementById('fDateVal').textContent='2026-04-09';
+  document.getElementById('fTimeS').textContent=ts;
+  document.getElementById('fTimeE').textContent=te;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
+function saveLesson(){
+  if(!S.fClass&&!S.editId){toast('请选择班级');return;}
+  const btn=document.getElementById('btnSave');btn.disabled=true;btn.textContent='保存中…';
+  setTimeout(()=>{
+    btn.disabled=false;btn.textContent='保 存';
+    if(!S.editId){
+      LESSONS.push({id:Date.now(),time:`${S.fTimeS}-${S.fTimeE}`,room:S.fRoom||'老吴测试专用教室(2022)',cls:S.fClass,subj:'语文',status:'pending',prepped:false});
+    }else{
+      const l=LESSONS.find(x=>x.id===S.editId);
+      if(l){l.room=S.fRoom||l.room;l.time=`${S.fTimeS}-${S.fTimeE}`;}
+    }
+    closeModal();renderLessons();toast('✅ 保存成功');
+  },800);
+}
+
+/* ================================================================
+   Picker
+   ================================================================ */
+function openPicker(type){
+  if(type==='class'&&S.editId)return;
+  S.currentPicker=type;S.pickerSel=null;
+  const titles={class:'选择班级',room:'选择教室',date:'选择日期',timeStart:'选择开始时间',timeEnd:'选择结束时间'};
+  document.getElementById('pickerTitle').textContent=titles[type];
+  let items=type==='class'?CLASSES:type==='room'?ROOMS:type==='date'?DATES:TIMES;
+  const cur={class:S.fClass,room:S.fRoom,date:S.fDate,timeStart:S.fTimeS,timeEnd:S.fTimeE}[type];
+  document.getElementById('pickerBody').innerHTML=items.map(it=>`<div class="picker-option ${it===cur?'sel':''}" onclick="pickOpt(this,'${it}')">${it}</div>`).join('');
+  document.getElementById('pickerOverlay').classList.add('show');
+}
+function pickOpt(el,val){document.querySelectorAll('.picker-option').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');S.pickerSel=val;}
+function confirmPicker(){
+  const v=S.pickerSel;if(!v){closePicker();return;}
+  const t=S.currentPicker;
+  if(t==='class'){S.fClass=v;document.getElementById('fClassVal').textContent=v;}
+  else if(t==='room'){S.fRoom=v;document.getElementById('fRoomVal').textContent=v;}
+  else if(t==='date'){S.fDate=v;document.getElementById('fDateVal').textContent=v;}
+  else if(t==='timeStart'){S.fTimeS=v;document.getElementById('fTimeS').textContent=v;}
+  else if(t==='timeEnd'){S.fTimeE=v;document.getElementById('fTimeE').textContent=v;}
+  closePicker();
+}
+function closePicker(){document.getElementById('pickerOverlay').classList.remove('show');}
+
+/* ================================================================
+   Bottom Sheet & Delete
+   ================================================================ */
+function openSheet(id){S.editId=id;document.getElementById('sheetOverlay').classList.add('show');}
+function closeSheet(){document.getElementById('sheetOverlay').classList.remove('show');}
+let delTimer=null;
+function openDeleteConfirm(){
+  document.getElementById('deleteOverlay').classList.add('show');
+  const btn=document.getElementById('btnDelConfirm');btn.disabled=true;let sec=3;
+  btn.textContent=`确认删除 (${sec}s)`;
+  delTimer=setInterval(()=>{sec--;if(sec<=0){clearInterval(delTimer);btn.disabled=false;btn.textContent='确认删除';}else btn.textContent=`确认删除 (${sec}s)`;},1000);
+}
+function closeDelete(){document.getElementById('deleteOverlay').classList.remove('show');if(delTimer)clearInterval(delTimer);}
+function doDelete(){
+  const i=LESSONS.findIndex(l=>l.id===S.editId);if(i>=0)LESSONS.splice(i,1);
+  closeDelete();renderLessons();toast('✅ 已删除');
+}
+
+/* ================================================================
+   备课工作台
+   ================================================================ */
+function openPrep(id){
+  S.prepId=id;const l=LESSONS.find(x=>x.id===id);
+  if(l) document.getElementById('prepInfo').innerHTML=
+    `<b>${l.cls} · ${l.subj}</b><span class="sep">|</span>2026-04-09<span class="sep">|</span>${l.time}<span class="sep">|</span>${l.room}`;
+  S.boundRes=new Set();S.prepDirty=false;S.inSub=false;
+  if(l&&l.prepped){S.boundRes.add('r1');S.boundRes.add('r3');}
+  renderFiles();renderBound();
+  document.getElementById('prepPage').classList.add('show');
+}
+function exitPrep(){if(S.prepDirty){document.getElementById('unsavedOverlay').classList.add('show');return;}closePrepForce();}
+function closePrepForce(){document.getElementById('prepPage').classList.remove('show');}
+function closeUnsaved(){document.getElementById('unsavedOverlay').classList.remove('show');}
+function finishPrep(){
+  const btn=document.querySelector('.btn-finish');btn.textContent='保存中…';btn.disabled=true;
+  setTimeout(()=>{
+    btn.textContent='✅ 完成备课';btn.disabled=false;
+    const l=LESSONS.find(x=>x.id===S.prepId);if(l)l.prepped=true;
+    S.prepDirty=false;closePrepForce();renderLessons();toast('✅ 备课已保存');
+  },800);
+}
+function switchTab(el){document.querySelectorAll('.pl-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');S.inSub=false;renderFiles();}
+
+function renderFiles(){
+  const bc=document.getElementById('plBreadcrumb'),list=document.getElementById('plList');
+  if(S.inSub){
+    bc.innerHTML=`<span class="pl-bc-item" onclick="navDir(-1)">个人云盘</span><span class="pl-bc-sep">/</span><span class="pl-bc-item">${S.inSub}</span>`;
+    list.innerHTML=SUBFILES.map(f=>{const ck=S.boundRes.has(f.id);return`<div class="pl-row ${ck?'checked':''}" onclick="togFile('${f.id}')"><div class="pl-chk">${ck?'✓':''}</div><span class="pl-icon">${f.icon}</span><span class="pl-name">${f.name}</span><span class="pl-status">${f.ok?'✅':''}</span><span class="pl-type">${f.type}</span><span class="pl-meta">${f.date}</span><span class="pl-size">${f.size}</span></div>`;}).join('');
+  }else{
+    bc.innerHTML='<span class="pl-bc-item">个人云盘</span>';
+    let h=FOLDERS.map(f=>`<div class="pl-row folder" onclick="navDir('${f.name}')"><div class="pl-chk"></div><span class="pl-icon">${f.icon}</span><span class="pl-name">${f.name}</span><span class="pl-type">文件夹</span><span class="pl-meta">${f.date}</span><span class="pl-size">${f.size}</span><span class="pl-go">▸</span></div>`).join('');
+    h+=FILES.map(f=>{const ck=S.boundRes.has(f.id);return`<div class="pl-row ${ck?'checked':''}" onclick="togFile('${f.id}')"><div class="pl-chk">${ck?'✓':''}</div><span class="pl-icon">${f.icon}</span><span class="pl-name">${f.name}</span><span class="pl-status">${f.ok?'✅':''}</span><span class="pl-type">${f.type}</span><span class="pl-meta">${f.date}</span><span class="pl-size">${f.size}</span></div>`;}).join('');
+    list.innerHTML=h;
+  }
+}
+function navDir(n){S.inSub=n===-1?false:n;renderFiles();}
+function togFile(id){S.boundRes.has(id)?S.boundRes.delete(id):S.boundRes.add(id);S.prepDirty=true;renderFiles();renderBound();}
+function unbind(id){S.boundRes.delete(id);S.prepDirty=true;renderFiles();renderBound();}
+
+function renderBound(){
+  const bound=[...S.boundRes].map(id=>ALL_FILES.find(f=>f.id===id)).filter(Boolean);
+  document.getElementById('prCount').textContent=`(${bound.length})`;
+  document.getElementById('prFooterN').textContent=bound.length;
+  const list=document.getElementById('prList');
+  if(!bound.length){list.innerHTML='<div class="pr-empty"><span class="pei">📋</span>暂无已绑定资料<br>点击左侧文件即可添加</div>';return;}
+  list.innerHTML=bound.map(f=>`<div class="pr-item"><span class="pr-item-icon">${f.icon}</span><div class="pr-item-info"><div class="pr-item-name">${f.name}</div><div class="pr-item-meta">${f.type} · ${f.size}</div></div><button class="btn-unbind" onclick="unbind('${f.id}')">✕ 解绑</button></div>`).join('');
+}
+
+/* ================================================================
+   Toast & Init
+   ================================================================ */
+function toast(msg){const w=document.getElementById('toastWrap'),t=document.createElement('div');t.className='toast';t.innerHTML=msg;w.appendChild(t);setTimeout(()=>t.remove(),2500);}
+renderLessons();
+</script>
+</body>
+</html>
