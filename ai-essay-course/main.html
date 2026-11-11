@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>班课管理</title>
+<!-- 班课主系统（与 src/main.js 相同的样式加载顺序：基础样式 -> 项目自定义的 Element 主题 -> 布局与页面样式） -->
+<link rel="stylesheet" href="assets/src/css/index.css">
+<link rel="stylesheet" href="assets/src/css/theme/theme/index.css">
+<link rel="stylesheet" href="css/main-shell.css">
+<link rel="stylesheet" href="css/main-workbench.css">
+<link rel="stylesheet" href="css/main-ai.css">
+<link rel="stylesheet" href="css/main-wechat.css">
+<link rel="stylesheet" href="css/main-summary.css">
+<link rel="stylesheet" href="css/main-record.css">
+<style>[v-cloak]{display:none}</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="vendor/vue.min.js"></script>
+<script src="vendor/element-ui.js"></script>
+<script>
+Vue.use(ELEMENT);
+/* 所有组件通过 this.ctx 读取父页面的状态：ctx = { S 状态, E 作文列表, D 常量, H 工具函数 }；
+   通过 this.$act('动作名', 载荷) 调用父页面的动作。父页面每次变更后会调用 window.__sync，驱动重新渲染。 */
+Vue.mixin({computed:{ctx(){ void this.$root.tick; return window.__ctx || {S:{},E:[],STU:[],D:{}}; }}});
+/* ctx：{S 状态, E 作文列表, STU 学员记录, D 常量}（结构见 demo v2 契约） */
+Vue.prototype.$act = function(n,d){ parent.postMessage({type:'act',name:n,payload:d||{}},'*'); };
+</script>
+<script src="scenes/main-shell.js"></script>
+<script src="scenes/main-workbench.js"></script>
+<script src="scenes/main-ai.js"></script>
+<script src="scenes/main-record.js"></script>
+<script src="scenes/main-wechat.js"></script>
+<script src="scenes/main-summary.js"></script>
+<script>
+const root = new Vue({
+  el:'#app', data:{tick:0},
+  /* 作文批改助手（scene==='essay'）打开期间 main 页面保持存活（iframe 只是被隐藏），回来后浮层选择/页签/筛选都还在；换视角/重置靠 epoch 重建 */
+  template:`<app-shell v-if="ctx.S.scene" :key="ctx.S.epoch"><scene-workbench/></app-shell>`
+});
+window.addEventListener('message',e=>{const m=e.data||{}; if(m.type==='state'){window.__ctx=m.snap;root.tick++} if(m.type==='toast'&&window.__toast)window.__toast(m.msg,m.kind); if(m.type==='clearToasts')document.querySelectorAll('.el-message').forEach(n=>n.remove())});
+parent.postMessage({type:'ready'},'*');
+window.__toast = function(msg,type){ root.$message({message:msg, type:type||'info'}); };
+</script>
+</body>
+</html>

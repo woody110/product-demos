@@ -1,0 +1,563 @@
+/* =====================================================================
+ * main-shell.css —— 班课主系统外壳（app-shell）+ 小铃铛面板
+ * 逐字取自：
+ *   /tmp/demo-spec/shell/style-layout.css   （Header / 铃铛触发器 / 外显按钮 / 待办 / Menu / Breadcrumb / Layout / App / handle-item）
+ *   /tmp/demo-spec/bell/style-notice.css    （[2] 面板外壳 .messageTip-box*、[3] 列表与卡片 .messageTip-box-list*）
+ * 仅有的改动：
+ *   1) url('../../../src/assets/img/…') 改为 url('../assets/src/img/…')（本文件在 demo/css/ 下，比规格里多一层目录）；
+ *   2) style-notice.css 里与 style-layout.css 完全重复的块（顶栏容器、.user-message、.normal-notice、.todo-message）不再重复写入。
+ * 加载顺序：src/assets/css/index.css -> 项目 Element 主题 -> 本文件（见 main.html）。
+ * ===================================================================== */
+
+/*
+ * style-layout.css —— 班课主系统外壳样式（Header / Menu / Breadcrumb / Layout 内容区 / App）逐块展开版
+ *
+ * 来源（均为仓库 /Users/woody/Documents/产品需求/班课/class-manage-源码 下）：
+ *   [1] src/components/layout/Header.vue          <style lang="less" scoped>
+ *   [2] src/components/layout/Notice.vue          <style lang="less" scoped> 中的 .user-message（顶栏小铃铛触发器）
+ *       src/components/layout/components/normalNotice.vue  <style lang="less" scoped>（顶栏左侧快捷按钮）
+ *       src/components/layout/Todo.vue            <style lang="less" scoped> 中的 .todo-message（顶栏待办触发器）
+ *       （通知面板/待办面板内部样式不在本文件，见 /tmp/demo-spec/bell/）
+ *   [3] src/components/layout/Menu.vue            3 个 <style>：scoped / 非 scoped / scoped（按原文件顺序）
+ *   [4] src/components/layout/Breadcrumb.vue      <style lang="less" scoped>
+ *   [5] src/components/layout/Index.vue           <style lang="less">（非 scoped，Layout 内容区）
+ *   [6] src/App.vue                               <style lang="less">（非 scoped）
+ *   [7] src/components/layout/handle-item.vue     <style lang="stylus" scoped>（用 stylus 编译）
+ *
+ * 处理方式：
+ *   - less/stylus 已用仓库 node_modules/.bin/lessc / stylus 只读编译；嵌套展开为后代选择器；本文件无 less 变量需要替换。
+ *   - 去掉 scoped（无 data-v 属性选择器）。注意：真实站点里 scoped 规则会多一个 [data-v-xxx] 属性选择器，特异性比这里高 (0,1,0)。
+ *     demo 必须让本文件在 src/assets/css/theme/theme/index.css 之后加载（同特异性下后者覆盖，例如 .el-menu{border:none}、.el-menu-item:hover 的背景）；
+ *     已在 /tmp/demo-spec/shell/reference-shell-render.html 里实测这些覆盖都生效。
+ *   - lessc 把 rgba(r,g,b,1) 自动压成了 #hex，已手工还原为源码原写法（数值等价）；其余数值未改。
+ *   - url('../../assets/img/...') 原相对 src/components/layout/，已改为 demo 目录(prd/ai-essay-course/demo/)视角的 ../../../src/assets/img/...
+ *   - 加载顺序（与 src/main.js 一致）：src/assets/css/index.css -> src/assets/css/theme/theme/index.css -> 本文件
+ *   - 【泄漏提醒】[3] Menu.vue 里这些规则在真实站点是 scoped 的，只作用于侧栏自己的元素；去掉 scoped 后变成全局：
+ *       .el-menu-item / .el-menu-item.is-active / .el-menu-item:hover / .el-menu / .el-menu--collapse / .el-menu-vertical /
+ *       .el-none--collapse .is-active / .icon-box / .noneSpan / .menuCollapse / .noMenuCollapse / .no-include-menu-item
+ *     若 demo 页面里除侧栏外还用到别的 el-menu 或 .icon-box，请给这些选择器加前缀 ".sc_menu "（先例：demo/ai-mark-filter/index.html 就是这么做的）。
+ *     .menuCollapse / .noMenuCollapse 本就挂在 .sc_menu 根上，不要加前缀（会变成后代选择器而失效）。
+ */
+
+/* ============================================================
+ * [1] src/components/layout/Header.vue （scoped，已去 scoped）
+ * ============================================================ */
+.layout-header-content {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 60px;
+  background-color: #fff;
+  z-index: 101;
+  display: flex;
+  align-items: center;
+  padding: 0 16px 0px 0px;
+}
+.layout-header-content .content {
+  display: flex;
+  flex: 1;
+}
+.layout-header-content .content .logo {
+  font-size: 18px;
+  color: #41414D;
+  line-height: 36px;
+  margin-left: 12px;
+}
+.layout-header-content .content .logo-box {
+  min-width: 60px;
+  line-height: 60px;
+  text-align: center;
+  height: 60px;
+}
+.layout-header-content .content .nocol-logo-box {
+  margin-left: 16px;
+}
+.layout-header-content .content .col-logo-box {
+  background: rgba(255, 95, 46, 1);
+}
+.layout-header-content .content .handle-icon {
+  display: flex;
+  align-items: center;
+  margin-left: 26px;
+  cursor: pointer;
+}
+.layout-header-content .content .lingxi-ai-icon {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+  cursor: pointer;
+}
+.layout-header-content .content .lingxi-ai-icon img {
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+}
+.layout-header-content .user-profile {
+  width: 48px;
+  height: 48px;
+  margin-right: 18px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.layout-header-content .user-profile .profile-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.layout-header-content .user-profile .name-substitute {
+  display: block;
+  width: 48px;
+  height: 48px;
+  line-height: 48px;
+  text-align: center;
+  color: #ffffff;
+  background-color: #FF5F2E;
+}
+.layout-header-content .user-message {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  left: -32px;
+  top: 2px;
+}
+.layout-header-content .user-message img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.layout-header-content .user-name {
+  cursor: pointer;
+}
+.layout-header-content .user-name .el-dropdown {
+  color: #41414D;
+}
+
+/* ============================================================
+ * [2a] src/components/layout/Notice.vue 中的 .user-message（小铃铛触发器；scoped）
+ *      注意：Header.vue 自己也写了一份 .user-message，但那份是 Header 的 scoped，
+ *      对 Notice 模板里的 el-badge 并不生效(无 Header 的 data-v)；真正生效的是 Notice.vue 这份。
+ *      两份数值完全相同（width/height 28，left -32px，top 2px），Notice 版多了 cursor:pointer。
+ * ============================================================ */
+.user-message {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  left: -32px;
+  top: 2px;
+  cursor: pointer;
+}
+.user-message img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* [2b] src/components/layout/components/normalNotice.vue（顶栏左侧"快捷按钮"；scoped） */
+.normal-notice {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 50px;
+}
+.normal-notice .notice-buttons {
+  display: flex;
+  gap: 8px;
+}
+.normal-notice .notice-buttons .el-button {
+  position: relative;
+}
+.normal-notice .notice-buttons .notice-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+}
+
+/* [2c] src/components/layout/Todo.vue 中的 .todo-message（待办触发器；scoped；Todo.vue 第 699 行起的那个 <style>） */
+.todo-message {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  left: -16px;
+  top: 2px;
+  cursor: pointer;
+}
+.todo-message img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================================
+ * [3] src/components/layout/Menu.vue
+ * ============================================================ */
+/* ---- Menu.vue 第 1 个 <style lang="less" scoped> ---- */
+.el-menu-item.is-active {
+  outline: 0;
+  color: #FF5F2E;
+  background-color: rgba(248,248,250,1);
+  background-image: url('../assets/src/img/menu-active.svg');
+}
+.el-menu-item:hover {
+  outline: 0;
+  background-color: rgba(248,248,250,1);
+}
+
+/* ---- Menu.vue 第 2 个 <style lang="less">（非 scoped） ---- */
+.el-submenu .is-opened {
+  overflow: auto;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+.el-submenu .is-opened::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+
+/* ---- Menu.vue 第 3 个 <style lang="less" scoped> ---- */
+.icon-box {
+  width: 18px;
+  height: 18px;
+}
+.sc_menu {
+  width: 240px;
+  background: #ffffff;
+  min-width: 50px;
+  position: fixed;
+  left: 0;
+  top: 60px;
+  bottom: 0;
+  z-index: 100;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  transition: width 0.3s;
+}
+.sc_menu::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+.noneSpan {
+  display: none;
+}
+.menuCollapse {
+  overflow: auto;
+  width: 60px !important;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+.menuCollapse::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+.noMenuCollapse {
+  width: 200px !important;
+}
+.noMenuCollapse::-webkit-scrollbar {
+  width: 4px;
+  /*高宽分别对应横竖滚动条的尺寸*/
+}
+.el-menu-vertical-demo {
+  overflow: auto;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+.el-menu-vertical-demo::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+.el-menu-vertical-demo .el-menu-item,
+.el-menu-vertical-demo span {
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+.el-menu--collapse {
+  width: 60px;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+.el-menu--collapse::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+.el-none--collapse .is-active {
+  background-image: url('../assets/src/img/over-active.svg');
+  background-size: 100% 100%;
+}
+.el-menu {
+  border: none;
+}
+.el-menu-vertical {
+  min-height: 100%;
+}
+.el-menu-item {
+  padding-left: 45px !important;
+}
+.no-include-menu-item {
+  padding-left: 20px !important;
+}
+.submenu-scroll-container {
+  max-height: 500px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+.submenu-scroll-container::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+
+/* ============================================================
+ * [4] src/components/layout/Breadcrumb.vue （scoped，已去 scoped）
+ * ============================================================ */
+.igetcool-breadcrumb {
+  position: fixed;
+  font-size: 16px;
+  z-index: 9;
+  padding-left: 20px;
+  left: 200px;
+  right: 0;
+  top: 60px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  background-color: rgba(245,245,250,1);
+}
+
+/* ============================================================
+ * [5] src/components/layout/Index.vue （Layout 主框架，非 scoped）
+ * ============================================================ */
+.router-view-content {
+  padding-left: 200px;
+  padding-top: 112px;
+  min-height: 100%;
+  height: 100%;
+}
+.router-view-container {
+  background:rgba(245,245,250,1);
+  padding: 0px 23px 22px;
+  min-height: 100%;
+}
+.router-view-content,
+.igetcool-breadcrumb {
+  transition: all 0.3s;
+}
+.menuCollapse + .igetcool-breadcrumb {
+  left: 60px;
+}
+.menuCollapse + .igetcool-breadcrumb + .router-view-content {
+  padding-left: 60px;
+}
+
+/* ============================================================
+ * [6] src/App.vue （非 scoped）
+ * ============================================================ */
+/* @import url('//at.alicdn.com/t/font_1578812_tmtp9rfgiwf.css');  <- 原文件第一行：阿里 iconfont 远程字体(font_1578812)，离线 demo 无法加载，外壳(Header/Menu/Breadcrumb)不使用它 */
+#app {
+  height: 100%;
+  min-height: 100%;
+}
+.app-container {
+  min-height: 100%;
+  height: 100%;
+}
+.refund-tool-styl {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+.refund-tool-styl .popper__arrow {
+  opacity: 0.9;
+}
+#ai-skills {
+  position: fixed;
+  z-index: 999999;
+}
+
+/* ============================================================
+ * [7] src/components/layout/handle-item.vue （stylus scoped；表单卡片 .handle-item，基础规则在 src/assets/css/index.css）
+ * ============================================================ */
+.handle-item {
+  padding: 20px;
+  margin-bottom: 10px;
+}
+.handle-tag {
+  top: 24px;
+}
+.handle-title {
+  margin-bottom: 20px;
+}
+
+
+/* ============================================================
+ * 以下取自 /tmp/demo-spec/bell/style-notice.css
+ * ============================================================ */
+/* ---------------------------------------------------------------------
+ * [2] Notice.vue（scoped）
+ * --------------------------------------------------------------------- */
+.messageTip-box {
+  padding: 10px 10px;
+  height: 450px;
+}
+.messageTip-box .messageTip-box-header {
+  height: 30px;
+}
+.messageTip-box .messageTip-box-bottom {
+  height: 50px;
+  margin-top: 10px;
+  text-align: left;
+  line-height: 50px;
+}
+/* 原文（scoped）：
+ * .el-icon-close {
+ *   font-size: 12px;
+ *   color: #5a5e66;
+ *   cursor: pointer;
+ * }
+ * 实际只作用于 Notice.vue 模板里自己写的两个 <i class="el-icon-close">（popover 头、dialog 头），
+ * 等价容器前缀：.messageTip-box-header
+ * 注意：popover 头的 <i> 带内联 style="cursor:pointer;font-size:16px;"，内联优先 → popover 里实际是 16px；dialog 头的 <i> 只有 cursor 内联 → 12px。
+ */
+.messageTip-box-header .el-icon-close {
+  font-size: 12px;
+  color: #5a5e66;
+  cursor: pointer;
+}
+.messageTip-box-header .el-icon-close:hover {
+  color: #FF5F2E;
+}
+
+/* ---------------------------------------------------------------------
+ * [3] NoticeMessageList.vue（scoped）—— 列表区 + 所有卡片
+ * --------------------------------------------------------------------- */
+.messageTip-box-list {
+  height: 300px;
+  overflow-y: auto;
+  border-bottom: 3px solid #E4E7ED;
+}
+/* —— 领读工单提醒（campOrder）卡片 —— */
+.messageTip-box-list .camp-messageTip-box-item {
+  text-align: left;
+  min-height: 100px;
+  background: #F2F6FC;
+  margin-top: 5px;
+  border-radius: 5px;
+}
+.messageTip-box-list .camp-messageTip-box-item .camp-messageTip-box-details {
+  padding: 10px;
+}
+.messageTip-box-list .camp-messageTip-box-item .camp-messageTip-box-details .details-top {
+  display: flex;
+  justify-content: space-between;
+}
+.messageTip-box-list .camp-messageTip-box-item .camp-messageTip-box-details .details-top .details-top-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #5a5e66;
+}
+.messageTip-box-list .camp-messageTip-box-item .camp-messageTip-box-details .details-content {
+  line-height: 30px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: wrap;
+  text-overflow: ellipsis;
+}
+.messageTip-box-list .camp-messageTip-box-item .camp-messageTip-box-details .details-time {
+  display: flex;
+  justify-content: flex-end;
+}
+.messageTip-box-list .camp-messageTip-box-item:hover {
+  background: #EBEEF5;
+  color: #db8230;
+}
+/* —— 通用卡片（素养类通知：除 campOrder 以外全部） —— */
+.messageTip-box-list .messageTip-box-item {
+  min-height: 50px;
+  background: #f5f5fa;
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  border-radius: 5px;
+}
+.messageTip-box-list .messageTip-box-item .messageTip-box-details {
+  padding: 10px;
+}
+.messageTip-box-list .messageTip-box-item .messageTip-box-details .messageTip-box-details-item {
+  line-height: 30px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: wrap;
+  text-overflow: ellipsis;
+}
+.messageTip-box-list .messageTip-box-item .messageTip-box-details .messageTip-box-details-item .userName-hidden {
+  height: 30px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.messageTip-box-list .messageTip-box-item .messageTip-box-details .messageTip-box-details-item.notice-title {
+  font-size: 16px;
+  color: black;
+}
+.messageTip-box-list .messageTip-box-item .messageTip-box-details .messageTip-box-details-item.notice-title.is-read {
+  color: #D1D1D1;
+}
+.messageTip-box-list .messageTip-box-item .messageTip-box-details .messageTip-box-details-item.notice-footer {
+  display: flex;
+  position: relative;
+}
+.messageTip-box-list .messageTip-box-item .messageTip-box-details .messageTip-box-details-item.notice-footer .notice-time {
+  margin-right: 10px;
+  height: 30px;
+}
+.messageTip-box-list .messageTip-box-item .messageTip-box-details .messageTip-box-details-item.notice-footer .notice-detail-btn {
+  color: #FF5F2E;
+  font-size: 13px;
+  position: absolute;
+  right: 5px;
+}
+.messageTip-box-list .messageTip-box-item .messageTip-box-details .messageTip-box-details-item .notice-inline-gap {
+  padding-right: 10px;
+}
+.messageTip-box-list .messageTip-box-item:hover {
+  background: #FFF1E5;
+}
+/* 原文（scoped）：
+ * .el-icon-close {
+ *   font-size: 12px;
+ *   color: #5a5e66;
+ *   cursor: pointer;
+ * }
+ * 实际只作用于 NoticeMessageList.vue 模板里自己写的那个 <i class="el-icon-close">（领读工单卡片状态行里的"×"，仅"未读消息"视图显示），
+ * 等价容器前缀：.details-top-status
+ */
+.details-top-status .el-icon-close {
+  font-size: 12px;
+  color: #5a5e66;
+  cursor: pointer;
+}
+.details-top-status .el-icon-close:hover {
+  color: #FF5F2E;
+}
+
+
+
+/* ====== 新增（产品方案） ====== */
+/* 作文求助的外显按钮、页签、卡片全部复用上面的真实 class（.normal-notice / .el-tabs__item / .messageTip-box-item…），
+   没有新增视觉样式，所以这里没有 x- 前缀的规则。 */

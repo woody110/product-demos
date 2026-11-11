@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>AI 作文课 · 班课侧交互原型 v2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  结构：
+  - main.html  班课主系统（Vue 2 + Element UI 2.14 + 项目真实主题）：一站式工作台 + 新增的 AI 作文课工作台（学员列表 + 两个抽屉）
+  - essay.html 作文批改助手（独立应用，真实是新页签打开；Element Plus 样式 + 项目 essay 样式）：只剩批改详情（含图片作文的识别校对）
+  - 本页只放"演示栏"，并持有全部数据与业务流程；两个 iframe 只负责渲染，动作通过 postMessage 回到这里。
+-->
+<style>
+html,body{margin:0;height:100%;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#11151d}
+#bar{position:fixed;top:0;left:0;right:0;height:44px;background:#1f2430;color:#fff;display:flex;align-items:center;gap:10px;padding:0 14px;z-index:10;font-size:13px;white-space:nowrap;overflow-x:auto}
+#bar b{font-size:14px;margin-right:4px}
+#bar button{font-family:inherit;cursor:pointer;font-size:13px}
+#bar .sc{background:#2d3444;border:1px solid #3d4558;color:#cfd6e6;border-radius:6px;padding:5px 11px}
+#bar .sc.on{background:#ff5f2e;border-color:#ff5f2e;color:#fff}
+#bar .act{background:#3b82f6;border:0;color:#fff;border-radius:6px;padding:5px 10px}
+#bar .gh{background:transparent;border:1px solid #4a5268;color:#cfd6e6;border-radius:6px;padding:5px 10px}
+#bar .sp{flex:1}
+#bar .where{color:#93a0bb;font-size:12px}
+#bar .lab{color:#93a0bb;font-size:12px}
+iframe{position:fixed;top:44px;bottom:30px;left:0;width:100%;height:calc(100% - 74px);border:0;background:#fff;display:none}
+iframe.on{display:block}
+#note{position:fixed;left:0;right:0;bottom:0;height:30px;background:#11151d;color:#a9b4cc;font-size:12px;display:flex;align-items:center;padding:0 14px;z-index:10;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#guide{position:fixed;inset:44px 0 30px 0;background:#f5f5fa;z-index:20;overflow:auto;display:none}
+#guide.on{display:block}
+#guide .box{max-width:800px;margin:30px auto;background:#fff;border-radius:8px;padding:26px 32px;font-size:14px;color:#333}
+#guide h2{margin:0 0 10px}
+#guide li{line-height:2.1}
+#guide .kbd{background:#f3f4f6;border-radius:4px;padding:1px 6px;font-size:12px}
+#guide button{background:#ff5f2e;border:0;color:#fff;border-radius:4px;padding:9px 20px;font-size:14px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<iframe id="fm" src="main.html"></iframe>
+<iframe id="fe" src="essay.html"></iframe>
+<div id="guide"><div class="box"><h2>演示指引</h2>
+<p style="line-height:1.9;color:#666">这是产品方案 v2 的可点原型：页面结构、样式、文案取自班课与作文批改助手真实源码，数据是假的。「班课主系统」和「作文批改助手」是两个独立页面（真实环境里作文批改助手是新页签打开的应用）。推荐路线：</p>
+<ol>
+<li><b>切到 AI 作文课</b>：打开后是现有的一站式工作台。点右上角"王老师"那个筛选浮层，课程选「三年级下·AI作文课」，页面整体换成 AI 作文课工作台（7 个页签换成「学员列表」一个）。<b>浮层里的「班级」多选保留，默认全选</b>，改班级后列表和三张汇总卡片一起变。</li>
+<li><b>学员列表</b>：页面里的筛选只有「课节」「批改状态」「学生姓名」。把"批改状态"筛成"待批改"；「首次文字作文」是课上直接批完的，只有「查看」；「订正作文」是学生重写拍照提交的，也只有「查看」；批改入口在最右侧「操作」列的「批改」（没有待批的订正作文时置灰）。周八带"已退费"标签但照常可批。</li>
+<li><b>查看批改结果</b>：点张三「首次文字作文」的「查看」→ 抽屉里嵌学生端的批改结果预览页；点「订正作文」的「查看」→ 待批改，只展示学生提交的内容，有「去批改」。</li>
+<li><b>批改</b>：点张三行「操作」里的「批改」→ 新页签打开作文批改助手：先"文字识别 / 图片校对"，点开始批改后 AI 批改，进入批改页，点「完成批改」→ 点「关闭页签」回到班课，列表已刷新为已批改。</li>
+<li><b>学员档案里找旧年级作文</b>：顶部演示栏切到「李老师 · 四年级教辅」→ 浮层课程选「四年级上·AI作文课」→ 班级下拉里可多选 → 点<b>吴九</b>的姓名，页签条新开他的「学员档案」，默认就在「作文批改」页签（带"新"角标）→ 能看到他三年级《写日记》等作文：首次已批改、订正待批改 → 点订正那条的「批改」进作文批改助手完成批改 → 关闭页签回来，这条变成已批改，点「查看」看结果。工具栏的课程类型、年级、状态可以筛。</li>
+<li><b>现有工作台能力</b>：勾选学员后点「企微群发」；点「导出」导出当前筛选结果；点学员姓名或ID，在页签条里多开一个该学员的「学员档案」页签（可关闭，最多 5 个）。</li>
+<li><b>学情总结（V1.1）</b>：学员列表操作列点「学情总结」，页签条新开"学情总结·姓名"。页面有页头摘要（完课、订正状态、首次/订正 优良中）、上课留痕、能力变化曲线（截止到当前课节；点图例可显示/隐藏某项能力，鼠标停在圆点上看分数）。赵六一节没学，「学情总结」置灰；只学满 1 节的学员，能力变化显示"数据不足"。家长话术与发送暂时从总结页移出，待定入口。</li>
+<li><b>只读</b>：王老师视角下在浮层里把教辅换成"李老师"，课程选「四年级上·AI作文课」，点任意一行的「批改」，作文批改助手里保存修改、完成批改置灰（登录人不是所选教辅）。</li>
+</ol>
+<p><button onclick="A.hideGuide()">开始演示</button></p></div></div>
+<div id="note"></div>
+
+<script>
+/* ================= 数据 ================= */
+const TEACHERS = { wang:{name:'王老师', ad:'wang.lin', grade:'三年级'}, li:{name:'李老师', ad:'li.hua', grade:'四年级'} };
+const COURSES = {
+  formal3:{id:'c1', title:'三年级下·素养课', type:'formal', teacher:'wang'},
+  ai3:{id:'c2', title:'三年级下·AI作文课', type:'ai', teacher:'wang'},
+  formal4:{id:'c3', title:'四年级上·素养课', type:'formal', teacher:'li'},
+  ai4:{id:'c4', title:'四年级上·AI作文课', type:'ai', teacher:'li'}
+};
+/* 每门 AI 作文课共 8 节；open=已开课 */
+const LESSONS = {
+  ai3:['猜猜他是谁','我的好朋友','写日记','我最喜欢的动物','一次有趣的游戏','难忘的一天','我的家乡','我的心愿'].map((n,i)=>({id:'l'+(i+1),name:'第'+(i+1)+'课 '+n,open:i<3})),
+  ai4:['我的暑假','一次难忘的旅行','秋天的校园','我敬佩的人','一件小事','神奇的想象','我的课余生活','写给未来的信'].map((n,i)=>({id:'l'+(i+1),name:'第'+(i+1)+'课 '+n,open:i<2}))
+};
+/* 班级 → 教辅：浮层里班级下拉的选项 = 该课程下、该教辅名下的班级 */
+const CLASS_TEACHER = { '三年级(1)班':'wang','三年级(2)班':'wang','四年级(1)班':'li' };
+const TXT = {
+  '总评':'这篇作文紧扣题目，开头直接点题，一下子就让人知道你要写谁。选取的事例比较具体，能看出你观察得很仔细。如果结尾再呼应一下开头，整篇会更完整。',
+  '详细点评':'第一段：开门见山，交代了人物，很好。\n第二段：用“眼睛笑起来眯成一条缝”写外貌，生动；建议再补一个动作细节。\n第三段：事例清楚，但过程写得有点快，可以把“怎么帮助同学”写具体。\n第四段：结尾可以回到开头，呼应“他是谁”。',
+  '全文润色':'我们班有个“棋王”，书包里总装着一副小小的象棋。他笑起来，眼睛眯成一条缝，嘴角还藏着一个浅浅的酒窝。有一次，同桌的数学题怎么也做不出来，他悄悄把自己的草稿纸推过去，一步一步讲给同桌听。这就是我们班的棋王，一个爱下棋，也爱帮助同学的人。',
+  '诊断建议':'优势能力：观察细致，语言自然。\n待提升能力：详略安排、结尾呼应。\n生活中练习：每天用三句话描述一个熟悉的人。'
+};
+const PARAS = ['我们班有个“棋王”，书包里总装着一副小小的象棋。','他的眼睛笑起来眯成一条缝，嘴角还有一个浅浅的酒窝。','有一次，同桌的数学题不会做，他把自己的草稿纸推过去，一步一步讲给同桌听。','这就是我们班的棋王，一个爱下棋、也爱帮助同学的人。'];
+const D = { COURSE:'三年级下·素养课', TEACHERS, COURSES, LESSONS, CLASS_TEACHER, TXT, PARAS, NOW:'11-08 10:20', TEACHER:'王老师',
+  STUDENTS:[{id:'12345',name:'张三'},{id:'23456',name:'李四'},{id:'34567',name:'王五'}] };
+
+/* 学员主数据：每条 = 一个学员在一门 AI 作文课里的记录 */
+function mkStu(sid,name,phone,course,cls,extra){ return Object.assign({sid,name,phone,course,cls,refunded:false,study:{}},extra||{}) }
+const ST = (times,last,state,video,qa,once,total,steps,draft)=>({times,last,state,video,qa,once,total,steps,draft});
+let STU, E, S, TOK = 0;
+function seed(){
+  STU = [
+    mkStu('12345','张三','13800138001','ai3','三年级(1)班'),
+    mkStu('23456','李四','13800138002','ai3','三年级(1)班'),
+    mkStu('34567','王五','13800138003','ai3','三年级(2)班'),
+    mkStu('45678','赵六','13800138004','ai3','三年级(2)班'),
+    mkStu('56789','孙七','13800138005','ai3','三年级(1)班'),
+    mkStu('67890','周八','13800138006','ai3','三年级(2)班',{refunded:true}),
+    mkStu('90123','钱十一','13800138008','ai3','三年级(2)班'),
+    mkStu('78901','吴九','13800138007','ai4','四年级(1)班'),
+    mkStu('89012','郑十','13800138009','ai4','四年级(1)班')
+  ];
+  const L3 = {
+    '12345':ST(3,'11-07 20:05','已完课',100,'5/5',25,62,'6/6',true),
+    '23456':ST(2,'11-07 19:40','已完课',100,'4/5',18,41,'6/6',true),
+    '34567':ST(1,'11-08 09:12','已学习',60,'2/5',12,12,'3/6',false),
+    '45678':ST(0,null,'未学习',0,'0/5',0,0,'0/6',false),
+    '56789':ST(2,'11-06 18:30','已完课',100,'5/5',22,48,'6/6',true),
+    '67890':ST(2,'11-07 20:50','已完课',100,'5/5',20,39,'6/6',true),
+    '90123':ST(1,'11-08 08:30','已完课',100,'4/5',26,26,'6/6',true)
+  };
+  const DONE = ST(2,'11-02 19:20','已完课',100,'5/5',20,45,'6/6',true), NONE = ST(0,null,'未学习',0,'0/5',0,0,'0/6',false);
+  const hasEssay = {l1:['12345','23456','56789','67890','90123','34567'], l2:['12345','23456','56789','67890']};
+  STU.forEach(s=>{
+    if(s.course==='ai3'){
+      s.study.l3 = L3[s.sid];
+      s.study.l1 = hasEssay.l1.indexOf(s.sid)>-1 ? DONE : NONE;
+      s.study.l2 = hasEssay.l2.indexOf(s.sid)>-1 ? DONE : NONE;
+    } else {
+      s.study.l1 = s.sid==='89012' ? ST(1,'11-08 09:45','已学习',70,'3/5',14,14,'3/6',false) : NONE;
+      s.study.l2 = NONE;
+    }
+  });
+  const mk=(id,sid,lesson,title,kind,status,submit,extra)=>Object.assign({id,sid,course:'ai3',lesson,title,kind,form:kind==='first'?'text':'image',status,submit,annot:3,
+    hasResult:status==='graded',ocrDone:status==='graded',txt:Object.assign({},TXT)},extra||{});
+  const g=(by,at)=>({gradedBy:by,gradedAt:at});
+  E = [
+    mk('e1','12345','l3','写日记','first','graded','11-07 20:15',g('wang','11-07 21:30')),
+    mk('e2','12345','l3','写日记','second','pending','11-08 08:40'),
+    mk('e3','23456','l3','写日记','first','graded','11-07 19:55',g('wang','11-07 19:55')),
+    mk('e14','23456','l3','写日记','second','pending','11-08 07:50'),
+    mk('e4','56789','l3','写日记','first','graded','11-06 18:50',g('wang','11-06 20:10')),
+    mk('e5','56789','l3','写日记','second','graded','11-07 08:20',g('wang','11-07 10:05')),
+    mk('e6','67890','l3','写日记','first','graded','11-07 21:20',g('wang','11-07 21:20')),
+    mk('e15','67890','l3','写日记','second','pending','11-08 09:05'),
+    mk('e7','78901','l3','写日记','first','graded','11-06 20:30',g('wang','11-06 20:30')),
+    mk('e16','78901','l3','写日记','second','pending','11-07 18:40'),
+    mk('e17','34567','l1','猜猜他是谁','first','graded','10-26 20:10',g('wang','10-27 09:40')),
+    mk('e18','90123','l3','写日记','first','graded','11-08 08:50',g('wang','11-08 08:50')),
+    mk('e8','12345','l2','我的好朋友','first','graded','11-02 19:40',g('wang','11-03 09:10')),
+    mk('e9','23456','l2','我的好朋友','first','graded','11-02 20:10',g('wang','11-03 09:30')),
+    mk('e10','56789','l2','我的好朋友','first','graded','11-02 19:50',g('wang','11-03 09:50')),
+    mk('e11','78901','l2','我的好朋友','first','graded','11-02 20:20',g('wang','11-03 10:10')),
+    mk('e12','12345','l1','猜猜他是谁','first','graded','10-26 19:30',g('wang','10-27 09:00')),
+    mk('e13','78901','l1','猜猜他是谁','first','graded','10-26 19:45',g('wang','10-27 09:20'))
+  ];
+  /* 作文批改时输出的优良中（班课直接读取，不另算）；演示用轮换 */
+  E.forEach((e,i)=>{ if(e.status==='graded') e.level = e.kind==='second' ? '优' : ['优','良','中'][i%3] });
+  /* 话术发送的演示标记：王五家长未加老师好友；钱十一首次发送会失败、重试成功 */
+  STU.forEach(s=>{ if(s.sid==='34567') s.noFriend=true; if(s.sid==='90123') s.failFirst=true });
+  S = { scene:'main', me:'wang', ro:false, epoch:0, cur:null, eview:'review', tab:'总评', editing:null, draft:null, preview:false, done:false, guide:false };
+  D.TEACHER = TEACHERS[S.me].name;
+}
+const ev = id => E.find(e=>e.id===id);
+
+/* ================= 与两个 iframe 同步 ================= */
+const fm = document.getElementById('fm'), fe = document.getElementById('fe');
+const frameOf = () => S.scene==='essay' ? fe : fm;
+function refresh(){
+  const act = frameOf();
+  fm.classList.toggle('on', act===fm); fe.classList.toggle('on', act===fe);
+  document.getElementById('guide').classList.toggle('on', S.guide);
+  postState(); renderBar();
+  document.getElementById('note').textContent = S.guide?'演示指引':NOTES[S.scene];
+}
+/* 只读由入口决定：列表里点「批改」= 所选教辅不是登录人时只读；学员档案里点「批改」按登录人，可编辑（S.ro 随 openEssay 写入） */
+function snapshot(){
+  return { S:JSON.parse(JSON.stringify(S)), E:JSON.parse(JSON.stringify(E)), STU:JSON.parse(JSON.stringify(STU)), D };
+}
+function postState(){ const snap=snapshot(); [fm,fe].forEach(f=>{ try{ f.contentWindow.postMessage({type:'state',snap},'*') }catch(e){} }); }
+function postToast(msg,kind){ try{ frameOf().contentWindow.postMessage({type:'toast',msg,kind:kind||''},'*') }catch(e){} }
+function clearToasts(){ [fm,fe].forEach(f=>{ try{ f.contentWindow.postMessage({type:'clearToasts'},'*') }catch(e){} }); }
+window.addEventListener('message',e=>{
+  const m=e.data||{};
+  if(m.type==='act' && A[m.name]) A[m.name](m.payload||{});
+  if(m.type==='ready') postState();
+});
+fm.addEventListener('load',refresh); fe.addEventListener('load',refresh);
+function toast(msg,kind){ postToast(msg,kind) }
+
+const NOTES = {
+  main:'对应产品方案 4.1–4.3：右上角浮层「教辅 / 课程 / 班级」→ AI 作文课工作台（只有学员列表）；首次/订正作文列里「查看」，操作列「批改」（订正作文）；点学员姓名开学员档案，在「作文批改」里找旧年级作文。班课系统一侧。',
+  essay:'对应产品方案 4.4：批改详情沿用作文批改助手（真实环境是新页签打开的独立应用）；图片作文先识别校对，完成批改后关闭页签回班课。'
+};
+function renderBar(){
+  const where = S.scene==='essay' ? '当前：作文批改助手（新页签 · 独立应用）' : '当前：班课主系统';
+  document.getElementById('bar').innerHTML = `<b>AI 作文课 · 交互原型 v2</b><span class="lab">演示视角</span>`+
+    Object.keys(TEACHERS).map(k=>`<button class="sc ${S.me===k?'on':''}" onclick="A.setMe({k:'${k}'})">${TEACHERS[k].name} · ${TEACHERS[k].grade}教辅</button>`).join('')+
+    `<span class="where">${where}</span><span class="sp"></span>
+     <button class="gh" onclick="A.showGuide()">演示指引</button><button class="act" onclick="A.reset()">重置演示</button>`;
+}
+
+/* ================= 流程 ================= */
+function later(ms,fn){const t=TOK;setTimeout(()=>{if(t===TOK){fn();refresh()}},ms)}
+function enterEssay(e){
+  S.cur=e.id; S.scene='essay'; S.tab='总评'; S.editing=null; S.preview=false; S.done=false;
+  if(e.hasResult){ S.eview='review'; return }
+  if(e.form==='image' && !e.ocrDone){ S.eview='ocr'; return }
+  startGrading(e);
+}
+function startGrading(e){
+  S.eview='grading'; refresh();
+  later(1800,()=>{ e.hasResult=true; S.eview='review' });
+}
+
+/* ================= 动作 ================= */
+const _A = {
+  setMe(d){ TOK++; S.me=d.k; D.TEACHER=TEACHERS[d.k].name; S.scene='main'; S.cur=null; S.epoch++; clearToasts() },
+  reset(){ TOK++; const me=S.me; seed(); S.me=me; D.TEACHER=TEACHERS[me].name; S.epoch=1+Math.floor(Math.random()*1e6); clearToasts() },
+  showGuide(){S.guide=true}, hideGuide(){S.guide=false},
+  fake(d){ toast(d.m,d.kind) },
+  /* 班课侧 → 打开作文批改助手（新页签）：d.id=作文 id */
+  openEssay(d){ const e=ev(d.id); clearToasts(); S.ro=!!d.ro; enterEssay(e);
+    const ro=S.ro; setTimeout(()=>toast(ro?'新页签打开作文批改助手：登录人不是所选教辅，只读':'新页签打开作文批改助手，按作文编号直接打开这一篇'),200) },
+  closeEssay(){ TOK++; S.scene='main'; S.cur=null; S.preview=false; S.editing=null; S.done=false; clearToasts(); setTimeout(()=>toast('已关闭作文批改助手页签，回到班课'),200) },
+  /* 作文批改助手 */
+  startGrade(){ const e=ev(S.cur); e.ocrDone=true; startGrading(e) },
+  rtab(d){S.tab=d.t;S.editing=null},
+  startEdit(){S.editing=S.tab;S.draft=ev(S.cur).txt[S.tab]},
+  cancelEdit(){S.editing=null}, setDraft(d){S.draft=d.text},
+  saveEdit(d){const e=ev(S.cur);e.txt[S.tab]=d&&d.text!=null?d.text:(S.draft!=null?S.draft:e.txt[S.tab]);S.editing=null;toast('保存成功','success')},
+  copy(){toast('已复制 Markdown 内容','success')},
+  toggleAnnot(){const e=ev(S.cur);e.annot=e.annot>0?0:3},
+  openPreview(){S.preview=true}, closePreview(){S.preview=false},
+  save(){ toast('保存成功','success') },
+  finish(){ const e=ev(S.cur); if(e.status!=='graded'){ e.status='graded'; e.gradedBy=S.me; e.gradedAt=D.NOW; e.level='优' }
+    S.done=true; toast('完成批改','success') }
+};
+const A = {};
+Object.keys(_A).forEach(k=>{A[k]=function(d){ _A[k](d||{}); refresh() }});
+window.A = A;
+seed(); refresh();
+</script>
+</body>
+</html>

@@ -1,0 +1,360 @@
+/* main-record.css —— 学员档案页签里的「作文批改」：样式逐字取自真实 EssayCorrectTab.vue（已去掉 scoped）；新增部分在末尾分隔线之后，类名 x- 前缀。 */
+/* ---------------------------------------------------------------
+ * SOURCE: src/components/student-archive/EssayCorrectTab.vue  (style block 1/1)  lang=css scoped
+ * --------------------------------------------------------------- */
+/* 与档案其它 Tab 内容区左右留白对齐（约 20px） */
+.essay-correct-tab {
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.essay-correct-tab__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.essay-correct-tab__filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.essay-correct-tab__filters .el-select {
+  width: 160px;
+}
+
+.essay-correct-tab__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.essay-correct-tab__total {
+  color: #666;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* [SPECIFICITY NOTE] 真实源码是 scoped（选择器带属性 = (0,2,0)），与主题 .el-button--primary:hover (0,2,0) 同权重、靠后加载取胜，
+   所以真实的橙色按钮 #ff6641 在 hover / focus / 按下时不变色。去掉 scoped 后要写成 .essay-correct-tab__cta.el-button--primary 才一致。 */
+.essay-correct-tab__cta.el-button--primary {
+  background: #ff6641;
+  border-color: #ff6641;
+}
+
+.essay-correct-tab__empty {
+  color: #999;
+  text-align: center;
+  padding: 64px 0;
+  font-size: 14px;
+}
+
+.essay-node {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.essay-node.is-last {
+  margin-bottom: 0;
+}
+
+.essay-node.is-last .essay-node__line {
+  bottom: 0;
+}
+
+.essay-node__rail {
+  position: relative;
+  width: 16px;
+  flex-shrink: 0;
+  margin-right: 8px;
+  align-self: stretch;
+}
+
+.essay-node__dot {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  background: #ff6641;
+  box-shadow: 0 0 0 3px rgba(255, 102, 65, 0.18);
+  z-index: 1;
+}
+
+.essay-node__line {
+  position: absolute;
+  top: 20px;
+  bottom: -20px;
+  left: 50%;
+  width: 1px;
+  margin-left: -0.5px;
+  background: #e8e8e8;
+}
+
+.essay-node__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.essay-node__time {
+  color: #8c8c8c;
+  font-size: 13px;
+  line-height: 22px;
+}
+
+.essay-node__card {
+  width: 100%;
+  border: 1px solid #efefef;
+  border-radius: 12px;
+  padding: 20px 24px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  cursor: pointer;
+}
+
+.essay-node__card:hover {
+  border-color: #e5e5e5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.essay-node__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.essay-node__head-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.essay-node__title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.essay-node__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f1f1f;
+  line-height: 24px;
+}
+
+.essay-node__tag {
+  font-size: 12px;
+  line-height: 18px;
+  padding: 1px 8px;
+  border-radius: 4px;
+}
+
+.essay-node__tag.is-formal {
+  color: #f95f2e;
+  background: #fff1eb;
+}
+
+.essay-node__tag.is-trial {
+  color: #fa8c16;
+  background: #fff7e6;
+}
+
+.essay-node__subtitle {
+  margin-top: 6px;
+  color: #8c8c8c;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.essay-node__link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #2f7cf6;
+  font-size: 13px;
+  line-height: 22px;
+  cursor: pointer;
+}
+
+.essay-node__link-icon {
+  flex-shrink: 0;
+}
+
+.essay-node__link:hover {
+  color: #1a5fd0;
+}
+
+.essay-node__body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.essay-node__cover {
+  width: 88px;
+  height: 110px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.essay-node__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.essay-node__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.essay-node__summary {
+  margin: 0 0 14px;
+  color: #595959;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.essay-node__abilities {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.essay-node__ability-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.essay-node__ability-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #8c8c8c;
+  line-height: 20px;
+}
+
+.essay-node__bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.essay-node__bullet.is-strength {
+  background: #52c41a;
+}
+
+.essay-node__bullet.is-improve {
+  background: #ff6641;
+}
+
+.essay-node__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.essay-chip {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 18px;
+  padding: 2px 10px;
+  border-radius: 4px;
+}
+
+.essay-chip--strength {
+  color: #389e0d;
+  background: #e6f7ef;
+}
+
+.essay-chip--improve {
+  color: #fa541c;
+  background: #fff2e8;
+}
+
+.essay-node__foot {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.essay-node__foot-item {
+  flex-shrink: 0;
+}
+
+.essay-node__status.is-pending {
+  color: #ff8000;
+}
+
+.essay-node__status.is-done {
+  color: #07c160;
+}
+
+.essay-node__status.is-fail {
+  color: #ff3b30;
+}
+
+/* ---------------------------------------------------------------
+ * SOURCE: node_modules/@igetcool/cool-desktop-ui/dist/cool-desktop-ui.css  (CoolPagination，库内全局样式)
+ * --------------------------------------------------------------- */
+.cool-desktop-pagination{margin-top:10px;padding:10px;text-align:right}
+.cool-desktop-pagination .el-pagination .el-pager li,.cool-desktop-pagination .el-pagination .el-pagination__editor.el-input .el-input__inner,.cool-desktop-pagination .el-pagination .el-pagination__total,.cool-desktop-pagination .el-pagination .el-select .el-input .el-input__inner,.cool-desktop-pagination .el-pagination button,.cool-desktop-pagination .el-pagination span:not([class*=suffix]){height:30px;line-height:30px}
+
+
+/* ====== 新增（产品方案：学员档案「作文批改」） ====== */
+/* 真实 StudentDetail 的"新"角标（src/.../StudentDetail/index.vue .essay-tab-new） */
+.essay-tab-new {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 14px;
+  color: #fff;
+  background: #f56c6c;
+  border-radius: 8px;
+  vertical-align: super;
+  font-style: normal;
+}
+.x-rec .el-tabs__header { margin-bottom: 0; }
+.x-rec-pane-empty { color: #999; text-align: center; padding: 64px 0; font-size: 14px; }
+/* 课程类型标签「AI作文课」：配色取工作台里"领"标签的蓝 */
+.essay-node__tag.x-ai { color: #1890ff; background: #e6f7ff; }
+.essay-node__tag.x-kind-first { color: #606266; background: #f5f7fa; }
+.essay-node__tag.x-kind-rev { color: #fa541c; background: #fff2e8; }
+/* 卡片右侧的「批改」「查看」文字按钮（取代真实的"查看完整批改记录"链接，位置相同） */
+.essay-node__actions { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.essay-node__actions .el-button--text { padding: 0; }
+.essay-node__actions .x-rec-go.el-button--text,
+.essay-node__actions .x-rec-go.el-button--text:hover { color: #ff5f2e; }

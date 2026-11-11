@@ -1,0 +1,2183 @@
+/* essay-home.css —— 批改台首页（scene-home）。逐字并入（保留来源注释，顺序同验证页 _verify/v2）：
+   vditor 依赖(外部参考) -> style-Home / MetaFields / ContentTabs / UploadPane / PastePane / EmptyState / ProgressState / EssayLoading / FailPanel
+   / ImageReview / TextReview / ReviewTitleInput / ParagraphEditor / FileCard / ImageThumb；末尾为产品方案新增（x- 前缀）。
+   依赖 essay-base.css（EP 子集 + tokens + element-theme + app）先加载。 */
+
+/* ================= 来源：_ref-vditor/vditor-core.css（Vditor 3.11.3 外部样式抽取，校对页编辑器依赖；非仓库文件） ================= */
+.vditor--dark {
+  --border-color: #141414;
+  --second-color: rgba(185, 185, 185, 0.36);
+  --panel-background-color: #24292e;
+  --panel-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+  --toolbar-background-color: #1d2125;
+  --toolbar-icon-color: #b9b9b9;
+  --toolbar-icon-hover-color: #fff;
+  --textarea-background-color: #2f363d;
+  --textarea-text-color: #d1d5da;
+  --resize-icon-color: var(--border-color);
+  --resize-background-color: var(--second-color);
+  --resize-hover-icon-color: var(--toolbar-icon-hover-color);
+  --resize-hover-background-color: rgba(185, 185, 185, 0.86);
+  --count-background-color: rgba(66, 133, 244, 0.36);
+  --heading-border-color: var(--textarea-text-color);
+  --blockquote-color: var(--toolbar-icon-color);
+  --callout-note-color: #58a6ff;
+  --callout-note-background-color: rgba(56, 139, 253, 0.15);
+  --callout-tip-color: #3fb950;
+  --callout-tip-background-color: rgba(46, 160, 67, 0.15);
+  --callout-important-color: #a371f7;
+  --callout-important-background-color: rgba(163, 113, 247, 0.15);
+  --callout-warning-color: #d29922;
+  --callout-warning-background-color: rgba(187, 128, 9, 0.15);
+  --callout-caution-color: #f85149;
+  --callout-caution-background-color: rgba(248, 81, 73, 0.15);
+  --ir-heading-color: #9876aa;
+  --ir-title-color: #808080;
+  --ir-bi-color: #cc7832;
+  --ir-link-color: #ffc66d;
+  --ir-bracket-color: #287bde;
+  --ir-paren-color: #6a8759;
+}
+
+.vditor-toolbar {
+  background-color: var(--toolbar-background-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 5px;
+  line-height: 1;
+}
+
+.vditor {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  box-sizing: border-box;
+  font-family: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", "Hiragino Sans GB", "Microsoft Yahei", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+}
+
+.vditor--fullscreen {
+  position: fixed;
+  top: 0;
+  width: 100% !important;
+  left: 0;
+  height: 100vh !important;
+  z-index: 90;
+  border-radius: 0;
+}
+
+.vditor-content {
+  display: flex;
+  min-height: 60px;
+  flex: 1;
+  min-width: 1px;
+  position: relative;
+}
+
+.vditor-reset {
+  color: #24292e;
+  font-variant-ligatures: no-common-ligatures;
+  font-family: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", "Hiragino Sans GB", "Microsoft Yahei", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+  word-wrap: break-word;
+  overflow: auto;
+  line-height: 1.5;
+  font-size: 16px;
+  word-break: break-word;
+}
+
+.vditor-reset--anchor {
+  padding-left: 20px;
+}
+
+.vditor-reset--error {
+  color: #d23f31;
+  font-size: 12px;
+  display: block;
+  line-height: 16px;
+}
+
+.vditor-reset ul ul ul {
+  list-style-type: square;
+}
+
+.vditor-reset ul ul {
+  list-style-type: circle;
+}
+
+.vditor-reset ul {
+  list-style-type: disc;
+}
+
+.vditor-reset ul,
+
+.vditor-reset ol {
+  padding-left: 2em;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.vditor-reset li + li {
+  margin-top: 0.25em;
+}
+
+.vditor-reset li p {
+  margin-top: 16px;
+}
+
+.vditor-reset audio {
+  max-width: 100%;
+}
+
+.vditor-reset audio:focus {
+  outline: none;
+}
+
+.vditor-reset video {
+  max-height: 90vh;
+  max-width: 100%;
+}
+
+.vditor-reset img {
+  max-width: 100%;
+}
+
+.vditor-reset img.emoji {
+  cursor: auto;
+  max-width: 20px;
+  vertical-align: sub;
+}
+
+.vditor-reset figure.vditor-image {
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.vditor-reset figure.vditor-image figcaption {
+  font-size: 0.875em;
+  margin-top: 4px;
+  opacity: 0.65;
+  white-space: pre-wrap;
+}
+
+.vditor-reset span.vditor-image[data-image-caption] {
+  display: inline-block;
+  max-width: 100%;
+  text-align: center;
+  vertical-align: top;
+}
+
+.vditor-reset span.vditor-image[data-image-caption]::after {
+  content: attr(data-image-caption);
+  display: block;
+  font-size: 0.875em;
+  line-height: 1.5;
+  margin-top: 4px;
+  opacity: 0.65;
+  white-space: pre-wrap;
+}
+
+.vditor-reset h1,
+
+.vditor-reset h2,
+
+.vditor-reset h3,
+
+.vditor-reset h4,
+
+.vditor-reset h5,
+
+.vditor-reset h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.vditor-reset h1:hover .vditor-anchor svg,
+
+.vditor-reset h2:hover .vditor-anchor svg,
+
+.vditor-reset h3:hover .vditor-anchor svg,
+
+.vditor-reset h4:hover .vditor-anchor svg,
+
+.vditor-reset h5:hover .vditor-anchor svg,
+
+.vditor-reset h6:hover .vditor-anchor svg {
+  visibility: visible;
+}
+
+.vditor-reset h1 {
+  font-size: 1.75em;
+}
+
+.vditor-reset h2 {
+  font-size: 1.55em;
+}
+
+.vditor-reset h3 {
+  font-size: 1.38em;
+}
+
+.vditor-reset h4 {
+  font-size: 1.25em;
+}
+
+.vditor-reset h5 {
+  font-size: 1.13em;
+}
+
+.vditor-reset h6 {
+  font-size: 1em;
+}
+
+.vditor-reset hr {
+  height: 2px;
+  padding: 0;
+  margin: 24px 0;
+  background-color: #eaecef;
+  border: 0;
+}
+
+.vditor-reset p {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.vditor-reset blockquote {
+  padding: 0 1em;
+  color: #6a737d;
+  border-left: 0.25em solid #eaecef;
+  margin: 0 0 16px 0;
+}
+
+.vditor-reset blockquote > :first-child {
+  margin-top: 0;
+}
+
+.vditor-reset blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.vditor-reset ins > iframe {
+  border: 0;
+}
+
+.vditor-reset iframe {
+  border: 1px solid #d1d5da;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.vditor-reset iframe.iframe__video {
+  min-width: 80%;
+  min-height: 36vh;
+}
+
+.vditor-reset table {
+  border-collapse: collapse;
+  empty-cells: show;
+  margin-bottom: 16px;
+  overflow: auto;
+  border-spacing: 0;
+  display: block;
+  word-break: keep-all;
+  width: 100%;
+}
+
+.vditor-reset table tr {
+  background-color: #fafbfc;
+  border-top: 1px solid #c6cbd1;
+}
+
+.vditor-reset table td,
+
+.vditor-reset table th {
+  padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+  word-break: normal;
+  white-space: nowrap;
+}
+
+.vditor-reset table td:first-child::after,
+
+.vditor-reset table th:first-child::after {
+  content: "";
+  display: inline-block;
+  vertical-align: top;
+  min-height: 24px;
+}
+
+.vditor-reset table th {
+  font-weight: 600;
+}
+
+.vditor-reset table tbody tr:nth-child(2n) {
+  background-color: #fff;
+}
+
+.vditor-reset code:not(.hljs):not(.highlight-chroma) {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  border-radius: 3px;
+  font-family: mononoki, Consolas, "Liberation Mono", Menlo, Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+  word-break: break-word;
+  background-size: 20px 20px;
+  white-space: pre-wrap;
+}
+
+.vditor-reset pre {
+  margin: 1em 0;
+}
+
+.vditor-reset pre > code {
+  margin: 0;
+  font-size: 85%;
+  padding: 0.5em;
+  border-radius: 5px;
+  display: block;
+  overflow: auto;
+  white-space: pre;
+  font-family: mononoki, Consolas, "Liberation Mono", Menlo, Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+  background-size: 20px 20px;
+  background-image: url(data:image/png;
+  base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8AgMAAABHkjHhAAAACVBMVEWAgIBaWlo+Pj7rTFvWAAAAA3RSTlMHCAw+VhR4AAAA+klEQVQoz4WSMW7EQAhFPxKWNh2FCx+HkaZI6RRb5DYbyVfIJXLKDCFoMbaTKSw/8ZnPAPjaH2xgZcUNUDADD7D9LtDBCLZ45fbkvo/30K8yeI64pPwl6znd/3n/Oe93P3ho9qeh72btTFzqkz0rsJle8Zr81OLEwZ1dv/713uWqvu2pl+k0fy7MWtj9r/tN5q/02z89qa/L4Dc2LvM93kezPfXlME/O86EbY/V9GB9ePX8G1/6W+/9h1dq/HGfTfzT3j/xNo7522Bfnqe5jO/fvhVthlfk434v3iO9zG/UOphyPeinPl1J8Gtaa7xPTa/Dk+RIs4deMvwGvcGsmsCvJ0AAAAABJRU5ErkJggg==);
+  word-break: initial;
+  word-wrap: normal;
+}
+
+.vditor-reset pre:hover div.vditor-copy {
+  display: block;
+}
+
+.vditor-reset .language-math,
+
+.vditor-reset .language-echarts,
+
+.vditor-reset .language-mindmap,
+
+.vditor-reset .language-plantuml,
+
+.vditor-reset .language-mermaid,
+
+.vditor-reset .language-smiles,
+
+.vditor-reset .language-markmap,
+
+.vditor-reset .language-abc,
+
+.vditor-reset .language-flowchart,
+
+.vditor-reset .language-graphviz,
+
+.vditor-reset .language-wavedrom {
+  margin-bottom: 16px;
+}
+
+.vditor-reset .language-math mjx-container:focus {
+  outline: none;
+  cursor: context-menu;
+}
+
+.vditor-reset .language-math .katex-display > .katex > .katex-html > .tag {
+  display: inline-block;
+  font-size: 1.21rem;
+  right: 2px;
+}
+
+.vditor-reset .language-echarts,
+
+.vditor-reset .language-mindmap {
+  overflow: hidden;
+  height: 420px;
+}
+
+.vditor-reset .language-mermaid,
+
+.vditor-reset .language-markmap,
+
+.vditor-reset .language-flowchart,
+
+.vditor-reset .language-graphviz,
+
+.vditor-reset .language-wavedrom {
+  text-align: center;
+}
+
+.vditor-reset .language-graphviz parsererror {
+  overflow: auto;
+}
+
+.vditor-reset kbd {
+  display: inline-block;
+  padding: 3px 5px;
+  font: 11px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  line-height: 10px;
+  color: #24292e;
+  vertical-align: middle;
+  background-color: #fafbfc;
+  border: solid 1px #d1d5da;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #d1d5da;
+}
+
+.vditor-reset summary {
+  cursor: pointer;
+}
+
+.vditor-reset summary:focus {
+  outline: none;
+}
+
+.vditor-reset svg {
+  height: auto;
+  width: auto;
+  stroke-width: initial;
+}
+
+.vditor-reset p:last-child,
+
+.vditor-reset blockquote:last-child,
+
+.vditor-reset pre:last-child,
+
+.vditor-reset ul:last-child,
+
+.vditor-reset ol:last-child,
+
+.vditor-reset hr:last-child {
+  margin-bottom: 0;
+}
+
+.vditor-reset .callout,
+
+.vditor-wysiwyg blockquote.callout,
+
+.vditor-ir blockquote.callout {
+  --callout-color: var(--callout-note-color, #0969da);
+  --callout-background-color: var(--callout-note-background-color, rgba(9, 105, 218, 0.08));
+  position: relative;
+  margin: 0 0 16px;
+  padding: 0.75em 1em;
+  color: inherit;
+  background-color: var(--callout-background-color);
+  border: 0;
+  border-left: 0.25em solid var(--callout-color);
+}
+
+.vditor-reset .callout[data-subtype="TIP"],
+
+.vditor-wysiwyg blockquote.callout[data-subtype="TIP"],
+
+.vditor-ir blockquote.callout[data-subtype="TIP"] {
+  --callout-color: var(--callout-tip-color, #1a7f37);
+  --callout-background-color: var(--callout-tip-background-color, rgba(26, 127, 55, 0.08));
+}
+
+.vditor-reset .callout[data-subtype="IMPORTANT"],
+
+.vditor-wysiwyg blockquote.callout[data-subtype="IMPORTANT"],
+
+.vditor-ir blockquote.callout[data-subtype="IMPORTANT"] {
+  --callout-color: var(--callout-important-color, #8250df);
+  --callout-background-color: var(--callout-important-background-color, rgba(130, 80, 223, 0.08));
+}
+
+.vditor-reset .callout[data-subtype="WARNING"],
+
+.vditor-wysiwyg blockquote.callout[data-subtype="WARNING"],
+
+.vditor-ir blockquote.callout[data-subtype="WARNING"] {
+  --callout-color: var(--callout-warning-color, #9a6700);
+  --callout-background-color: var(--callout-warning-background-color, rgba(154, 103, 0, 0.08));
+}
+
+.vditor-reset .callout[data-subtype="CAUTION"],
+
+.vditor-wysiwyg blockquote.callout[data-subtype="CAUTION"],
+
+.vditor-ir blockquote.callout[data-subtype="CAUTION"] {
+  --callout-color: var(--callout-caution-color, #cf222e);
+  --callout-background-color: var(--callout-caution-background-color, rgba(207, 34, 46, 0.08));
+}
+
+.vditor-reset .callout > .callout-info,
+
+.vditor-wysiwyg blockquote.callout > .callout-info,
+
+.vditor-ir blockquote.callout > .callout-info {
+  display: flex;
+  align-items: center;
+  min-height: 1.5em;
+  margin: 0 0 0.5em;
+  color: var(--callout-color);
+  font-weight: 600;
+}
+
+.vditor-reset .callout > .callout-info .callout-icon,
+
+.vditor-wysiwyg blockquote.callout > .callout-info .callout-icon,
+
+.vditor-ir blockquote.callout > .callout-info .callout-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.35em;
+}
+
+.vditor-reset .callout > .callout-info .callout-title,
+
+.vditor-wysiwyg blockquote.callout > .callout-info .callout-title,
+
+.vditor-ir blockquote.callout > .callout-info .callout-title {
+  min-width: 1px;
+}
+
+.vditor-reset .callout > .callout-info .callout-img,
+
+.vditor-wysiwyg blockquote.callout > .callout-info .callout-img,
+
+.vditor-ir blockquote.callout > .callout-info .callout-img,
+
+.vditor-reset .callout > .callout-info > .callout-img,
+
+.vditor-wysiwyg blockquote.callout > .callout-info > .callout-img,
+
+.vditor-ir blockquote.callout > .callout-info > .callout-img {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.35em;
+  -o-object-fit: contain;
+  object-fit: contain;
+}
+
+.vditor-reset .callout > .callout-content > :last-child,
+
+.vditor-wysiwyg blockquote.callout > .callout-content > :last-child,
+
+.vditor-ir blockquote.callout > .callout-content > :last-child,
+
+.vditor-reset .callout > :last-child,
+
+.vditor-wysiwyg blockquote.callout > :last-child,
+
+.vditor-ir blockquote.callout > :last-child {
+  margin-bottom: 0;
+}
+
+.vditor-wysiwyg__callout-marker {
+  display: none;
+}
+
+.vditor-wysiwyg {
+  box-sizing: border-box;
+  flex: 1;
+  position: relative;
+  width: 100%;
+  min-width: 1px;
+}
+
+.vditor-wysiwyg pre.vditor-reset {
+  background-color: var(--panel-background-color);
+  margin: 0;
+  white-space: pre-wrap;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.vditor-wysiwyg pre.vditor-reset[contenteditable="false"] {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.vditor-wysiwyg pre.vditor-reset:empty::before {
+  content: attr(placeholder);
+  color: var(--second-color);
+}
+
+.vditor-wysiwyg pre.vditor-reset:focus {
+  outline: none;
+  background-color: var(--textarea-background-color);
+}
+
+.vditor-wysiwyg pre.vditor-reset:after {
+  content: "";
+  height: var(--editor-bottom);
+  display: block;
+}
+
+.vditor-wysiwyg blockquote:empty::before,
+
+.vditor-wysiwyg pre > code:empty::before,
+
+.vditor-wysiwyg p:empty::before,
+
+.vditor-wysiwyg h1:empty::after,
+
+.vditor-wysiwyg h2:empty::after,
+
+.vditor-wysiwyg h3:empty::after,
+
+.vditor-wysiwyg h4:empty::after,
+
+.vditor-wysiwyg h5:empty::after,
+
+.vditor-wysiwyg h6:empty::after {
+  content: ' ';
+}
+
+.vditor-wysiwyg code[data-marker="`"] {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.vditor-wysiwyg__block pre:first-child {
+  margin-bottom: -1em;
+}
+
+.vditor-wysiwyg__block pre:first-child code {
+  color: var(--textarea-text-color);
+  height: auto;
+  text-align: left;
+}
+
+.vditor-wysiwyg__block pre:last-child {
+  margin-bottom: 1em;
+}
+
+.vditor-wysiwyg__preview {
+  cursor: pointer;
+  white-space: initial;
+  min-height: 27px;
+}
+
+.vditor-wysiwyg > .vditor-reset > h1:before,
+
+.vditor-wysiwyg > .vditor-reset > h2:before,
+
+.vditor-wysiwyg > .vditor-reset > h3:before,
+
+.vditor-wysiwyg > .vditor-reset > h4:before,
+
+.vditor-wysiwyg > .vditor-reset > h5:before,
+
+.vditor-wysiwyg > .vditor-reset > h6:before,
+
+.vditor-wysiwyg div.vditor-wysiwyg__block:before,
+
+.vditor-wysiwyg div[data-type="link-ref-defs-block"]:before,
+
+.vditor-wysiwyg div[data-type="footnotes-block"]:before,
+
+.vditor-wysiwyg .vditor-toc:before {
+  float: left;
+  padding-right: 4px;
+  margin-left: -29px;
+  content: 'H1';
+  font-size: 0.85rem;
+  font-weight: normal;
+  color: var(--second-color);
+}
+
+.vditor-wysiwyg > .vditor-reset > h2:before {
+  content: 'H2';
+}
+
+.vditor-wysiwyg > .vditor-reset > h3:before {
+  content: 'H3';
+}
+
+.vditor-wysiwyg > .vditor-reset > h4:before {
+  content: 'H4';
+}
+
+.vditor-wysiwyg > .vditor-reset > h5:before {
+  content: 'H5';
+}
+
+.vditor-wysiwyg > .vditor-reset > h6:before {
+  content: 'H6';
+}
+
+.vditor-wysiwyg div[data-type="link-ref-defs-block"]:before {
+  content: '"A"';
+}
+
+.vditor-wysiwyg div[data-type="footnotes-block"]:before {
+  content: '^F';
+}
+
+.vditor-wysiwyg div.vditor-wysiwyg__block:before {
+  content: "</>";
+}
+
+.vditor-wysiwyg div.vditor-wysiwyg__block[data-type="yaml-front-matter"]:before {
+  content: "F";
+}
+
+.vditor-wysiwyg div.vditor-wysiwyg__block[data-type="math-block"]:before {
+  content: "$$";
+}
+
+.vditor-wysiwyg .vditor-toc:before {
+  content: "ToC";
+}
+
+.vditor-wysiwyg hr {
+  display: inline-block;
+  margin: 12px 0;
+  width: 100%;
+}
+
+.vditor-wysiwyg details {
+  white-space: initial;
+}
+
+.vditor-wysiwyg a {
+  cursor: pointer;
+}
+
+.vditor-wysiwyg span[data-type="backslash"] > span {
+  display: none;
+  color: var(--second-color);
+}
+
+.vditor-wysiwyg span[data-type="link-ref"],
+
+.vditor-wysiwyg sup[data-type="footnotes-ref"] {
+  color: #4285f4;
+}
+
+.vditor-wysiwyg span[data-type="toc-h"] {
+  color: #4285f4;
+  text-decoration: underline;
+}
+
+.vditor-wysiwyg div[data-type="footnotes-block"] {
+  border-top: 2px solid var(--heading-border-color);
+  padding-top: 24px;
+  margin-top: 24px;
+}
+
+.vditor-wysiwyg div[data-type="link-ref-defs-block"] {
+  color: var(--blockquote-color);
+}
+
+/* ================= 来源：essay/src/styles/vditor-essay.css（仓库原文） ================= */
+/* 右栏 Markdown 正文样式 — 预览/编辑共用，对齐 PanelSection + struct-table */
+
+.essay-md-content {
+  font-family: var(--essay-doc-font-family);
+  font-size: 14px;
+  line-height: 24px;
+  color: #212121;
+}
+
+/* 预览 host 与编辑区 pre 都会带 vditor-reset，两种 DOM 结构都要命中 */
+.essay-md-content.vditor-reset,
+.essay-md-content .vditor-reset {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 24px;
+  color: #212121;
+  padding: 0;
+}
+
+/* 正文段落 */
+.essay-md-content.vditor-reset p,
+.essay-md-content .vditor-reset p {
+  margin: 0 0 8px;
+  color: #212121;
+}
+
+.essay-md-content.vditor-reset p:last-child,
+.essay-md-content .vditor-reset p:last-child {
+  margin-bottom: 0;
+}
+
+.essay-md-content.vditor-reset strong,
+.essay-md-content .vditor-reset strong {
+  color: #212121;
+  font-weight: 600;
+}
+
+/* 最小改动版预览/导出：修改标注由 Markdown strong 承载 */
+.essay-md-preview.is-modification-strong strong,
+.essay-md-preview.is-modification-strong .vditor-reset strong {
+  color: var(--essay-modification-strong-color, #ef4444);
+}
+
+.essay-md-content.vditor-reset blockquote,
+.essay-md-content .vditor-reset blockquote {
+  margin: 8px 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 13px;
+}
+
+.essay-md-content.vditor-reset blockquote p,
+.essay-md-content .vditor-reset blockquote p {
+  color: #666;
+}
+
+.essay-md-content.vditor-reset ul,
+.essay-md-content.vditor-reset ol,
+.essay-md-content .vditor-reset ul,
+.essay-md-content .vditor-reset ol {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  color: #212121;
+}
+
+.essay-md-content.vditor-reset li,
+.essay-md-content .vditor-reset li {
+  margin-bottom: 4px;
+}
+
+.essay-md-content.vditor-reset hr,
+.essay-md-content .vditor-reset hr {
+  border: none;
+  border-top: 1px dashed #eee;
+  margin: 12px 0;
+}
+
+/* 结构梳理表格 — 对齐改前 .struct-table */
+.essay-md-content.vditor-reset table,
+.essay-md-content .vditor-reset table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0;
+}
+
+.essay-md-content.vditor-reset table th,
+.essay-md-content .vditor-reset table th {
+  text-align: left;
+  color: #ff5e2e;
+  font-weight: 500;
+  background: rgba(255, 94, 46, 0.08);
+  padding: 8px;
+  border: none;
+}
+
+.essay-md-content.vditor-reset table td,
+.essay-md-content .vditor-reset table td {
+  color: #4d4d4d;
+  padding: 8px;
+  background: #fafafa;
+  border: none;
+}
+
+.essay-md-content.vditor-reset table th:nth-child(1),
+.essay-md-content.vditor-reset table td:nth-child(1),
+.essay-md-content .vditor-reset table th:nth-child(1),
+.essay-md-content .vditor-reset table td:nth-child(1) {
+  width: 50px;
+}
+
+.essay-md-content.vditor-reset table th:nth-child(2),
+.essay-md-content.vditor-reset table td:nth-child(2),
+.essay-md-content .vditor-reset table th:nth-child(2),
+.essay-md-content .vditor-reset table td:nth-child(2) {
+  width: 55px;
+}
+
+/*
+ * 编辑态：隐藏 Vditor 默认结构标记（H2、## 等），与预览视觉一致
+ * 默认样式见 vditor/dist/index.css 中 h2:before { content: 'H2' } 等规则
+ */
+.vditor-host .vditor-ir .vditor-reset > h1:before,
+.vditor-host .vditor-ir .vditor-reset > h2:before,
+.vditor-host .vditor-ir .vditor-reset > h3:before,
+.vditor-host .vditor-ir .vditor-reset > h4:before,
+.vditor-host .vditor-ir .vditor-reset > h5:before,
+.vditor-host .vditor-ir .vditor-reset > h6:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h1:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h2:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h3:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h4:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h5:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h6:before,
+.vditor-host .vditor-ir div[data-type="link-ref-defs-block"]:before,
+.vditor-host .vditor-ir div[data-type="footnotes-block"]:before,
+.vditor-host .vditor-ir .vditor-toc:before,
+.vditor-host .vditor-wysiwyg div.vditor-wysiwyg__block:before,
+.vditor-host .vditor-wysiwyg div[data-type="link-ref-defs-block"]:before,
+.vditor-host .vditor-wysiwyg div[data-type="footnotes-block"]:before,
+.vditor-host .vditor-wysiwyg .vditor-toc:before {
+  content: none !important;
+  display: none !important;
+}
+
+.vditor-host .vditor-ir .vditor-reset > h1,
+.vditor-host .vditor-ir .vditor-reset > h2,
+.vditor-host .vditor-ir .vditor-reset > h3,
+.vditor-host .vditor-ir .vditor-reset > h4,
+.vditor-host .vditor-ir .vditor-reset > h5,
+.vditor-host .vditor-ir .vditor-reset > h6,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h1,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h2,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h3,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h4,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h5,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h6 {
+  margin-left: 0;
+}
+
+.vditor-host .vditor-ir__marker {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  font-size: 0 !important;
+  padding: 0 !important;
+}
+
+/* 隐藏 wysiwyg 光标上方块级浮动工具栏（上移/下移/删除等） */
+.vditor-host .vditor-panel {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ================= style-Home.css ================= */
+/*
+ * 来源: essay/src/views/home/Home.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 已把 2 处 :deep(X) 展开为后代选择器 " X"（其余内容一字未改）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.home-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+.left-panel {
+  width: 440px;
+  background: var(--essay-white);
+  border-right: 1px solid var(--essay-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+/* 无编辑权限或已提交：左侧只读展示 */
+.left-panel.is-submitted .panel-content {
+  opacity: 0.72;
+}
+
+.panel-content {
+  flex: 1;
+  min-height: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.label-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--essay-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.label-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--essay-text);
+}
+
+.label-sub {
+  font-size: 12px;
+  color: var(--essay-text-4);
+}
+
+.panel-footer {
+  height: 72px;
+  padding: 0 16px;
+  border-top: 1px solid var(--essay-border);
+  background: var(--essay-white);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.reset-btn {
+  height: 44px;
+  padding: 0 20px;
+}
+
+.submit-btn {
+  flex: 1;
+  height: 44px;
+}
+
+.submit-btn.is-idle,
+.submit-btn.is-disabled {
+  opacity: 0.3;
+}
+
+.submit-btn span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reset-btn span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ================= style-MetaFields.css ================= */
+/*
+ * 来源: essay/src/views/home/MetaFields.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.meta-fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+}
+
+.field label {
+  font-size: 12px;
+  color: var(--essay-text-3);
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+}
+
+.field--grade {
+  width: 168px;
+  flex-shrink: 0;
+}
+
+.field--unit {
+  flex: 1;
+  min-width: 0;
+}
+
+.essay-select {
+  width: 100%;
+}
+
+/* ================= style-ContentTabs.css ================= */
+/*
+ * 来源: essay/src/views/home/ContentTabs.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.tabs {
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid var(--essay-border);
+  width: 100%;
+}
+
+.tab {
+  padding: 10px 2px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--essay-text-3);
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tab.active {
+  color: var(--essay-primary);
+  border-bottom-color: var(--essay-primary);
+  font-weight: 500;
+}
+
+/* ================= style-UploadPane.css ================= */
+/*
+ * 来源: essay/src/views/home/UploadPane.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.upload-pane {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.drop-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  border: 2px dashed var(--essay-primary);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.drop-mask-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--essay-primary-soft);
+  color: var(--essay-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drop-mask-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--essay-text);
+}
+
+.upload-zone {
+  flex: 1;
+  min-height: 220px;
+}
+
+.upload-zone {
+  border: 2px dashed var(--essay-border);
+  border-radius: 12px;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  cursor: pointer;
+  position: relative;
+}
+
+.upload-zone:hover,
+.upload-zone.is-dragging {
+  border-color: var(--essay-primary);
+}
+
+.upload-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--essay-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.upload-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.upload-main {
+  font-size: 14px;
+  color: var(--essay-text-5);
+}
+
+.upload-main em {
+  font-style: normal;
+  color: var(--essay-primary);
+}
+
+.upload-hint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--essay-text-4);
+  max-width: 220px;
+}
+
+.file-list-area {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--essay-text-3);
+}
+
+.clear-all {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--essay-primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.thumb-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.add-more {
+  position: relative;
+  height: 52px;
+  padding: 0 16px;
+  border: 1px dashed var(--essay-border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #525252;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.add-more em {
+  font-style: normal;
+  font-size: 12px;
+  color: #A3A3A3;
+}
+
+.files-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ================= style-PastePane.css ================= */
+/*
+ * 来源: essay/src/views/home/PastePane.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 已把 2 处 :deep(X) 展开为后代选择器 " X"（其余内容一字未改）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.paste-pane {
+  flex: 1;
+  min-height: 220px;
+  width: 100%;
+  border: 1px solid var(--essay-border);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.paste-pane.is-disabled {
+  background: var(--el-disabled-bg-color, #f5f7fa);
+}
+
+.paste-input {
+  flex: 1;
+}
+
+.paste-input .el-textarea__inner,
+.paste-input .el-textarea.is-disabled .el-textarea__inner {
+  height: 100% !important;
+  min-height: 180px;
+  border: 0;
+  box-shadow: none;
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--essay-text);
+  background: transparent;
+  resize: none;
+}
+
+.word-count {
+  padding: 0 16px 12px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--essay-text-4);
+  background: transparent;
+}
+
+/* ================= style-EmptyState.css ================= */
+/*
+ * 来源: essay/src/views/home/EmptyState.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.empty-state {
+  flex: 1;
+  min-width: 0;
+  background: var(--essay-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 40px;
+  background: var(--essay-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.empty-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.empty-copy h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--essay-text);
+}
+
+.empty-copy p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--essay-text-3);
+}
+
+/* ================= style-ProgressState.css ================= */
+/*
+ * 来源: essay/src/views/home/ProgressState.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.progress-state {
+  flex: 1;
+  min-width: 0;
+  background: var(--essay-bg);
+  padding: 40px;
+}
+
+/* ================= style-EssayLoading.css ================= */
+/*
+ * 来源: essay/src/components/EssayLoading.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.essay-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.essay-loading.is-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+/* 列表悬浮：提示语轻一点，避免抢内容区视觉 */
+.essay-loading.is-overlay .essay-loading__copy h3 {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--essay-text-3, #808080);
+}
+
+.essay-loading__spinner {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: essay-loading-spin 0.8s linear infinite;
+}
+
+.essay-loading__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.essay-loading__copy h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--essay-text);
+}
+
+.essay-loading__copy p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--essay-text-3);
+}
+
+@keyframes essay-loading-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ================= style-FailPanel.css ================= */
+/*
+ * 来源: essay/src/components/FailPanel.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.fail-panel {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  background: var(--essay-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px;
+}
+
+.fail-panel__icon {
+  display: flex;
+  width: 50px;
+  height: 50px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50px;
+  background: #ff3b3b;
+  flex-shrink: 0;
+}
+
+.fail-panel__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.fail-panel__copy h3 {
+  color: #262626;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.fail-panel__copy p {
+  max-width: 360px;
+  color: #737373;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.fail-panel__btn {
+  display: flex;
+  min-width: 120px;
+  height: 40px;
+  padding: 10px 16px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 4px;
+  border-radius: 8px;
+  background: #ff6641;
+}
+
+.fail-panel__btn:hover,
+.fail-panel__btn:focus {
+  background: #ff6641;
+  border-color: #ff6641;
+}
+
+/* ================= style-ImageReview.css ================= */
+/*
+ * 来源: essay/src/views/home/ImageReview.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 已把 6 处 :deep(X) 展开为后代选择器 " X"（其余内容一字未改）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.review-pane {
+  flex: 1;
+  min-width: 0;
+  background: var(--essay-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 30px;
+}
+
+.review-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #212121;
+}
+
+.review-hint {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #808080;
+}
+
+.review-hint em {
+  font-style: normal;
+  font-weight: 500;
+  color: #ff5e2e;
+}
+
+.page-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+}
+
+.page-tab {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  color: #666;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.page-tab.active {
+  background: rgba(255, 94, 46, 0.1);
+  color: #ff5e2e;
+  font-weight: 500;
+}
+
+.compare {
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+  border: 1px solid var(--essay-border);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.compare-image,
+.compare-editor {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.compare-image {
+  background: #fafafa;
+}
+
+.compare-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+  padding: 4px 0;
+}
+
+.compare-text {
+  flex: 1;
+  min-height: 0;
+  background: #f5f5f5;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.compare-text .para-editor,
+.compare-text .para-editor .vditor,
+.compare-text .para-editor .vditor-content,
+.compare-text .para-editor .vditor-wysiwyg,
+.compare-text .para-editor pre.vditor-reset {
+  background: #f5f5f5 !important;
+}
+
+.compare-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.review-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 0 0;
+}
+
+.start-btn {
+  width: 308px;
+  height: 44px;
+}
+
+.start-btn span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ================= style-TextReview.css ================= */
+/*
+ * 来源: essay/src/views/home/TextReview.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 已把 6 处 :deep(X) 展开为后代选择器 " X"（其余内容一字未改）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.review-pane {
+  flex: 1;
+  min-width: 0;
+  background: var(--essay-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 30px;
+}
+
+.review-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #212121;
+}
+
+.review-hint {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #808080;
+}
+
+.review-hint em {
+  font-style: normal;
+  font-weight: 500;
+  color: #ff5e2e;
+}
+
+.page-tabs {
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.text-wrap {
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+  border: 1px solid var(--essay-border);
+  border-radius: 10px;
+  padding: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.text-editor {
+  flex: 1;
+  min-height: 0;
+  background: #f5f5f5;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.text-editor .para-editor,
+.text-editor .para-editor .vditor,
+.text-editor .para-editor .vditor-content,
+.text-editor .para-editor .vditor-wysiwyg,
+.text-editor .para-editor pre.vditor-reset {
+  background: #f5f5f5 !important;
+}
+
+.review-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 0 0;
+}
+
+.start-btn {
+  width: 308px;
+  height: 44px;
+}
+
+.start-btn span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ================= style-ReviewTitleInput.css ================= */
+/*
+ * 来源: essay/src/views/home/ReviewTitleInput.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 已把 4 处 :deep(X) 展开为后代选择器 " X"（其余内容一字未改）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.review-title-input {
+  flex-shrink: 0;
+  height: 40px;
+  background: #f5f5f5;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.review-title-input .el-input {
+  height: 100%;
+}
+
+.review-title-input .el-input__wrapper {
+  height: 100%;
+  padding: 0 20px;
+  background: transparent;
+  box-shadow: none !important;
+  border-radius: 10px;
+}
+
+.review-title-input .el-input__inner {
+  height: 40px;
+  line-height: 40px;
+  font-size: 16px;
+  color: #212121;
+  text-align: center;
+  background: transparent;
+}
+
+.review-title-input .el-input__inner::placeholder {
+  color: #999;
+  font-size: 14px;
+}
+
+/* ================= style-ParagraphEditor.css ================= */
+/*
+ * 来源: essay/src/views/home/ParagraphEditor.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 已把 7 处 :deep(X) 展开为后代选择器 " X"（其余内容一字未改）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.para-editor {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: #fafafa;
+  border-radius: 10px;
+}
+
+.para-editor.vditor-host.vditor,
+.para-editor .vditor {
+  height: 100% !important;
+  border: none !important;
+  background: #fafafa !important;
+  box-shadow: none !important;
+}
+
+.para-editor .vditor-toolbar {
+  display: none;
+}
+
+.para-editor .vditor-content,
+.para-editor .vditor-wysiwyg {
+  height: 100%;
+  background: #fafafa !important;
+}
+
+.para-editor .vditor-wysiwyg pre.vditor-reset {
+  min-height: 100% !important;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px !important;
+  font-size: 16px;
+  line-height: 24px;
+  color: #000;
+  background: #fafafa !important;
+  /* 防止残留 \\n 仍按 pre 硬换行；正文应按容器宽重排 */
+  white-space: normal !important;
+}
+
+.para-editor .vditor-wysiwyg pre.vditor-reset p {
+  margin: 0 0 12px;
+  font-size: 16px;
+  line-height: 1.8;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.para-editor .vditor-wysiwyg pre.vditor-reset p:last-child {
+  margin-bottom: 0;
+}
+
+/* ================= style-FileCard.css ================= */
+/*
+ * 来源: essay/src/views/home/FileCard.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.file-card {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--essay-border);
+  border-radius: 8px;
+  box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.08);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.thumb--docx {
+  background: var(--essay-docx);
+}
+
+.thumb--pdf {
+  background: var(--essay-pdf);
+}
+
+.thumb--file {
+  background: var(--essay-text-3);
+}
+
+.middle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--essay-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.progress {
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--essay-border);
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--essay-success);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ok {
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--essay-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ================= style-ImageThumb.css ================= */
+/*
+ * 来源: essay/src/views/home/ImageThumb.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 已把 1 处 :deep(X) 展开为后代选择器 " X"（其余内容一字未改）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.image-thumb {
+  position: relative;
+  height: 148px;
+  min-width: 0;
+  background: #fafaf5;
+  border: 1px solid var(--essay-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.preview {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: zoom-in;
+}
+
+.preview .el-image__inner {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview--empty {
+  background: #fafaf5;
+}
+
+.close-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.success-badge {
+  position: absolute;
+  left: 7px;
+  bottom: 35px;
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--essay-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.filename-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28px;
+  padding: 0 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 11px;
+  line-height: 28px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ================= 补：Element Plus 2.2.36 el-alert 样式（essay-base.css 的子集里没有；逐字取自 element-plus@2.2.36 dist/index.css） =================
+   用于首页作文列表区的两条提示条（只读说明 = warning，来自学员档案 = info）。essay 项目 main.js 全量注册了 Element Plus，真实实现直接用 <el-alert>。 */
+.el-alert{--el-alert-padding:8px 16px;--el-alert-border-radius-base:var(--el-border-radius-base);--el-alert-title-font-size:13px;--el-alert-description-font-size:12px;--el-alert-close-font-size:12px;--el-alert-close-customed-font-size:13px;--el-alert-icon-size:16px;--el-alert-icon-large-size:28px;width:100%;padding:var(--el-alert-padding);margin:0;box-sizing:border-box;border-radius:var(--el-alert-border-radius-base);position:relative;background-color:var(--el-color-white);overflow:hidden;opacity:1;display:flex;align-items:center;transition:opacity var(--el-transition-duration-fast)}
+.el-alert.is-light .el-alert__close-btn{color:var(--el-text-color-placeholder)}
+.el-alert.is-dark .el-alert__close-btn{color:var(--el-color-white)}
+.el-alert.is-dark .el-alert__description{color:var(--el-color-white)}
+.el-alert.is-center{justify-content:center}
+.el-alert--success{--el-alert-bg-color:var(--el-color-success-light-9)}
+.el-alert--success.is-light{background-color:var(--el-alert-bg-color);color:var(--el-color-success)}
+.el-alert--success.is-light .el-alert__description{color:var(--el-color-success)}
+.el-alert--success.is-dark{background-color:var(--el-color-success);color:var(--el-color-white)}
+.el-alert--info{--el-alert-bg-color:var(--el-color-info-light-9)}
+.el-alert--info.is-light{background-color:var(--el-alert-bg-color);color:var(--el-color-info)}
+.el-alert--info.is-light .el-alert__description{color:var(--el-color-info)}
+.el-alert--info.is-dark{background-color:var(--el-color-info);color:var(--el-color-white)}
+.el-alert--warning{--el-alert-bg-color:var(--el-color-warning-light-9)}
+.el-alert--warning.is-light{background-color:var(--el-alert-bg-color);color:var(--el-color-warning)}
+.el-alert--warning.is-light .el-alert__description{color:var(--el-color-warning)}
+.el-alert--warning.is-dark{background-color:var(--el-color-warning);color:var(--el-color-white)}
+.el-alert--error{--el-alert-bg-color:var(--el-color-error-light-9)}
+.el-alert--error.is-light{background-color:var(--el-alert-bg-color);color:var(--el-color-error)}
+.el-alert--error.is-light .el-alert__description{color:var(--el-color-error)}
+.el-alert--error.is-dark{background-color:var(--el-color-error);color:var(--el-color-white)}
+.el-alert__content{display:table-cell;padding:0 8px}
+.el-alert .el-alert__icon{font-size:var(--el-alert-icon-size);width:var(--el-alert-icon-size)}
+.el-alert .el-alert__icon.is-big{font-size:var(--el-alert-icon-large-size);width:var(--el-alert-icon-large-size)}
+.el-alert__title{font-size:var(--el-alert-title-font-size);line-height:18px;vertical-align:text-top}
+.el-alert__title.is-bold{font-weight:700}
+.el-alert .el-alert__description{font-size:var(--el-alert-description-font-size);margin:5px 0 0 0}
+.el-alert .el-alert__close-btn{font-size:var(--el-alert-close-font-size);opacity:1;position:absolute;top:12px;right:15px;cursor:pointer}
+.el-alert .el-alert__close-btn.is-customed{font-style:normal;font-size:var(--el-alert-close-customed-font-size);top:9px}
+
+
+/* ====== 新增（产品方案 v2） ====== */
+/* v1 的首页新增样式（AI 作文｜上传作文分段、学生下拉、作文列表、卡片、折叠行等）已整体移到 demo/_unused/essay-home.v1.css。
+   这里只剩校对页左侧"手写稿纸占位"（学生拍照提交的手写作文没有图片文件，用 CSS 画一张）。
+   颜色取自本页已有 token：稿纸白底、横线 #dbe3ef 一类浅灰蓝、笔迹灰 var(--essay-text-4)、说明小字 12px / --essay-text-4。 */
+
+.x-hw {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #fff;
+  /* 横线：每行高 = 稿纸高度的 3.9%（与 essay-home.js 里的 RH 一致），每行最下面 1px 一条浅线 */
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(3.9% - 1px), #dfe5ee calc(3.9% - 1px), #dfe5ee 3.9%);
+}
+
+/* 左侧装订线：一条浅红竖线，稿纸的常见样子 */
+.x-hw::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 6%;
+  width: 1px;
+  background: rgba(239, 68, 68, 0.28);
+}
+
+/* 一行笔迹：每个字一小块灰色（块宽由行内联样式的 background-size 决定） */
+.x-hw__line {
+  position: absolute;
+  border-radius: 2px;
+  background-image: linear-gradient(90deg, rgba(110, 110, 110, 0.55) 0, rgba(110, 110, 110, 0.55) 68%, transparent 68%, transparent 100%);
+  background-repeat: repeat-x;
+}
+
+.x-hw__line--title {
+  background-image: linear-gradient(90deg, rgba(80, 80, 80, 0.7) 0, rgba(80, 80, 80, 0.7) 72%, transparent 72%, transparent 100%);
+}
+
+.x-hw__tip {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--essay-text-4);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0 4px;
+}
+
+/* 校对页左图容器：稿纸按 3:4 居中放（真实是 <img> object-fit: contain，照片 3:4 左右） */
+.compare-image {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.compare-image .x-hw {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 3 / 4;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}

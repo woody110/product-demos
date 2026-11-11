@@ -1,0 +1,1208 @@
+/* essay-overlays.css —— E2b：批改历史抽屉 / 发送遮罩 / 预览弹层
+   顺序：补充（Element Plus 的 el-drawer / el-pager / el-pagination 基础规则，essay-base.css 里没有）
+        → 逐字取自真实源码的样式（HistoryDrawer、CorrectionPreviewOverlay、correction-preview-doc、CorrectionBrandLogo、CorrectionExportHost）
+        → 新增（产品方案）与"隔离"修正。
+   依赖（同页其他 css 已提供，这里不重复）：Vditor 预览基础样式 + light 内容主题 + vditor-essay.css、EssayLoading、
+        Correction.vue 的整页 loading（.correction-capture-loading）——都在 essay-correction.css 里；
+        tokens / .essay-icon / .el-overlay / .el-input 在 essay-base.css 里。
+   说明：真实源码里这些组件的样式都是 scoped；demo 里整页同源，.name / .badge / .close-btn / .brand-logo 等通用类名
+         会与顶栏、首页的同名规则互相污染，所以 HistoryDrawer 的 scoped 块统一加前缀 .history-el-drawer，
+         CorrectionPreviewOverlay 的统一加前缀 .correction-preview-overlay（选择器之外的声明一字未改）。 */
+/* ================= 补充（E2b）：Element Plus 2.2.36 的 el-drawer / el-pagination / el-pager 基础规则 =================
+   来源：/tmp/demo-spec/essay-correction/_ref/element-plus-2.2.36/index.css（只取这三个组件的规则，原值未改，仅换行排版；
+   Vue 2 的 <transition> 用 enter-class/leave-class 指到 *-enter-from / *-leave-from 以复用这里的过渡类）。
+   若 essay-base.css 之后补进了这些规则，可删除本段去重。 */
+.el-drawer {
+  --el-drawer-bg-color:var(--el-dialog-bg-color, var(--el-bg-color));
+  --el-drawer-padding-primary:var(--el-dialog-padding-primary, 20px);
+}
+
+.el-drawer {
+  position:absolute;
+  box-sizing:border-box;
+  background-color:var(--el-drawer-bg-color);
+  display:flex;
+  flex-direction:column;
+  box-shadow:var(--el-box-shadow-dark);
+  overflow:hidden;
+  transition:all var(--el-transition-duration);
+}
+
+.el-drawer .rtl {
+  transform:translate(0,0);
+}
+
+.el-drawer .ltr {
+  transform:translate(0,0);
+}
+
+.el-drawer .ttb {
+  transform:translate(0,0);
+}
+
+.el-drawer .btt {
+  transform:translate(0,0);
+}
+
+.el-drawer__sr-focus:focus {
+  outline:0!important;
+}
+
+.el-drawer__header {
+  align-items:center;
+  color:#72767b;
+  display:flex;
+  margin-bottom:32px;
+  padding:var(--el-drawer-padding-primary);
+  padding-bottom:0;
+}
+
+.el-drawer__header>:first-child {
+  flex:1;
+}
+
+.el-drawer__title {
+  margin:0;
+  flex:1;
+  line-height:inherit;
+  font-size:1rem;
+}
+
+.el-drawer__footer {
+  padding:var(--el-drawer-padding-primary);
+  padding-top:10px;
+  text-align:right;
+}
+
+.el-drawer__close-btn {
+  display:inline-flex;
+  border:none;
+  cursor:pointer;
+  font-size:var(--el-font-size-extra-large);
+  color:inherit;
+  background-color:transparent;
+  outline:0;
+}
+
+.el-drawer__close-btn:focus i,
+.el-drawer__close-btn:hover i {
+  color:var(--el-color-primary);
+}
+
+.el-drawer__body {
+  flex:1;
+  padding:var(--el-drawer-padding-primary);
+  overflow:auto;
+}
+
+.el-drawer__body>* {
+  box-sizing:border-box;
+}
+
+.el-drawer.ltr,
+.el-drawer.rtl {
+  height:100%;
+  top:0;
+  bottom:0;
+}
+
+.el-drawer.btt,
+.el-drawer.ttb {
+  width:100%;
+  left:0;
+  right:0;
+}
+
+.el-drawer.ltr {
+  left:0;
+}
+
+.el-drawer.rtl {
+  right:0;
+}
+
+.el-drawer.ttb {
+  top:0;
+}
+
+.el-drawer.btt {
+  bottom:0;
+}
+
+.el-drawer-fade-enter-active,
+.el-drawer-fade-leave-active {
+  transition:all var(--el-transition-duration);
+}
+
+.el-drawer-fade-enter-active,
+.el-drawer-fade-enter-from,
+.el-drawer-fade-enter-to,
+.el-drawer-fade-leave-active,
+.el-drawer-fade-leave-from,
+.el-drawer-fade-leave-to {
+  overflow:hidden!important;
+}
+
+.el-drawer-fade-enter-from,
+.el-drawer-fade-leave-to {
+  opacity:0;
+}
+
+.el-drawer-fade-enter-to,
+.el-drawer-fade-leave-from {
+  opacity:1;
+}
+
+.el-drawer-fade-enter-from .rtl,
+.el-drawer-fade-leave-to .rtl {
+  transform:translateX(100%);
+}
+
+.el-drawer-fade-enter-from .ltr,
+.el-drawer-fade-leave-to .ltr {
+  transform:translateX(-100%);
+}
+
+.el-drawer-fade-enter-from .ttb,
+.el-drawer-fade-leave-to .ttb {
+  transform:translateY(-100%);
+}
+
+.el-drawer-fade-enter-from .btt,
+.el-drawer-fade-leave-to .btt {
+  transform:translateY(100%);
+}
+
+.el-pagination {
+  --el-pagination-font-size:14px;
+  --el-pagination-bg-color:var(--el-fill-color-blank);
+  --el-pagination-text-color:var(--el-text-color-primary);
+  --el-pagination-border-radius:2px;
+  --el-pagination-button-color:var(--el-text-color-primary);
+  --el-pagination-button-width:32px;
+  --el-pagination-button-height:32px;
+  --el-pagination-button-disabled-color:var(--el-text-color-placeholder);
+  --el-pagination-button-disabled-bg-color:var(--el-fill-color-blank);
+  --el-pagination-button-bg-color:var(--el-fill-color);
+  --el-pagination-hover-color:var(--el-color-primary);
+  --el-pagination-font-size-small:12px;
+  --el-pagination-button-width-small:24px;
+  --el-pagination-button-height-small:24px;
+  --el-pagination-item-gap:16px;
+  white-space:nowrap;
+  color:var(--el-pagination-text-color);
+  font-size:var(--el-pagination-font-size);
+  font-weight:400;
+  display:flex;
+  align-items:center;
+}
+
+.el-pagination .el-input__inner {
+  text-align:center;
+  -moz-appearance:textfield;
+}
+
+.el-pagination .el-select .el-input {
+  width:128px;
+}
+
+.el-pagination button {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:var(--el-pagination-font-size);
+  min-width:var(--el-pagination-button-width);
+  height:var(--el-pagination-button-height);
+  line-height:var(--el-pagination-button-height);
+  color:var(--el-pagination-button-color);
+  background:var(--el-pagination-bg-color);
+  padding:0 4px;
+  border:none;
+  border-radius:var(--el-pagination-border-radius);
+  cursor:pointer;
+  text-align:center;
+  box-sizing:border-box;
+}
+
+.el-pagination button * {
+  pointer-events:none;
+}
+
+.el-pagination button:focus {
+  outline:0;
+}
+
+.el-pagination button:hover {
+  color:var(--el-pagination-hover-color);
+}
+
+.el-pagination button.is-active {
+  color:var(--el-pagination-hover-color);
+  cursor:default;
+  font-weight:700;
+}
+
+.el-pagination button.is-active.is-disabled {
+  font-weight:700;
+  color:var(--el-text-color-secondary);
+}
+
+.el-pagination button.is-disabled,
+.el-pagination button:disabled {
+  color:var(--el-pagination-button-disabled-color);
+  background-color:var(--el-pagination-button-disabled-bg-color);
+  cursor:not-allowed;
+}
+
+.el-pagination button:focus-visible {
+  outline:1px solid var(--el-pagination-hover-color);
+  outline-offset:-1px;
+}
+
+.el-pagination .btn-next .el-icon,
+.el-pagination .btn-prev .el-icon {
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  width:inherit;
+}
+
+.el-pagination>.is-first {
+  margin-left:0!important;
+}
+
+.el-pagination>.is-last {
+  margin-right:0!important;
+}
+
+.el-pagination .btn-prev {
+  margin-left:var(--el-pagination-item-gap);
+}
+
+.el-pagination__sizes {
+  margin-left:var(--el-pagination-item-gap);
+  font-weight:400;
+  color:var(--el-text-color-regular);
+}
+
+.el-pagination__total {
+  margin-left:var(--el-pagination-item-gap);
+  font-weight:400;
+  color:var(--el-text-color-regular);
+}
+
+.el-pagination__total[disabled=true] {
+  color:var(--el-text-color-placeholder);
+}
+
+.el-pagination__jump {
+  display:flex;
+  align-items:center;
+  margin-left:var(--el-pagination-item-gap);
+  font-weight:400;
+  color:var(--el-text-color-regular);
+}
+
+.el-pagination__jump[disabled=true] {
+  color:var(--el-text-color-placeholder);
+}
+
+.el-pagination__goto {
+  margin-right:8px;
+}
+
+.el-pagination__editor {
+  text-align:center;
+  box-sizing:border-box;
+}
+
+.el-pagination__editor.el-input {
+  width:56px;
+}
+
+.el-pagination__editor .el-input__inner::-webkit-inner-spin-button,
+.el-pagination__editor .el-input__inner::-webkit-outer-spin-button {
+  -webkit-appearance:none;
+  margin:0;
+}
+
+.el-pagination__classifier {
+  margin-left:8px;
+}
+
+.el-pagination__rightwrapper {
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+}
+
+.el-pagination.is-background .btn-next,
+.el-pagination.is-background .btn-prev,
+.el-pagination.is-background .el-pager li {
+  margin:0 4px;
+  background-color:var(--el-pagination-button-bg-color);
+}
+
+.el-pagination.is-background .btn-next.is-active,
+.el-pagination.is-background .btn-prev.is-active,
+.el-pagination.is-background .el-pager li.is-active {
+  background-color:var(--el-color-primary);
+  color:var(--el-color-white);
+}
+
+.el-pagination.is-background .btn-next.is-disabled,
+.el-pagination.is-background .btn-next:disabled,
+.el-pagination.is-background .btn-prev.is-disabled,
+.el-pagination.is-background .btn-prev:disabled,
+.el-pagination.is-background .el-pager li.is-disabled,
+.el-pagination.is-background .el-pager li:disabled {
+  color:var(--el-text-color-placeholder);
+  background-color:var(--el-disabled-bg-color);
+}
+
+.el-pagination.is-background .btn-next.is-disabled.is-active,
+.el-pagination.is-background .btn-next:disabled.is-active,
+.el-pagination.is-background .btn-prev.is-disabled.is-active,
+.el-pagination.is-background .btn-prev:disabled.is-active,
+.el-pagination.is-background .el-pager li.is-disabled.is-active,
+.el-pagination.is-background .el-pager li:disabled.is-active {
+  color:var(--el-text-color-secondary);
+  background-color:var(--el-fill-color-dark);
+}
+
+.el-pagination.is-background .btn-prev {
+  margin-left:var(--el-pagination-item-gap);
+}
+
+.el-pagination--small .btn-next,
+.el-pagination--small .btn-prev,
+.el-pagination--small .el-pager li {
+  height:var(--el-pagination-button-height-small);
+  line-height:var(--el-pagination-button-height-small);
+  font-size:var(--el-pagination-font-size-small);
+  min-width:var(--el-pagination-button-width-small);
+}
+
+.el-pagination--small button,
+.el-pagination--small span:not([class*=suffix]) {
+  font-size:var(--el-pagination-font-size-small);
+}
+
+.el-pagination--small .el-select .el-input {
+  width:100px;
+}
+
+.el-pager {
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
+  list-style:none;
+  font-size:0;
+  padding:0;
+  margin:0;
+  display:flex;
+  align-items:center;
+}
+
+.el-pager li {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:var(--el-pagination-font-size);
+  min-width:var(--el-pagination-button-width);
+  height:var(--el-pagination-button-height);
+  line-height:var(--el-pagination-button-height);
+  color:var(--el-pagination-button-color);
+  background:var(--el-pagination-bg-color);
+  padding:0 4px;
+  border:none;
+  border-radius:var(--el-pagination-border-radius);
+  cursor:pointer;
+  text-align:center;
+  box-sizing:border-box;
+}
+
+.el-pager li * {
+  pointer-events:none;
+}
+
+.el-pager li:focus {
+  outline:0;
+}
+
+.el-pager li:hover {
+  color:var(--el-pagination-hover-color);
+}
+
+.el-pager li.is-active {
+  color:var(--el-pagination-hover-color);
+  cursor:default;
+  font-weight:700;
+}
+
+.el-pager li.is-active.is-disabled {
+  font-weight:700;
+  color:var(--el-text-color-secondary);
+}
+
+.el-pager li.is-disabled,
+.el-pager li:disabled {
+  color:var(--el-pagination-button-disabled-color);
+  background-color:var(--el-pagination-button-disabled-bg-color);
+  cursor:not-allowed;
+}
+
+.el-pager li:focus-visible {
+  outline:1px solid var(--el-pagination-hover-color);
+  outline-offset:-1px;
+}
+
+@keyframes slideInRight-enter {
+0%{opacity:0;transform-origin:0 0;transform:translateX(100%)}to{opacity:1;transform-origin:0 0;transform:translateX(0)}
+}
+
+@keyframes slideInRight-leave {
+0%{transform-origin:0 0;transform:translateX(0);opacity:1}100%{transform-origin:0 0;transform:translateX(100%);opacity:0}
+}
+
+@keyframes slideInLeft-enter {
+0%{opacity:0;transform-origin:0 0;transform:translateX(-100%)}to{opacity:1;transform-origin:0 0;transform:translateX(0)}
+}
+
+@keyframes slideInLeft-leave {
+0%{transform-origin:0 0;transform:translateX(0);opacity:1}100%{transform-origin:0 0;transform:translateX(-100%);opacity:0}
+}
+
+
+/* ================= 来源：essay/src/components/HistoryDrawer.vue =================
+   第 1 块（原 scoped）：选择器统一加前缀 .history-el-drawer（见文件头说明）；第 2 块（原本就是全局）：逐字。 */
+/* ===== 第 1 块：原 <style scoped>（仅作用于本组件模板内元素；去 scoped 后变成全局选择器） ===== */
+.history-el-drawer .drawer-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.history-el-drawer .record-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0 8px;
+}
+
+.history-el-drawer .search-input {
+  flex-shrink: 0;
+}
+
+.history-el-drawer .pager-wrap {
+  flex-shrink: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--essay-border);
+  display: flex;
+  justify-content: center;
+}
+
+.history-el-drawer .empty {
+  color: var(--essay-text-4);
+  font-size: 14px;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.history-el-drawer .record-card {
+  position: relative;
+  width: 100%;
+  text-align: left;
+  background: var(--essay-white);
+  border: 1px solid var(--essay-border);
+  border-radius: 12px;
+  padding: 28px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-el-drawer .record-card.is-active {
+  background: #fff3f0;
+  border-color: #ffc8ba;
+}
+
+.history-el-drawer .badge {
+  position: absolute;
+  right: -1px;
+  top: 0;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 0 12px 0 10px;
+}
+
+.history-el-drawer .badge--pending {
+  background: var(--essay-primary);
+}
+
+.history-el-drawer .badge--fail {
+  background: #ff3b30;
+}
+
+.history-el-drawer .badge--done {
+  background: #07c160;
+}
+
+.history-el-drawer .meta {
+  font-size: 14px;
+  color: var(--essay-text-muted);
+}
+
+.history-el-drawer .name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--essay-text);
+}
+
+.history-el-drawer .time {
+  font-size: 12px;
+  color: #999;
+}
+
+.history-el-drawer .close-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--essay-border);
+  border-radius: 8px;
+  background: var(--essay-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+
+/* ===== 第 2 块：原 <style>（本来就是全局，用于 el-drawer 被 teleport 到 body 后的覆盖） ===== */
+.history-el-overlay {
+  top: 56px !important;
+  height: calc(100% - 56px) !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.history-el-overlay .el-drawer.history-el-drawer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: var(--essay-white);
+  border-right: 1px solid var(--essay-border);
+  box-shadow: 8px 0 24px -8px rgba(0, 0, 0, 0.1);
+}
+
+.history-el-drawer .el-drawer__header {
+  margin-bottom: 16px;
+  padding: 0;
+  align-items: center;
+}
+
+.history-el-drawer .el-drawer__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--essay-text);
+}
+
+.history-el-drawer .el-drawer__body {
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-el-drawer .search-input .el-input__wrapper {
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--essay-border) inset;
+}
+
+.history-el-drawer .search-input .el-input__inner {
+  height: 40px;
+  font-size: 14px;
+  color: var(--essay-text);
+}
+
+.history-el-drawer .search-input .el-input__inner::placeholder {
+  color: #999;
+}
+
+.history-el-drawer .pager-wrap .el-pagination {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ================= 来源：essay/src/views/correction/CorrectionPreviewOverlay.vue（原 scoped；选择器加前缀 .correction-preview-overlay） ================= */
+.correction-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(15, 23, 42, 0.94);
+  display: flex;
+  flex-direction: column;
+}
+
+.correction-preview-overlay .preview-toolbar {
+  flex-shrink: 0;
+  height: 56px;
+  padding: 0 24px;
+  background: #1e293b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.correction-preview-overlay .toolbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.correction-preview-overlay .brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--essay-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.correction-preview-overlay .brand-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.correction-preview-overlay .toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.correction-preview-overlay .toolbar-btn {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.correction-preview-overlay .toolbar-btn .essay-icon img {
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+.correction-preview-overlay .toolbar-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.correction-preview-overlay .toolbar-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.correction-preview-overlay .toolbar-btn--close {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.correction-preview-overlay .preview-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 32px 24px 48px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ================= 来源：essay/src/styles/correction-preview-doc.css（整文件原样） ================= */
+/**
+ * 批改报告预览文档样式
+ * 间距/字号变量由 correctionPreviewLayout.js（PREVIEW_DOC_LAYOUT）注入，PDF 同源
+ */
+
+.preview-doc {
+  --doc-brand-logo-size: 40px;
+  --doc-brand-logo-gap: 24px;
+  --doc-meta-width-ratio: 0.5037;
+  --doc-content-padding-top: 48px;
+  --doc-content-padding-right: 56px;
+  --doc-content-padding-bottom: 64px;
+  --doc-content-padding-left: 56px;
+  position: relative;
+  width: min(920px, 100%);
+  margin: 0 auto;
+  padding: var(--doc-content-padding-top) var(--doc-content-padding-right) var(--doc-content-padding-bottom) var(--doc-content-padding-left);
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  color: #212121;
+  /* 与 PDF / 图片导出共用 Noto Sans CJK SC，换行位置一致 */
+  font-family: var(--essay-doc-font-family);
+}
+
+/* Figma pdf01：logo 贴内容区右上角（与 padding 对齐） */
+.preview-doc > .doc-brand-logo {
+  position: absolute;
+  top: var(--doc-content-padding-top);
+  right: var(--doc-content-padding-right);
+  width: var(--doc-brand-logo-size);
+  height: var(--doc-brand-logo-size);
+  margin: 0;
+  padding: 0;
+}
+
+/* 页眉：左侧 meta（约半宽），logo 已独立绝对定位 */
+.preview-doc .doc-meta {
+  position: relative;
+  margin-bottom: var(--essay-doc-meta-margin-bottom, 40px);
+}
+
+.preview-doc .doc-meta-main {
+  /* logo 绝对定位在右上，meta 可用宽 = 内容区 − logo − 间距，避免长题目无谓折行 */
+  max-width: calc(100% - var(--doc-brand-logo-size) - var(--doc-brand-logo-gap));
+  min-width: 0;
+}
+
+.preview-doc .grade-unit {
+  margin: 0 0 var(--essay-doc-grade-unit-margin-bottom, 12px);
+  font-size: var(--essay-doc-grade-unit-font-size, 20px);
+  font-weight: 400;
+  color: var(--essay-doc-grade-unit-color, #737373);
+  line-height: 1.5;
+  text-align: left;
+}
+
+.preview-doc .student-name,
+.preview-doc .essay-title {
+  margin: 0 0 var(--essay-doc-meta-item-gap, 12px);
+  font-size: var(--essay-doc-meta-font-size, 26px);
+  font-weight: 700;
+  color: #262626;
+  line-height: 1.5;
+  text-align: left;
+  word-wrap: normal;
+  letter-spacing: 0;
+}
+
+.preview-doc .book-title-mark {
+  /* 勿用 inline-block：会在《与题名之间整段折行 */
+  display: inline;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.preview-doc .book-title-inner {
+  display: inline;
+}
+
+.preview-doc .doc-section {
+  margin-bottom: var(--essay-doc-section-margin-bottom, 48px);
+  /* 与 PDF 一致：为右上角 logo 列留白，避免正文侵入 */
+  padding-right: calc(var(--doc-brand-logo-size) + var(--doc-brand-logo-gap));
+}
+
+.preview-doc .doc-section:first-of-type {
+  /* 老师批注整页图需要满宽，不缩进 logo 列 */
+  padding-right: 0;
+}
+
+.preview-doc .doc-section:last-child {
+  margin-bottom: 0;
+}
+
+.preview-doc .section-heading {
+  margin: 0 0 var(--essay-doc-section-heading-margin-bottom, 28px);
+  font-size: var(--essay-doc-section-heading-size, 28px);
+  font-weight: 700;
+  color: var(--essay-primary, #ff6641);
+  line-height: 1.4;
+}
+
+.preview-doc .marknote-page-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--essay-doc-marknote-page-gap, 28px);
+}
+
+.preview-doc .marknote-page-image {
+  width: 100%;
+  display: block;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.preview-doc .subsection-heading {
+  margin: 0 0 var(--essay-doc-subsection-heading-margin-bottom, 24px);
+  font-size: var(--essay-doc-subsection-heading-size, 26px);
+  font-weight: 700;
+  color: #333;
+  line-height: 1.5;
+}
+
+.preview-doc .subsubsection-heading {
+  margin: 0 0 var(--essay-doc-subsubsection-heading-margin-bottom, 16px);
+  font-size: var(--essay-doc-subsubsection-heading-size, 24px);
+  font-weight: 700;
+  color: #333;
+  line-height: 1.5;
+}
+
+.preview-doc .subsection-block--follow {
+  margin-top: var(--essay-doc-subsection-follow-margin-top, 36px);
+  padding-top: var(--essay-doc-subsection-follow-padding-top, 36px);
+  border-top: 1px dashed #eee;
+}
+
+.preview-doc .subsection-block:first-child .subsection-heading {
+  margin-top: 0;
+}
+
+.preview-doc .subsubsection-block + .subsubsection-block {
+  margin-top: 24px;
+}
+
+.preview-doc .annotation-empty {
+  margin: 0;
+  color: #8e8e93;
+  font-size: var(--essay-doc-grade-unit-font-size, 20px);
+}
+
+.preview-doc .annotation-layout {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.preview-doc .annotation-layout--follow {
+  margin-top: 36px;
+  padding-top: 36px;
+  border-top: 1px dashed #eee;
+}
+
+.preview-doc .essay-page-card {
+  position: relative;
+  flex: 0 0 58%;
+  max-width: 520px;
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  background: #fff;
+}
+
+.preview-doc .essay-page-image {
+  width: 100%;
+  display: block;
+}
+
+.preview-doc .page-marker {
+  position: absolute;
+  width: var(--essay-doc-annotation-marker-size, 32px);
+  height: var(--essay-doc-annotation-marker-size, 32px);
+  margin-left: calc(var(--essay-doc-annotation-marker-size, 32px) / -2);
+  margin-top: calc(var(--essay-doc-annotation-marker-size, 32px) / -2);
+  border-radius: 50%;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.preview-doc .annotation-list {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 0;
+}
+
+.preview-doc .annotation-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.preview-doc .annotation-marker {
+  width: var(--essay-doc-annotation-marker-size, 32px);
+  height: var(--essay-doc-annotation-marker-size, 32px);
+  border-radius: 50%;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.preview-doc .annotation-text {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  color: var(--essay-primary, #ff6641);
+  font-size: var(--essay-doc-annotation-font-size, 24px);
+  line-height: 1.75;
+  font-weight: 700;
+}
+
+/* 需高于 vditor-essay.css 的 .essay-md-content.vditor-reset { font-size: 14px } */
+.preview-doc .essay-md-content.preview-md-block,
+.preview-doc .essay-md-content.preview-md-block.vditor-reset,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset {
+  font-family: inherit;
+  color: #404040;
+  font-size: var(--essay-doc-body-font-size, 24px);
+  line-height: var(--essay-doc-body-line-height, 40px);
+  overflow: visible;
+}
+
+.preview-doc .essay-md-content.preview-md-block.vditor-reset p,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset p {
+  margin: 0 0 var(--essay-doc-body-paragraph-gap, 16px);
+  color: #404040;
+  font-size: inherit;
+  line-height: var(--essay-doc-body-line-height, 40px);
+}
+
+/* 字号放大后须加大缩进，否则 outside 圆点会被裁成半个 */
+.preview-doc .essay-md-content.preview-md-block.vditor-reset ul,
+.preview-doc .essay-md-content.preview-md-block.vditor-reset ol,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset ul,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset ol {
+  margin: 0 0 var(--essay-doc-body-paragraph-gap, 16px);
+  padding-left: 2em;
+  overflow: visible;
+  color: inherit;
+}
+
+.preview-doc .essay-md-content.preview-md-block.vditor-reset li,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset li {
+  margin-bottom: 0.4em;
+  overflow: visible;
+}
+
+.preview-doc .essay-md-content.preview-md-block.vditor-reset strong,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset strong {
+  color: #212121;
+  font-weight: 700;
+}
+
+/* 最小改动版：修改标注 strong 与右栏预览同色（需高于上方通用 strong 规则） */
+.preview-doc .essay-md-content.preview-md-block.is-modification-strong.vditor-reset strong,
+.preview-doc .essay-md-content.preview-md-block.is-modification-strong .vditor-reset strong {
+  color: var(--essay-modification-strong-color, #ef4444);
+}
+
+.preview-doc .essay-md-content.preview-md-block.vditor-reset h3,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset h3 {
+  margin: 0 0 16px;
+  font-size: var(--essay-doc-subsubsection-heading-size, 24px);
+  font-weight: 700;
+  color: #212121;
+}
+
+.preview-doc .essay-md-content.preview-md-block.vditor-reset blockquote,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset blockquote {
+  margin: 12px 0;
+  padding: 0;
+  border: none;
+  color: #666;
+  font-size: var(--essay-doc-blockquote-font-size, 20px);
+}
+
+.preview-doc .essay-md-content.preview-md-block.vditor-reset table th,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset table th {
+  text-align: left;
+  color: var(--essay-primary, #ff6641);
+  font-weight: 600;
+  background: #fff2f0;
+  padding: 12px;
+  border: none;
+}
+
+.preview-doc .essay-md-content.preview-md-block.vditor-reset table td,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset table td {
+  color: #4d4d4d;
+  padding: 12px;
+  background: #fff;
+  border: none;
+}
+
+.preview-doc .essay-md-content.preview-md-block.vditor-reset table tbody tr:nth-child(even) td,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset table tbody tr:nth-child(even) td {
+  background: #f9f9f9;
+}
+
+.preview-doc .essay-md-content.preview-md-block.vditor-reset hr,
+.preview-doc .essay-md-content.preview-md-block .vditor-reset hr {
+  border: none;
+  border-top: 1px dashed #eee;
+  margin: var(--essay-doc-markdown-hr-margin, 20px) 0;
+}
+
+/* 导出截图：foreignObject 默认裁切溢出，行尾字形需 overflow: visible */
+.preview-doc.preview-doc--capture,
+.preview-doc.preview-doc--capture .essay-md-content.preview-md-block,
+.preview-doc.preview-doc--capture .essay-md-content.preview-md-block * {
+  overflow: visible !important;
+}
+
+.preview-doc-capture-wrap {
+  overflow: visible;
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .preview-doc {
+    padding: 32px 24px 48px;
+  }
+
+  .preview-doc .annotation-layout {
+    flex-direction: column;
+  }
+
+  .preview-doc .essay-page-card {
+    flex: none;
+    max-width: none;
+    width: 100%;
+  }
+}
+
+/* ================= 来源：essay/src/components/CorrectionBrandLogo.vue ================= */
+.correction-brand-logo {
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* ================= 来源：essay/src/components/CorrectionExportHost.vue（导出用离屏宿主；demo 不渲染，保留备查） ================= */
+.correction-export-host {
+  position: fixed;
+  left: -12000px;
+  top: 0;
+  width: 920px;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ====== 新增（产品方案） ====== */
+/* 以下全部是产品方案新增、真实批改台没有的元素；类名统一 x- 前缀，颜色/圆角/字号全部取自上面已有控件的真实 token。 */
+
+/* --- 5.3 批改历史抽屉：补充"已发送"角标 --- */
+/* 真实只有 完成(绿 #07c160)/失败(红 #ff3b30)/正在批改(橙 --essay-primary) 三种角标。
+   与顶栏、首页作文列表里同一状态的标签保持一致：
+   "批完待发送" = 绿，直接复用 badge--done；"已发送" = 灰，取 --essay-text-3（顶栏/首页的"已发送"也是灰），
+   形状、字号、圆角、内边距全部沿用 .badge。 */
+.history-el-drawer .badge.x-badge--sent {
+  background: var(--essay-text-3);
+}
+
+/* 订正任务的小标签：与顶栏、首页作文列表里的"订正"标签（.x-hd-tag--rev / .x-tag--rev）同色同形：
+   蓝字、10% 蓝底、4px 圆角、20px 高、12px；跟在"姓名《题目》"后面，不继承 .name 的粗体 */
+.history-el-drawer .name .x-hist-tag {
+  display: inline-block;
+  margin-left: 8px;
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  vertical-align: 2px;
+  white-space: nowrap;
+}
+
+/* --- 5.4 发送遮罩：在真实整页 loading（.correction-capture-loading）上追加副行与小字 --- */
+/* 副行（当前步骤）直接用 EssayLoading 自带的 p 样式（14px / --essay-text-3），不再改写；
+   "期间不可编辑、不可导出"与 30 秒提示是新增小字：12px，取 --essay-text-4 / --essay-primary（与卡片 .time 同级字号） */
+.x-sending .essay-loading__copy p.x-sending-tip {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--essay-text-4);
+}
+
+.x-sending .essay-loading__copy p.x-sending-slow {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--essay-primary);
+}
+
+/* --- 预览弹层：批注合成图占位（真实是 marknote 的合成图 dataURL；demo 用画布现画一张） --- */
+.preview-doc .marknote-page-image.x-composite {
+  height: auto;
+}
+
+
+/* --- 隔离：真实源码里这些类名都是 scoped，demo 同页后其他区块的同名全局规则会漏进来。
+   下面只"抵消"漏进来的属性，把值还原成真实抽屉里的样子（真实值见上面逐字块）。 --- */
+/* 首页 FileCard 的 .name（单行省略）会漏进抽屉的 .name；真实抽屉里作文标题可换行 */
+.history-el-drawer .name {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+/* 首页 ImageThumb 的 .close-btn（绝对定位的 20px 小叉、白底、阴影）会漏进抽屉标题栏的关闭钮 */
+.history-el-drawer .close-btn {
+  position: static;
+  top: auto;
+  right: auto;
+  z-index: auto;
+  box-shadow: none;
+}
+
+/* --- 隔离：顶栏 AppHeader.css 的 .brand-title 在窄屏会 display:none，预览弹层的品牌名不受影响 --- */
+.correction-preview-overlay .brand-title {
+  display: inline;
+}
+
+/* --- 隔离：画布占位的层级 --- */
+/* 真实抽屉遮罩 z-index 40（顶栏 50 之下、其余页面内容之上）。批改页画布占位的底栏（.x-mn__bar，z-index 45）会漏出占位自己的
+   层叠上下文、盖住 40 的遮罩；真实 marknote 是整块第三方组件，内部层级不会漏到页面上。给占位根加独立层叠上下文即可（z-index 保持 auto）。
+   （这条本该写在 essay-correction.css 的 .x-mn 里，已记入 needs_other_owner；写在这里是保证单独生效。） */
+.x-mn {
+  isolation: isolate;
+}
+
+/* --- 提示条抬到预览弹层之上（仅预览打开期间） --- */
+/* 真实预览弹层 z-index 3000，ElMessage 层级从 2000 起递增，真实环境里预览中点导出，提示条会被弹层盖住（规格笔记"未核实"那条）。
+   demo 里"导出为 PDF/Word/图片"只靠提示条给反馈，被盖住就等于没反应，所以仅在预览打开时把提示条抬到弹层之上；
+   预览关闭后提示条层级回到 essay-app.js 里按真实递增的 2001+。 */
+body.x-preview-open .el-message {
+  z-index: 3100 !important;
+}

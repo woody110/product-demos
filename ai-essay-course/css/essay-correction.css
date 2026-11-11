@@ -1,0 +1,1582 @@
+/* essay-correction.css —— 批改页（左画布区 + 右 380 面板）
+ * 来源与顺序（同真实 essay 的加载顺序）：
+ *   1) Vditor 3.11.3 基础样式里的 .vditor-reset 规则（第三方参考拷贝 _ref/vditor-3.11.3/vditor-reset-rules.css，仓库内没安装 vditor）
+ *   2) Vditor 内容主题 light（运行时 setContentTheme 动态插入的那份）
+ *   3) essay/src/styles/vditor-essay.css（整文件原样）
+ *   4) Correction / EssayEditor / panel-fill-root / EssayLoading / FailPanel 的 <style scoped>（去掉 scoped，逐字）
+ *   5) RightPanel / PolishPanel / MarkdownPanelSection 的 <style scoped>（逐字，仅在每个选择器前加 ".x-review " 作用域）
+ *      原因：真实代码是 scoped，demo 里首页(ContentTabs 的 .tab、EmptyState 的 .empty-state、FileCard 的 .actions)与它们类名相同，
+ *      去掉 scoped 会互相污染；加作用域等价于 Vue scoped 的 [data-v-xxx]，规则体一字未改。
+ *   6) 文件末尾「新增（产品方案）」：x- 前缀的新增元素 + 画布占位（marknote 本机未安装，外观为推断）。
+ */
+
+/* ================= 来源：Vditor 3.11.3 dist/index.css 中的 .vditor-reset 规则（_ref/vditor-3.11.3/vditor-reset-rules.css） ================= */
+.vditor-preview > .vditor-reset {padding: 10px;
+  margin: 0 auto;}
+.vditor-reset {color: #24292e;
+  font-variant-ligatures: no-common-ligatures;
+  font-family: "Helvetica Neue", "Luxi Sans", "DejaVu Sans", "Hiragino Sans GB", "Microsoft Yahei", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+  word-wrap: break-word;
+  overflow: auto;
+  line-height: 1.5;
+  font-size: 16px;
+  word-break: break-word;}
+.vditor-reset--anchor {padding-left: 20px;}
+.vditor-reset--error {color: #d23f31;
+  font-size: 12px;
+  display: block;
+  line-height: 16px;}
+.vditor-reset ul ul ul {list-style-type: square;}
+.vditor-reset ul ul {list-style-type: circle;}
+.vditor-reset ul {list-style-type: disc;}
+.vditor-reset ul,
+.vditor-reset ol {padding-left: 2em;
+  margin-top: 0;
+  margin-bottom: 16px;}
+.vditor-reset li + li {margin-top: 0.25em;}
+.vditor-reset li p {margin-top: 16px;}
+.vditor-reset audio {max-width: 100%;}
+.vditor-reset audio:focus {outline: none;}
+.vditor-reset video {max-height: 90vh;
+  max-width: 100%;}
+.vditor-reset img {max-width: 100%;}
+.vditor-reset img.emoji {cursor: auto;
+  max-width: 20px;
+  vertical-align: sub;}
+.vditor-reset figure.vditor-image {margin: 0 0 16px;
+  text-align: center;}
+.vditor-reset figure.vditor-image figcaption {font-size: 0.875em;
+  margin-top: 4px;
+  opacity: 0.65;
+  white-space: pre-wrap;}
+.vditor-reset span.vditor-image[data-image-caption] {display: inline-block;
+  max-width: 100%;
+  text-align: center;
+  vertical-align: top;}
+.vditor-reset span.vditor-image[data-image-caption]::after {content: attr(data-image-caption);
+  display: block;
+  font-size: 0.875em;
+  line-height: 1.5;
+  margin-top: 4px;
+  opacity: 0.65;
+  white-space: pre-wrap;}
+.vditor-reset h1,
+.vditor-reset h2,
+.vditor-reset h3,
+.vditor-reset h4,
+.vditor-reset h5,
+.vditor-reset h6 {margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;}
+.vditor-reset h1:hover .vditor-anchor svg,
+.vditor-reset h2:hover .vditor-anchor svg,
+.vditor-reset h3:hover .vditor-anchor svg,
+.vditor-reset h4:hover .vditor-anchor svg,
+.vditor-reset h5:hover .vditor-anchor svg,
+.vditor-reset h6:hover .vditor-anchor svg {visibility: visible;}
+.vditor-reset h1 {font-size: 1.75em;}
+.vditor-reset h2 {font-size: 1.55em;}
+.vditor-reset h3 {font-size: 1.38em;}
+.vditor-reset h4 {font-size: 1.25em;}
+.vditor-reset h5 {font-size: 1.13em;}
+.vditor-reset h6 {font-size: 1em;}
+.vditor-reset hr {height: 2px;
+  padding: 0;
+  margin: 24px 0;
+  background-color: #eaecef;
+  border: 0;}
+.vditor-reset p {margin-top: 0;
+  margin-bottom: 16px;}
+.vditor-reset blockquote {padding: 0 1em;
+  color: #6a737d;
+  border-left: 0.25em solid #eaecef;
+  margin: 0 0 16px 0;}
+.vditor-reset blockquote > :first-child {margin-top: 0;}
+.vditor-reset blockquote > :last-child {margin-bottom: 0;}
+.vditor-reset ins > iframe {border: 0;}
+.vditor-reset iframe {border: 1px solid #d1d5da;
+  max-width: 100%;
+  box-sizing: border-box;}
+.vditor-reset iframe.iframe__video {min-width: 80%;
+  min-height: 36vh;}
+.vditor-reset table {border-collapse: collapse;
+  empty-cells: show;
+  margin-bottom: 16px;
+  overflow: auto;
+  border-spacing: 0;
+  display: block;
+  word-break: keep-all;
+  width: 100%;}
+.vditor-reset table tr {background-color: #fafbfc;
+  border-top: 1px solid #c6cbd1;}
+.vditor-reset table td,
+.vditor-reset table th {padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+  word-break: normal;
+  white-space: nowrap;}
+.vditor-reset table td:first-child::after,
+.vditor-reset table th:first-child::after {content: "";
+  display: inline-block;
+  vertical-align: top;
+  min-height: 24px;}
+.vditor-reset table th {font-weight: 600;}
+.vditor-reset table tbody tr:nth-child(2n) {background-color: #fff;}
+.vditor-reset code:not(.hljs):not(.highlight-chroma) {padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  border-radius: 3px;
+  font-family: mononoki, Consolas, "Liberation Mono", Menlo, Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+  word-break: break-word;
+  background-size: 20px 20px;
+  white-space: pre-wrap;}
+.vditor-reset pre {margin: 1em 0;}
+.vditor-reset pre > code {margin: 0;
+  font-size: 85%;
+  padding: 0.5em;
+  border-radius: 5px;
+  display: block;
+  overflow: auto;
+  white-space: pre;
+  font-family: mononoki, Consolas, "Liberation Mono", Menlo, Courier, monospace, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", "EmojiSymbols";
+  background-size: 20px 20px;
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8AgMAAABHkjHhAAAACVBMVEWAgIBaWlo+Pj7rTFvWAAAAA3RSTlMHCAw+VhR4AAAA+klEQVQoz4WSMW7EQAhFPxKWNh2FCx+HkaZI6RRb5DYbyVfIJXLKDCFoMbaTKSw/8ZnPAPjaH2xgZcUNUDADD7D9LtDBCLZ45fbkvo/30K8yeI64pPwl6znd/3n/Oe93P3ho9qeh72btTFzqkz0rsJle8Zr81OLEwZ1dv/713uWqvu2pl+k0fy7MWtj9r/tN5q/02z89qa/L4Dc2LvM93kezPfXlME/O86EbY/V9GB9ePX8G1/6W+/9h1dq/HGfTfzT3j/xNo7522Bfnqe5jO/fvhVthlfk434v3iO9zG/UOphyPeinPl1J8Gtaa7xPTa/Dk+RIs4deMvwGvcGsmsCvJ0AAAAABJRU5ErkJggg==);
+  word-break: initial;
+  word-wrap: normal;}
+.vditor-reset pre:hover div.vditor-copy {display: block;}
+.vditor-reset .language-math,
+.vditor-reset .language-echarts,
+.vditor-reset .language-mindmap,
+.vditor-reset .language-plantuml,
+.vditor-reset .language-mermaid,
+.vditor-reset .language-smiles,
+.vditor-reset .language-markmap,
+.vditor-reset .language-abc,
+.vditor-reset .language-flowchart,
+.vditor-reset .language-graphviz,
+.vditor-reset .language-wavedrom {margin-bottom: 16px;}
+.vditor-reset .language-math mjx-container:focus {outline: none;
+  cursor: context-menu;}
+.vditor-reset .language-math .katex-display > .katex > .katex-html > .tag {display: inline-block;
+  font-size: 1.21rem;
+  right: 2px;}
+.vditor-reset .language-echarts,
+.vditor-reset .language-mindmap {overflow: hidden;
+  height: 420px;}
+.vditor-reset .language-mermaid,
+.vditor-reset .language-markmap,
+.vditor-reset .language-flowchart,
+.vditor-reset .language-graphviz,
+.vditor-reset .language-wavedrom {text-align: center;}
+.vditor-reset .language-graphviz parsererror {overflow: auto;}
+.vditor-reset kbd {display: inline-block;
+  padding: 3px 5px;
+  font: 11px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  line-height: 10px;
+  color: #24292e;
+  vertical-align: middle;
+  background-color: #fafbfc;
+  border: solid 1px #d1d5da;
+  border-radius: 3px;
+  box-shadow: inset 0 -1px 0 #d1d5da;}
+.vditor-reset summary {cursor: pointer;}
+.vditor-reset summary:focus {outline: none;}
+.vditor-reset svg {height: auto;
+  width: auto;
+  stroke-width: initial;}
+.vditor-reset p:last-child,
+.vditor-reset blockquote:last-child,
+.vditor-reset pre:last-child,
+.vditor-reset ul:last-child,
+.vditor-reset ol:last-child,
+.vditor-reset hr:last-child {margin-bottom: 0;}
+.vditor-reset .callout,
+.vditor-wysiwyg blockquote.callout,
+.vditor-ir blockquote.callout {--callout-color: var(--callout-note-color, #0969da);
+  --callout-background-color: var(--callout-note-background-color, rgba(9, 105, 218, 0.08));
+  position: relative;
+  margin: 0 0 16px;
+  padding: 0.75em 1em;
+  color: inherit;
+  background-color: var(--callout-background-color);
+  border: 0;
+  border-left: 0.25em solid var(--callout-color);}
+.vditor-reset .callout[data-subtype="TIP"],
+.vditor-wysiwyg blockquote.callout[data-subtype="TIP"],
+.vditor-ir blockquote.callout[data-subtype="TIP"] {--callout-color: var(--callout-tip-color, #1a7f37);
+  --callout-background-color: var(--callout-tip-background-color, rgba(26, 127, 55, 0.08));}
+.vditor-reset .callout[data-subtype="IMPORTANT"],
+.vditor-wysiwyg blockquote.callout[data-subtype="IMPORTANT"],
+.vditor-ir blockquote.callout[data-subtype="IMPORTANT"] {--callout-color: var(--callout-important-color, #8250df);
+  --callout-background-color: var(--callout-important-background-color, rgba(130, 80, 223, 0.08));}
+.vditor-reset .callout[data-subtype="WARNING"],
+.vditor-wysiwyg blockquote.callout[data-subtype="WARNING"],
+.vditor-ir blockquote.callout[data-subtype="WARNING"] {--callout-color: var(--callout-warning-color, #9a6700);
+  --callout-background-color: var(--callout-warning-background-color, rgba(154, 103, 0, 0.08));}
+.vditor-reset .callout[data-subtype="CAUTION"],
+.vditor-wysiwyg blockquote.callout[data-subtype="CAUTION"],
+.vditor-ir blockquote.callout[data-subtype="CAUTION"] {--callout-color: var(--callout-caution-color, #cf222e);
+  --callout-background-color: var(--callout-caution-background-color, rgba(207, 34, 46, 0.08));}
+.vditor-reset .callout > .callout-info,
+.vditor-wysiwyg blockquote.callout > .callout-info,
+.vditor-ir blockquote.callout > .callout-info {display: flex;
+  align-items: center;
+  min-height: 1.5em;
+  margin: 0 0 0.5em;
+  color: var(--callout-color);
+  font-weight: 600;}
+.vditor-reset .callout > .callout-info .callout-icon,
+.vditor-wysiwyg blockquote.callout > .callout-info .callout-icon,
+.vditor-ir blockquote.callout > .callout-info .callout-icon {display: inline-flex;
+  align-items: center;
+  margin-right: 0.35em;}
+.vditor-reset .callout > .callout-info .callout-title,
+.vditor-wysiwyg blockquote.callout > .callout-info .callout-title,
+.vditor-ir blockquote.callout > .callout-info .callout-title {min-width: 1px;}
+.vditor-reset .callout > .callout-info .callout-img,
+.vditor-wysiwyg blockquote.callout > .callout-info .callout-img,
+.vditor-ir blockquote.callout > .callout-info .callout-img,
+.vditor-reset .callout > .callout-info > .callout-img,
+.vditor-wysiwyg blockquote.callout > .callout-info > .callout-img,
+.vditor-ir blockquote.callout > .callout-info > .callout-img {width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.35em;
+  -o-object-fit: contain;
+     object-fit: contain;}
+.vditor-reset .callout > .callout-content > :last-child,
+.vditor-wysiwyg blockquote.callout > .callout-content > :last-child,
+.vditor-ir blockquote.callout > .callout-content > :last-child,
+.vditor-reset .callout > :last-child,
+.vditor-wysiwyg blockquote.callout > :last-child,
+.vditor-ir blockquote.callout > :last-child {margin-bottom: 0;}
+.vditor-wysiwyg pre.vditor-reset {background-color: var(--panel-background-color);
+  margin: 0;
+  white-space: pre-wrap;
+  height: 100%;
+  box-sizing: border-box;}
+.vditor-wysiwyg pre.vditor-reset[contenteditable="false"] {opacity: 0.3;
+  cursor: not-allowed;}
+.vditor-wysiwyg pre.vditor-reset:empty::before {content: attr(placeholder);
+  color: var(--second-color);}
+.vditor-wysiwyg pre.vditor-reset:focus {outline: none;
+  background-color: var(--textarea-background-color);}
+.vditor-wysiwyg pre.vditor-reset:after {content: "";
+  height: var(--editor-bottom);
+  display: block;}
+.vditor-wysiwyg > .vditor-reset > h1:before,
+.vditor-wysiwyg > .vditor-reset > h2:before,
+.vditor-wysiwyg > .vditor-reset > h3:before,
+.vditor-wysiwyg > .vditor-reset > h4:before,
+.vditor-wysiwyg > .vditor-reset > h5:before,
+.vditor-wysiwyg > .vditor-reset > h6:before,
+.vditor-wysiwyg div.vditor-wysiwyg__block:before,
+.vditor-wysiwyg div[data-type="link-ref-defs-block"]:before,
+.vditor-wysiwyg div[data-type="footnotes-block"]:before,
+.vditor-wysiwyg .vditor-toc:before {float: left;
+  padding-right: 4px;
+  margin-left: -29px;
+  content: 'H1';
+  font-size: 0.85rem;
+  font-weight: normal;
+  color: var(--second-color);}
+.vditor-wysiwyg > .vditor-reset > h2:before {content: 'H2';}
+.vditor-wysiwyg > .vditor-reset > h3:before {content: 'H3';}
+.vditor-wysiwyg > .vditor-reset > h4:before {content: 'H4';}
+.vditor-wysiwyg > .vditor-reset > h5:before {content: 'H5';}
+.vditor-wysiwyg > .vditor-reset > h6:before {content: 'H6';}
+.vditor-ir pre.vditor-reset {background-color: var(--panel-background-color);
+  margin: 0;
+  white-space: pre-wrap;
+  height: 100%;
+  box-sizing: border-box;}
+.vditor-ir pre.vditor-reset[contenteditable="false"] {opacity: 0.3;
+  cursor: not-allowed;}
+.vditor-ir pre.vditor-reset:empty::before {content: attr(placeholder);
+  color: var(--second-color);}
+.vditor-ir pre.vditor-reset:focus {outline: none;
+  background-color: var(--textarea-background-color);}
+.vditor-ir pre.vditor-reset:after {content: "";
+  height: var(--editor-bottom);
+  display: block;}
+.vditor-ir pre.vditor-reset pre {margin: 0;}
+.vditor-ir .vditor-reset > h1:before,
+.vditor-ir .vditor-reset > h2:before,
+.vditor-ir .vditor-reset > h3:before,
+.vditor-ir .vditor-reset > h4:before,
+.vditor-ir .vditor-reset > h5:before,
+.vditor-ir .vditor-reset > h6:before,
+.vditor-ir div[data-type="link-ref-defs-block"]:before,
+.vditor-ir div[data-type="footnotes-block"]:before,
+.vditor-ir .vditor-toc:before {float: left;
+  padding-right: 4px;
+  margin-left: -29px;
+  content: 'H1';
+  font-size: 0.85rem;
+  font-weight: normal;
+  color: var(--second-color);}
+.vditor-ir .vditor-reset > h2:before {content: 'H2';}
+.vditor-ir .vditor-reset > h3:before {content: 'H3';}
+.vditor-ir .vditor-reset > h4:before {content: 'H4';}
+.vditor-ir .vditor-reset > h5:before {content: 'H5';}
+.vditor-ir .vditor-reset > h6:before {content: 'H6';}
+
+/* ================= 来源：Vditor 内容主题 light（_ref/vditor-content-theme/light.css） ================= */
+/*!
+ * Vditor - A markdown editor written in TypeScript.
+ *
+ * MIT License
+ *
+ * Copyright (c) 2018-present B3log 开源, b3log.org
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+.vditor-reset {
+    --callout-note-color: #0969da;
+    --callout-note-background-color: rgba(9, 105, 218, 0.08);
+    --callout-tip-color: #1a7f37;
+    --callout-tip-background-color: rgba(26, 127, 55, 0.08);
+    --callout-important-color: #8250df;
+    --callout-important-background-color: rgba(130, 80, 223, 0.08);
+    --callout-warning-color: #9a6700;
+    --callout-warning-background-color: rgba(154, 103, 0, 0.08);
+    --callout-caution-color: #cf222e;
+    --callout-caution-background-color: rgba(207, 34, 46, 0.08);
+}
+
+.vditor-reset h1, .vditor-reset h2 {
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #eaecef;
+}
+
+.vditor-reset hr {
+    background-color: #eaecef;
+}
+
+.vditor-reset blockquote {
+    color: #6a737d;
+    border-left: .25em solid #eaecef
+}
+
+.vditor-reset iframe {
+    border: 1px solid #d1d5da
+}
+
+.vditor-reset table tr {
+    border-top: 1px solid #c6cbd1;
+    background-color: #fafbfc
+}
+
+.vditor-reset table td, .vditor-reset table th {
+    border: 1px solid #dfe2e5
+}
+
+.vditor-reset table tbody tr:nth-child(2n) {
+    background-color: #fff
+}
+
+.vditor-reset code:not(.hljs):not(.highlight-chroma) {
+    background-color: rgba(27, 31, 35, .05);
+}
+
+.vditor-reset kbd {
+    color: #24292e;
+    background-color: #fafbfc;
+    border: solid 1px #d1d5da;
+    box-shadow: inset 0 -1px 0 #d1d5da;
+}
+
+.vditor-speech {
+    background-color: #f6f8fa;
+    border: 1px solid #d1d5da;
+    color: #586069;
+}
+
+.vditor-speech--current, .vditor-speech:hover {
+    color: #4285f4;
+}
+
+.vditor-linkcard a {
+    background-color: #f6f8fa;
+}
+
+.vditor-linkcard a:visited .vditor-linkcard__abstract {
+    color: rgba(88, 96, 105, 0.36);
+}
+
+.vditor-linkcard__title {
+    color: #24292e;
+}
+
+.vditor-linkcard__abstract {
+    color: #586069;
+}
+
+.vditor-linkcard__site {
+    color: #4285f4;
+}
+
+.vditor-linkcard__image {
+    background-color: rgba(88, 96, 105, 0.36);
+}
+
+/* ================= 来源：essay/src/styles/vditor-essay.css ================= */
+/*
+ * 来源：essay/src/styles/vditor-essay.css（整文件原样拷贝，未改一个字符）
+ */
+
+/* 右栏 Markdown 正文样式 — 预览/编辑共用，对齐 PanelSection + struct-table */
+
+.essay-md-content {
+  font-family: var(--essay-doc-font-family);
+  font-size: 14px;
+  line-height: 24px;
+  color: #212121;
+}
+
+/* 预览 host 与编辑区 pre 都会带 vditor-reset，两种 DOM 结构都要命中 */
+.essay-md-content.vditor-reset,
+.essay-md-content .vditor-reset {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 24px;
+  color: #212121;
+  padding: 0;
+}
+
+/* 正文段落 */
+.essay-md-content.vditor-reset p,
+.essay-md-content .vditor-reset p {
+  margin: 0 0 8px;
+  color: #212121;
+}
+
+.essay-md-content.vditor-reset p:last-child,
+.essay-md-content .vditor-reset p:last-child {
+  margin-bottom: 0;
+}
+
+.essay-md-content.vditor-reset strong,
+.essay-md-content .vditor-reset strong {
+  color: #212121;
+  font-weight: 600;
+}
+
+/* 最小改动版预览/导出：修改标注由 Markdown strong 承载 */
+.essay-md-preview.is-modification-strong strong,
+.essay-md-preview.is-modification-strong .vditor-reset strong {
+  color: var(--essay-modification-strong-color, #ef4444);
+}
+
+.essay-md-content.vditor-reset blockquote,
+.essay-md-content .vditor-reset blockquote {
+  margin: 8px 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 13px;
+}
+
+.essay-md-content.vditor-reset blockquote p,
+.essay-md-content .vditor-reset blockquote p {
+  color: #666;
+}
+
+.essay-md-content.vditor-reset ul,
+.essay-md-content.vditor-reset ol,
+.essay-md-content .vditor-reset ul,
+.essay-md-content .vditor-reset ol {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  color: #212121;
+}
+
+.essay-md-content.vditor-reset li,
+.essay-md-content .vditor-reset li {
+  margin-bottom: 4px;
+}
+
+.essay-md-content.vditor-reset hr,
+.essay-md-content .vditor-reset hr {
+  border: none;
+  border-top: 1px dashed #eee;
+  margin: 12px 0;
+}
+
+/* 结构梳理表格 — 对齐改前 .struct-table */
+.essay-md-content.vditor-reset table,
+.essay-md-content .vditor-reset table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0;
+}
+
+.essay-md-content.vditor-reset table th,
+.essay-md-content .vditor-reset table th {
+  text-align: left;
+  color: #ff5e2e;
+  font-weight: 500;
+  background: rgba(255, 94, 46, 0.08);
+  padding: 8px;
+  border: none;
+}
+
+.essay-md-content.vditor-reset table td,
+.essay-md-content .vditor-reset table td {
+  color: #4d4d4d;
+  padding: 8px;
+  background: #fafafa;
+  border: none;
+}
+
+.essay-md-content.vditor-reset table th:nth-child(1),
+.essay-md-content.vditor-reset table td:nth-child(1),
+.essay-md-content .vditor-reset table th:nth-child(1),
+.essay-md-content .vditor-reset table td:nth-child(1) {
+  width: 50px;
+}
+
+.essay-md-content.vditor-reset table th:nth-child(2),
+.essay-md-content.vditor-reset table td:nth-child(2),
+.essay-md-content .vditor-reset table th:nth-child(2),
+.essay-md-content .vditor-reset table td:nth-child(2) {
+  width: 55px;
+}
+
+/*
+ * 编辑态：隐藏 Vditor 默认结构标记（H2、## 等），与预览视觉一致
+ * 默认样式见 vditor/dist/index.css 中 h2:before { content: 'H2' } 等规则
+ */
+.vditor-host .vditor-ir .vditor-reset > h1:before,
+.vditor-host .vditor-ir .vditor-reset > h2:before,
+.vditor-host .vditor-ir .vditor-reset > h3:before,
+.vditor-host .vditor-ir .vditor-reset > h4:before,
+.vditor-host .vditor-ir .vditor-reset > h5:before,
+.vditor-host .vditor-ir .vditor-reset > h6:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h1:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h2:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h3:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h4:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h5:before,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h6:before,
+.vditor-host .vditor-ir div[data-type="link-ref-defs-block"]:before,
+.vditor-host .vditor-ir div[data-type="footnotes-block"]:before,
+.vditor-host .vditor-ir .vditor-toc:before,
+.vditor-host .vditor-wysiwyg div.vditor-wysiwyg__block:before,
+.vditor-host .vditor-wysiwyg div[data-type="link-ref-defs-block"]:before,
+.vditor-host .vditor-wysiwyg div[data-type="footnotes-block"]:before,
+.vditor-host .vditor-wysiwyg .vditor-toc:before {
+  content: none !important;
+  display: none !important;
+}
+
+.vditor-host .vditor-ir .vditor-reset > h1,
+.vditor-host .vditor-ir .vditor-reset > h2,
+.vditor-host .vditor-ir .vditor-reset > h3,
+.vditor-host .vditor-ir .vditor-reset > h4,
+.vditor-host .vditor-ir .vditor-reset > h5,
+.vditor-host .vditor-ir .vditor-reset > h6,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h1,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h2,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h3,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h4,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h5,
+.vditor-host .vditor-wysiwyg > .vditor-reset > h6 {
+  margin-left: 0;
+}
+
+.vditor-host .vditor-ir__marker {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  font-size: 0 !important;
+  padding: 0 !important;
+}
+
+/* 隐藏 wysiwyg 光标上方块级浮动工具栏（上移/下移/删除等） */
+.vditor-host .vditor-panel {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ================= 来源：Correction.vue ================= */
+/*
+ * 来源：essay/src/views/correction/Correction.vue
+ * 原 <style scoped>
+ * 已去掉 scoped；:deep(X) 展开为后代选择器 X；其余内容逐字保留。
+ */
+
+.correction-page {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+/* class 落在子组件根节点上，需 :deep；fixed 盖住 marknote 底栏/添加批注（z≤45）与顶栏 */
+.correction-capture-loading.essay-loading.is-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+/* ================= 来源：EssayEditor.vue ================= */
+/*
+ * 来源：essay/src/views/correction/EssayEditor.vue
+ * 原 <style scoped>
+ * 已去掉 scoped；:deep(X) 展开为后代选择器 X；其余内容逐字保留。
+ */
+
+.essay-editor {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--essay-bg);
+}
+
+.editor-loading {
+  flex: 1;
+  min-height: 0;
+  background: var(--essay-bg);
+  padding: 40px;
+}
+
+.editor-annotator {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+/* 无教辅权限时禁止在画布上批注/改文，仍可看内容 */
+.editor-annotator.is-readonly {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ================= 来源：panels/{Overview,Detail,Advice}Panel.vue ================= */
+/*
+ * 来源：essay/src/views/correction/panels/{OverviewPanel,DetailPanel,AdvicePanel}.vue
+ * 三个 .vue 的 <style scoped> 内容完全相同（已逐一比对），合并为一个文件
+ * 已去掉 scoped；:deep(X) 展开为后代选择器 X；其余内容逐字保留。
+ */
+
+.panel-fill-root {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= 来源：RightPanel.vue（选择器加 .x-review 作用域） ================= */
+/*
+ * 来源：essay/src/views/correction/RightPanel.vue
+ * 原 <style scoped>
+ * 已去掉 scoped；:deep(X) 展开为后代选择器 X；其余内容逐字保留。
+ */
+
+.x-review .right-panel {
+  width: 380px;
+  flex-shrink: 0;
+  background: var(--essay-white);
+  border-left: 1px solid var(--essay-border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px 12px;
+}
+
+.x-review .tab-bar {
+  display: flex;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.x-review .tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #999;
+  font-size: 14px;
+  position: relative;
+}
+
+.x-review .tab.is-active {
+  color: #212121;
+}
+
+.x-review .tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 56px;
+  height: 4px;
+  margin-left: -28px;
+  border-radius: 2px;
+  background: #ff5e2e;
+}
+
+.x-review .tab-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-top: 0;
+  font-family: var(--essay-doc-font-family);
+}
+
+/* ================= 来源：PolishPanel.vue（选择器加 .x-review 作用域） ================= */
+/*
+ * 来源：essay/src/views/correction/panels/PolishPanel.vue
+ * 原 <style scoped>
+ * 已去掉 scoped；:deep(X) 展开为后代选择器 X；其余内容逐字保留。
+ */
+
+.x-review .polish-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.x-review .sub-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+
+.x-review .sub-tab {
+  border: none;
+  background: transparent;
+  color: var(--essay-text-muted);
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.x-review .sub-tab.is-active {
+  background: rgba(255, 94, 46, 0.1);
+  color: #ff5e2e;
+  font-weight: 500;
+}
+
+.x-review .body {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.x-review .empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--essay-text-muted);
+  font-size: 14px;
+}
+
+/* ================= 来源：MarkdownPanelSection.vue（选择器加 .x-review 作用域） ================= */
+/*
+ * 来源：essay/src/components/MarkdownPanelSection.vue
+ * 原 <style scoped>
+ * 已去掉 scoped；:deep(X) 展开为后代选择器 X；其余内容逐字保留。
+ */
+
+.x-review .md-panel-section {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fff;
+}
+
+/* 总评/诊断建议等单卡片：标题固定，section-body 内部滚动 */
+.x-review .md-panel-section.is-fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.x-review .section-title {
+  flex-shrink: 0;
+  height: 44px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.x-review .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: #ff5e2e;
+  flex-shrink: 0;
+}
+
+.x-review .title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--essay-text);
+}
+
+.x-review .actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.x-review .section-title .btn {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.x-review .text-btn {
+  border: none;
+  background: transparent;
+  color: var(--essay-text-muted);
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.x-review .section-body {
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 24px;
+  color: #212121;
+}
+
+.x-review .is-fill .section-body {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 最小改动版：接口用 **…** 标注修改处，Vditor 渲染为 strong */
+.x-review .is-modification-strong .essay-md-preview strong,
+.x-review .is-modification-strong .essay-md-preview .vditor-reset strong,
+.x-review .is-modification-strong .vditor-host strong {
+  color: var(--essay-modification-strong-color, #ef4444);
+}
+
+/* Vditor 会把 .vditor 加在 host 自身，需同时命中 host 与内部容器 */
+.x-review .vditor-host.vditor,
+.x-review .vditor-host .vditor {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.x-review .vditor-host .vditor-toolbar {
+  display: none;
+}
+
+.x-review .vditor-host .vditor-content {
+  min-height: auto;
+  background: transparent !important;
+}
+
+.x-review .vditor-host .vditor-ir,
+.x-review .vditor-host .vditor-wysiwyg,
+.x-review .vditor-host .vditor-wysiwyg pre.vditor-reset {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.x-review .vditor-host .vditor-wysiwyg pre.vditor-reset:focus {
+  background: transparent !important;
+  outline: none !important;
+}
+
+.x-review .btn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.x-review .btn.ghost {
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  color: #666;
+}
+
+.x-review .btn.primary {
+  border: none;
+  background: #ff5e2e;
+  color: #fff;
+}
+
+/* ================= 来源：EssayLoading.vue ================= */
+/*
+ * 来源：essay/src/components/EssayLoading.vue
+ * 原 <style scoped>
+ * 已去掉 scoped；:deep(X) 展开为后代选择器 X；其余内容逐字保留。
+ */
+
+.essay-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.essay-loading.is-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+/* 列表悬浮：提示语轻一点，避免抢内容区视觉 */
+.essay-loading.is-overlay .essay-loading__copy h3 {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--essay-text-3, #808080);
+}
+
+.essay-loading__spinner {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: essay-loading-spin 0.8s linear infinite;
+}
+
+.essay-loading__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.essay-loading__copy h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--essay-text);
+}
+
+.essay-loading__copy p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--essay-text-3);
+}
+
+@keyframes essay-loading-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ================= 来源：FailPanel.vue ================= */
+/*
+ * 来源：essay/src/components/FailPanel.vue
+ * 原 <style scoped>
+ * 已去掉 scoped；:deep(X) 展开为后代选择器 X；其余内容逐字保留。
+ */
+
+.fail-panel {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  background: var(--essay-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px;
+}
+
+.fail-panel__icon {
+  display: flex;
+  width: 50px;
+  height: 50px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50px;
+  background: #ff3b3b;
+  flex-shrink: 0;
+}
+
+.fail-panel__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.fail-panel__copy h3 {
+  color: #262626;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.fail-panel__copy p {
+  max-width: 360px;
+  color: #737373;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.fail-panel__btn {
+  display: flex;
+  min-width: 120px;
+  height: 40px;
+  padding: 10px 16px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 4px;
+  border-radius: 8px;
+  background: #ff6641;
+}
+
+.fail-panel__btn:hover,
+.fail-panel__btn:focus {
+  background: #ff6641;
+  border-color: #ff6641;
+}
+
+/* ====== 新增（产品方案） ====== */
+/* 约定：x- 前缀 = 产品方案新增元素 / 画布占位；颜色、圆角、字号全部取自本页已有 token 与控件
+ * （--essay-* 来自 tokens.css；橙 #ff6641 / #ff5e2e、成功绿 #22c55e、修改标注红 #ef4444、描边 #e8e8e8 / #e5e5e5 等都是上面真实样式里已出现的值）。 */
+
+/* ---- 根：占满顶栏下方剩余高度，页面自身不滚动（画布区与右栏各自滚动） ---- */
+.x-review {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: var(--essay-bg);
+}
+
+/* ---- 发送成功提示条（产品方案 5.2 规则 4）：顶栏下方、画布上方整行；绿色系取自「保存修改」按钮的 --essay-success ---- */
+.x-sent-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 16px;
+  background: rgba(34, 197, 94, 0.1);
+  border-bottom: 1px solid rgba(34, 197, 94, 0.3);
+  color: var(--essay-text);
+  font-size: 14px;
+}
+
+.x-sent-bar__icon {
+  /* 与首页文件卡片里的「上传成功」小对勾同一控件：16px 圆 + success-check.svg（10px） */
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--essay-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.x-sent-bar__text {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+}
+
+.x-sent-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ---- 画布上方的演示小工具条（不是真实界面，仅用于演示「批注清空 → 发送校验」） ---- */
+.x-demo-bar {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* 与画布区同底色（--essay-bg），不加分隔线：读起来是画布背景上的一行小字，不像一条真实工具栏 */
+  background: var(--essay-bg);
+  font-size: 12px;
+  color: var(--essay-text-muted);
+}
+
+.x-demo-bar__tag {
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--essay-primary-soft);
+  color: var(--essay-primary);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.x-demo-bar__hint {
+  color: var(--essay-text-4);
+}
+
+.x-demo-btn {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  background: #fff;
+  color: #666;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.x-demo-btn:hover:not(:disabled) {
+  color: var(--essay-primary);
+  border-color: var(--essay-primary);
+}
+
+.x-demo-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- 画布占位（@igetcool/marknote workbench：缩略图条 + 画布 + 底栏；外观为推断，非真实） ---- */
+.x-mn {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--essay-bg);
+}
+
+.x-mn__main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* 左侧缩略图条 */
+.x-mn__thumbs {
+  width: 120px;
+  flex-shrink: 0;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  overflow-y: auto;
+  background: var(--essay-white);
+  border-right: 1px solid var(--essay-border);
+}
+
+.x-thumb {
+  width: 72px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.x-thumb__page {
+  position: relative;
+  width: 72px;
+  height: 96px;
+  overflow: hidden;
+  border: 1px solid var(--essay-border);
+  border-radius: 4px;
+  background: #fff center / cover no-repeat;
+}
+
+.x-thumb__page--text {
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0, transparent 4px, rgba(239, 68, 68, 0.22) 4px, rgba(239, 68, 68, 0.22) 5px),
+    repeating-linear-gradient(to right, transparent 0, transparent 4px, rgba(239, 68, 68, 0.22) 4px, rgba(239, 68, 68, 0.22) 5px);
+  background-size: 60px 80px;
+  background-position: 5px 11px;
+  background-repeat: no-repeat;
+}
+
+.x-thumb__page--text::before {
+  content: '';
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  top: 4px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--essay-text-4);
+}
+
+.x-thumb__page--photo {
+  background-image: url(../assets/essay/src/mock/essay-page.jpg);
+}
+
+.x-thumb.is-current .x-thumb__page {
+  border-color: var(--essay-primary);
+  box-shadow: 0 0 0 1px var(--essay-primary);
+}
+
+.x-thumb__no {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--essay-text-4);
+}
+
+.x-thumb.is-current .x-thumb__no {
+  color: var(--essay-primary);
+}
+
+/* 中间画布：内容超出时在这里滚动；--cell 按可用宽度在 17~28px 之间缩放 */
+.x-mn__stage {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+  overflow: auto;
+  container-type: size;
+  --cell: clamp(17px, min(calc((100cqw - 290px) / 20), calc((100cqh - 100px) / 20)), 32px);
+}
+
+.x-sheet {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: max-content;
+  margin: 0 auto;
+}
+
+.x-sheet--photo {
+  align-items: stretch;
+}
+
+/* 田字格作文纸：20 列 x 20 行，首行放标题；格线颜色为推断 */
+.x-paper {
+  flex-shrink: 0;
+  padding: 24px;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.x-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(20, var(--cell));
+  grid-auto-rows: var(--cell);
+  border-top: 1px solid rgba(239, 68, 68, 0.3);
+  border-left: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.x-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(239, 68, 68, 0.3);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+  font-size: calc(var(--cell) * 0.66);
+  line-height: 1;
+  color: var(--essay-text);
+  background-image:
+    linear-gradient(to bottom, rgba(239, 68, 68, 0.16) 50%, transparent 50%),
+    linear-gradient(to right, rgba(239, 68, 68, 0.16) 50%, transparent 50%);
+  background-size: 1px 6px, 6px 1px;
+  background-position: 50% 0, 0 50%;
+  background-repeat: repeat-y, repeat-x;
+}
+
+.x-cell.is-title {
+  font-weight: 700;
+}
+
+/* 逗号、句号等标点靠格子左下角 */
+.x-cell.is-punct {
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 0 0 1px 2px;
+}
+
+/* 红圈（教辅红笔圈出的词句） */
+.x-circle {
+  position: absolute;
+  border: 2px solid var(--essay-modification-strong-color, #ef4444);
+  border-radius: 50%;
+  transform: rotate(-1deg);
+  pointer-events: none;
+}
+
+.x-circle.is-hot {
+  border-width: 3px;
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.x-circle--photo {
+  position: absolute;
+}
+
+/* 右侧便签式 AI 批注：落在页面右侧 note 区，没有序号圆点 */
+.x-notes {
+  position: relative;
+  width: 220px;
+  flex-shrink: 0;
+  margin-top: 24px;
+}
+
+.x-sheet--photo .x-notes {
+  margin-top: 0;
+}
+
+.x-note {
+  position: absolute;
+  left: 0;
+  width: 220px;
+  padding: 8px 12px;
+  border: 1px solid #ffc8ba;
+  border-radius: 8px;
+  background: var(--essay-primary-soft);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  color: var(--essay-text);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.x-note::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 12px;
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  border-left: 1px solid #ffc8ba;
+  border-bottom: 1px solid #ffc8ba;
+  background: var(--essay-primary-soft);
+}
+
+.x-note.is-hot {
+  border-color: var(--essay-primary);
+}
+
+.x-note.is-hot::before {
+  border-color: var(--essay-primary);
+}
+
+.x-note__tag {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: var(--essay-primary);
+  color: #fff;
+  font-size: 11px;
+  line-height: 16px;
+  vertical-align: 1px;
+}
+
+/* 订正任务：学生手写照片 */
+.x-photo-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: max(300px, min(calc(100cqw - 290px), calc((100cqh - 48px) * 1280 / 1707)));
+}
+
+.x-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1280 / 1707;
+  background: #fff url(../assets/essay/src/mock/essay-page.jpg) center / cover no-repeat;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  transform: rotate(-0.4deg);
+}
+
+/* 底栏：深色工具条（旧自研工具栏的白色图标）+ 「添加批注」；z-index <= 45 */
+.x-mn__bar {
+  position: relative;
+  z-index: 45;
+  flex-shrink: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--essay-white);
+  border-top: 1px solid var(--essay-border);
+}
+
+.x-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--essay-text);
+}
+
+.x-tool {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.x-tool:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.x-tool.is-active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.x-tool img {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.x-tools__sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 6px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.x-add-note {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  margin-top: -16px;
+}
+
+/* ---- 抵消首页同名类（ContentTabs 的 .tab、EmptyState 的 .empty-state）泄漏到批改页 ---- */
+.x-review .empty-state {
+  background: transparent;
+  padding: 0;
+  gap: normal;
+  flex-direction: row;
+}
+
+.x-review .tab {
+  padding: 1px 6px;
+  gap: normal;
+  align-items: normal;
+  display: block;
+}
+
+
+/* ====== 新增（产品方案 v2） ====== */
+/* 完成批改后的成功提示条：画布上方整行，用 Element Plus 的 el-alert success（样式见 essay-home.css 的"补：el-alert"），右侧一个「关闭页签」小按钮 */
+.x-done-bar {
+  flex-shrink: 0;
+  padding: 12px 16px 0;
+  background: var(--essay-bg);
+}
+
+.x-done-bar .el-alert__content {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+
+.x-done-bar .el-alert__title {
+  font-size: 14px;
+}
+
+.x-done-bar .x-done-act {
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+/* 图片作文画布：手写稿纸占位（essay-home.js 的 essay-handwrite）放进 .x-photo，红圈 / 便签的位置按稿纸百分比换算 */
+.x-photo--hw {
+  background: none;
+  overflow: hidden;
+  transform: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+}
+
+/* 只读：画布底栏的工具与「添加批注」整体置灰（画布本身已 pointer-events: none） */
+.editor-annotator.is-readonly .x-mn__bar {
+  opacity: 0.4;
+}
+
+.x-photo--hw {
+  position: relative;
+}
+
+.x-photo--hw .x-hw {
+  position: absolute;
+  inset: 0;
+}
+
+/* 图片作文的缩略图：横线稿纸 + 一条浅红装订线 */
+.x-thumb__page--hw {
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0, transparent 5px, #dfe5ee 5px, #dfe5ee 6px),
+    linear-gradient(to right, transparent 6px, rgba(239, 68, 68, 0.28) 6px, rgba(239, 68, 68, 0.28) 7px, transparent 7px);
+}

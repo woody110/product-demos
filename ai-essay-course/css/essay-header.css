@@ -1,0 +1,349 @@
+/* essay-header.css —— 顶栏 + 确认弹窗（逐字取自 /tmp/demo-spec/essay-home/style-AppHeader.css、style-EssayConfirmDialog.css） */
+
+/* ================= 来源：essay/src/components/AppHeader.vue（style-AppHeader.css 原文） ================= */
+/*
+ * 来源: essay/src/components/AppHeader.vue  <style scoped>
+ * 逐字转换：
+ *  - 已去掉 scoped（原样式只作用于本组件模板内元素；去掉后是全局选择器，类名冲突见 tokens-notes.md「scoped 类名冲突」）
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ *  - 提示：真实运行时 vue 会给每条规则的最后一段选择器追加 [data-v-xxxx]（特异性 +0,1,0）；去掉后需保证本文件在 Element/ep 样式之后加载
+ */
+.app-header {
+  height: 56px;
+  padding: 0 16px;
+  background: var(--essay-white);
+  border-bottom: 1px solid var(--essay-border);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  z-index: 50;
+  scrollbar-width: thin;
+}
+
+.app-header::-webkit-scrollbar {
+  height: 4px;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.header-right {
+  gap: 12px;
+  margin-left: auto;
+}
+
+.header-meta {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.header-meta__name,
+.header-meta__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #404040;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.header-meta__name {
+  flex-shrink: 1;
+}
+
+.header-meta__title {
+  flex-shrink: 2;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--essay-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--essay-text);
+  white-space: nowrap;
+}
+
+.header-btn {
+  height: 37px;
+  padding: 10px 16px;
+  border: 1px solid var(--essay-border);
+  border-radius: 8px;
+  background: var(--essay-white);
+  color: var(--essay-text-muted);
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.header-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.header-btn__label {
+  white-space: nowrap;
+}
+
+.header-btn:hover:not(:disabled) {
+  border-color: var(--essay-primary);
+  color: var(--essay-primary);
+}
+
+.action-btn {
+  height: 37px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-btn--save {
+  background: var(--essay-success);
+}
+
+.action-btn--done {
+  background: var(--essay-primary);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--essay-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 960px) {
+  .brand-title {
+    display: none;
+  }
+
+  .app-header {
+    padding: 0 12px;
+  }
+
+  .header-left,
+  .header-right {
+    gap: 8px;
+  }
+
+  .header-btn,
+  .action-btn {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+@media (max-width: 860px) {
+  .header-btn__label--hide-medium {
+    display: none;
+  }
+
+  .header-btn {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 760px) {
+  .header-btn__label--hide-narrow {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-meta__title {
+    display: none;
+  }
+}
+
+/* ================= 来源：essay/src/components/EssayConfirmDialog.vue（style-EssayConfirmDialog.css 原文） ================= */
+/*
+ * 来源: essay/src/components/EssayConfirmDialog.vue  <style>
+ * 逐字转换：
+ *  - 原本就是非 scoped 全局样式，内容未改动
+ *  - 无 less/stylus，无变量替换需求；var(--essay-*) 取值见 tokens.css
+ */
+.essay-confirm-overlay {
+  background-color: rgba(0, 0, 0, 0.35) !important;
+}
+
+.essay-confirm-dialog.el-dialog {
+  /* align-center + margin:auto 垂直居中；height/align-self 防止被 flex 拉满 */
+  height: auto;
+  align-self: center;
+  margin: auto !important;
+  padding: 24px 28px;
+  border-radius: 8px;
+  border: none;
+  background: #fff;
+  box-shadow: none;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.essay-confirm-dialog .el-dialog__header {
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.essay-confirm-dialog .el-dialog__body {
+  padding: 0;
+  margin: 0 0 24px;
+}
+
+.essay-confirm-dialog .el-dialog__footer {
+  padding: 0;
+}
+
+.essay-confirm-dialog__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 28px;
+  position: relative;
+}
+
+.essay-confirm-dialog__icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+}
+
+.essay-confirm-dialog__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #262626;
+  line-height: 24px;
+}
+
+.essay-confirm-dialog__close {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.essay-confirm-dialog__body {
+  font-size: 14px;
+  line-height: 22px;
+  color: #262626;
+  word-break: break-word;
+}
+
+.essay-confirm-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.essay-confirm-dialog__footer .el-button {
+  min-width: 72px;
+  margin-left: 0;
+}
+
+/* ====== 新增（产品方案 v2） ====== */
+/* v1 的状态标签 / 订正标签 / 发送给学生 / 预览导出下拉等已整体移到 demo/_unused/essay-header.v1.css。
+   v2 顶栏 = 真实顶栏（品牌、返回、姓名《题目》、保存修改、完成批改、预览、导出 x3、头像），只多一句"只读"说明。
+   类名统一 x-hd- 前缀；颜色取自 EP 警告色。 */
+
+/* 外壳：顶栏下方内容区占满剩余高度，自身不出现滚动条（App.vue 原样式 .app-shell / .app-content 在 base 里） */
+.x-app-shell {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+/* 只读说明：放不下时才省略，完整文字在悬停提示里；比作文题目先被省略 */
+.x-hd-ro-note {
+  min-width: 80px;
+  flex-shrink: 10000;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--el-color-warning-dark-2, #b88230);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-meta > .header-meta__name {
+  flex-shrink: 0;
+}
+
+/* 校对页顶栏没有右侧按钮，头像仍靠右 */
+.x-hd--ocr .header-right {
+  margin-left: auto;
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="14px" height="14px" viewBox="0 0 14 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>矩形</title>
+    <desc>Created with Sketch.</desc>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="我的班级" transform="translate(-244.000000, -273.000000)">
+            <g id="编组-5" transform="translate(224.000000, 112.000000)">
+                <g id="编组-6" transform="translate(20.000000, 158.000000)">
+                    <g id="班主任" transform="translate(0.000000, 3.000000)">
+                        <g id="编组-4" transform="translate(1.500000, 0.598633)">
+                            <circle id="椭圆形" stroke="#6D6D80" stroke-width="1.2" cx="5.5605625" cy="3.25" r="2.65"></circle>
+                            <path d="M11,11.5852051 C11,8.54763895 8.53756612,6.08520508 5.5,6.08520508 C2.46243388,6.08520508 0,8.54763895 0,11.5852051 C0,11.5852051 11,11.5852051 11,11.5852051 Z" id="路径" stroke="#6D6D80" stroke-width="1.2"></path>
+                            <rect id="矩形" fill="#E4E4EB" x="6.8105625" y="8.02088623" width="2" height="1.2" rx="0.6"></rect>
+                            <polyline id="路径" stroke="#6D6D80" points="3.55354736 6.5 5.46821167 8.02029419 7.49678467 6.5"></polyline>
+                            <line x1="5.5" y1="11.4677429" x2="5.5" y2="7.92208862" id="路径-5" stroke="#6D6D80"></line>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

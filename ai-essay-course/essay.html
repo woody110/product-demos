@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>作文批改助手</title>
+<!-- 作文批改助手（独立应用）：Element Plus 样式子集 + 项目 essay 样式；与班课主系统互不加载对方的 el- 样式 -->
+<link rel="stylesheet" href="css/essay-base.css">
+<link rel="stylesheet" href="css/essay-header.css">
+<link rel="stylesheet" href="css/essay-home.css">
+<link rel="stylesheet" href="css/essay-correction.css">
+<link rel="stylesheet" href="css/essay-overlays.css">
+<style>[v-cloak]{display:none}</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="vendor/vue.min.js"></script>
+<script>
+/* Vue 2 在这里只当"模板引擎 + 响应式"用；页面 DOM/class/样式取自作文批改助手真实源码（Element Plus 渲染结果）。
+   组件通过 this.ctx 读取父页面状态，通过 this.$act('动作名', 载荷) 回调父页面。 */
+Vue.mixin({computed:{ctx(){ void this.$root.tick; return window.__ctx || {S:{},E:[],STU:[],D:{}}; }}});
+/* ctx：{S 状态, E 作文列表, STU 学员, D 常量}（结构见 /tmp/demo-contract-v2.md）；工具函数如下 */
+window.H = {
+  ev:id=>(window.__ctx.E||[]).find(e=>e.id===id),
+  stu:sid=>(window.__ctx.STU||[]).find(s=>s.sid===sid)
+};
+Vue.prototype.H = window.H;
+Vue.prototype.$act = function(n,d){ parent.postMessage({type:'act',name:n,payload:d||{}},'*'); };
+</script>
+<script src="scenes/essay-home.js"></script>
+<script src="scenes/essay-review.js"></script>
+<script src="scenes/essay-overlays.js"></script>
+<script src="scenes/essay-app.js"></script>
+<script>
+const root = new Vue({ el:'#app', data:{tick:0}, template:'<essay-app v-if="ctx.S.scene===\'essay\'" :key="ctx.S.epoch"/>' });
+window.addEventListener('message',e=>{const m=e.data||{}; if(m.type==='state'){window.__ctx=m.snap;root.tick++} if(m.type==='toast'&&window.__toast)window.__toast(m.msg,m.kind); if(m.type==='clearToasts')document.querySelectorAll('.el-message').forEach(n=>n.remove())});
+parent.postMessage({type:'ready'},'*');
+/* window.__toast(msg, type) 由 essay-app.js 定义（Element Plus 的 el-message 外观） */
+</script>
+</body>
+</html>

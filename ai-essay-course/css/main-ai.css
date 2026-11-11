@@ -1,0 +1,227 @@
+/* =====================================================================
+ * main-ai.css —— AI 作文课工作台（ai-panel）
+ * 学员列表 / 作文批改 页面本身复用 main-workbench.css 里的真实样式
+ * （.filter-and-cards-section / .filter-header / .list-header-inline / .table-container / .student-info /
+ *   .pagination / 订单信息抽屉 .student-list-order-drawer + .order-detail-card*），这里不重复。
+ * 以下只写新增元素，类名统一 x- 前缀。
+ * ===================================================================== */
+
+/* 还原（非新增）：真实项目按需引入 element-ui 的 drawer 样式（node_modules/element-ui/lib/theme-chalk/drawer.css），
+   项目自定义主题里没有这一条；demo 只引了主题，补上这条才能让抽屉盖在页面上（逐字取自 drawer.css）。 */
+.el-drawer__wrapper{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden;margin:0}
+
+/* ====== 新增（产品方案 v2） ====== */
+
+/* 筛选区只有一行、没有数据卡片：去掉真实 .filter-header 为"卡片之下"准备的上分隔线与上下留白 */
+.x-ai-filter.filter-header {
+  margin: 0;
+  padding: 0;
+  border-top: 0;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+}
+
+/* 学员姓名后"已退费"小标签 */
+.student-list-container .student-info .student-name .x-ai-refund-tag {
+  margin-left: 2px;
+}
+
+/* 抽屉：灰字提示 */
+.x-ai-drawer-tip {
+  margin-top: 4px;
+  padding: 0 4px;
+  font-size: 12px;
+  color: #909399;
+  line-height: 1.6;
+}
+.x-ai-report-drawer .x-ai-alert {
+  margin-bottom: 12px;
+}
+
+/* 抽屉：信息块底部小字（提交时间 / 批改老师 / 批改时间） */
+.x-ai-meta {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: #909399;
+  line-height: 1.6;
+}
+.x-ai-meta span + span {
+  margin-left: 16px;
+}
+
+/* 抽屉：区块标题（左侧橙色竖线，主题色 #ff5f2e）与正文 */
+.x-ai-sec-title {
+  margin-bottom: 8px;
+  padding-left: 8px;
+  border-left: 3px solid #ff5f2e;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #303133;
+}
+.x-ai-sec-body {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #303133;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 稿纸：文字作文（横线稿纸）与图片作文（拍照占位，用 CSS 画横线稿纸 + 手写线条 + 红色圈注） */
+.x-ai-paper {
+  position: relative;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  background-color: #fffdf6;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, #e8e2cf 27px, #e8e2cf 28px);
+  background-position: 0 6px;
+}
+.x-ai-paper--text {
+  padding: 6px 14px 14px;
+  font-size: 13px;
+  line-height: 28px;
+  color: #303133;
+}
+.x-ai-paper--text p {
+  margin: 0;
+  text-indent: 2em;
+}
+.x-ai-paper--img {
+  height: 224px;
+  overflow: hidden;
+}
+.x-ai-scribble {
+  position: absolute;
+  left: 6%;
+  height: 4px;
+  border-radius: 2px;
+  background: #c0c4cc;
+  opacity: 0.8;
+}
+.x-ai-circle {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid #f56c6c;
+  border-radius: 50%;
+}
+.x-ai-note {
+  position: absolute;
+  font-size: 12px;
+  color: #f56c6c;
+  white-space: nowrap;
+}
+.x-ai-paper-cap {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 12px;
+  color: #909399;
+}
+
+/* 抽屉底部"去批改"：贴底 */
+.x-ai-drawer-foot {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 0 4px;
+  text-align: right;
+  background: #f5f7fa;
+}
+
+/* 浮层「课程」下拉里，AI 作文课选项名称后的小标签 */
+.x-wb-ai-tag.el-tag {
+  margin-left: 8px;
+  vertical-align: 1px;
+}
+
+/* 批改结果抽屉：内容不满一屏时，"去批改"仍贴在抽屉底部 */
+.x-ai-report-drawer .order-detail-drawer-body {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.x-ai-report-drawer .x-ai-drawer-foot {
+  margin-top: auto;
+}
+
+/* 学习详情抽屉：标签列放宽，较长的字段名不折行 */
+.x-ai-study-drawer .order-detail-card__label {
+  flex-basis: 150px;
+}
+
+
+/* ====== 新增（产品方案 v2 · 第二轮：流转列按钮 / 手机框预览） ====== */
+
+/* 作文流转列：状态、提交时间下方，一行并排的文字按钮；「批改」用主题橙色强调 */
+.x-ai-flow-btns {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  line-height: 1.6;
+}
+.x-ai-flow-btns .el-button + .el-button {
+  margin-left: 0;
+}
+.x-ai-flow-btns .x-ai-go.el-button--text,
+.x-ai-flow-btns .x-ai-go.el-button--text:hover,
+.x-ai-flow-btns .x-ai-go.el-button--text:focus {
+  color: #ff5f2e;
+}
+
+/* 批改结果抽屉：手机外框（宽 375、高 670）里嵌学生端报告页 */
+.x-ai-phone-wrap {
+  margin-top: 12px;
+  text-align: center;
+}
+.x-ai-phone {
+  box-sizing: content-box;
+  display: inline-block;
+  width: 375px;
+  height: 670px;
+  border: 6px solid #303133;
+  border-radius: 28px;
+  overflow: hidden;
+  background: #fff;
+  vertical-align: top;
+}
+.x-ai-phone-frame {
+  display: block;
+  width: 375px;
+  height: 670px;
+  border: 0;
+  background: #fff;
+}
+
+/* 汇总卡片：夹在筛选区与学员列表之间，复用真实 .main-data-cards / .data-card / .card-* */
+.x-ai-cards {
+  margin: 0 0 16px;
+  padding: 16px 20px;
+  background: #fff;
+  border-radius: 8px;
+}
+.x-ai-cards .data-card.x-ai-card {
+  flex: 1 1 0;
+  min-width: 280px;
+}
+.x-ai-card-time {
+  font-size: 16px !important;
+}
+.x-ai-done {
+  color: #303133;
+  font-weight: 600;
+}
+.x-ai-done-total {
+  color: #909399;
+}
+.x-ai-cards .action-text.action-selected {
+  background: #fff1ec;
+  color: #ff5f2e;
+}
+
+/* 汇总卡片：说明文字放在数字下方 */
+.x-ai-cards .card-metrics-row .metric-col .metric-value { margin-bottom: 8px; }
+.x-ai-cards .card-metrics-row .metric-col .metric-label { margin-bottom: 0; }
+
+/* 抽屉获得焦点时不出现浏览器默认的蓝色聚焦框 */
+.student-list-order-drawer:focus, .student-list-order-drawer *:focus { outline: none !important; }
+.el-drawer__wrapper .el-drawer:focus, .el-drawer__header span:focus { outline: none !important; }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200px" height="48px" viewBox="0 0 200 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60.1 (88133) - https://sketch.com -->
+    <title>椭圆形@web</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="200" height="48"></rect>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="辅导账户管理" transform="translate(0.000000, -217.000000)">
+            <rect fill="#F5F5FA" x="0" y="0" width="1440" height="1067"></rect>
+            <g id="侧边栏" transform="translate(0.000000, 60.000000)"></g>
+            <g id="侧边栏">
+                <rect id="矩形" fill="#FFFFFF" x="0" y="0" width="200" height="1312"></rect>
+                <g id="选中" transform="translate(0.000000, 217.000000)">
+                    <g id="椭圆形">
+                        <mask id="mask-2" fill="white">
+                            <use xlink:href="#path-1"></use>
+                        </mask>
+                        <use id="蒙版" fill="#F8F8FA" xlink:href="#path-1"></use>
+                        <path d="M186,17 C172.192881,17 161,28.1928813 161,42 C161,55.8071187 172.192881,67 186,67 C199.807119,67 211,55.8071187 211,42 C211,28.1928813 199.807119,17 186,17 Z M186,27 C194.284271,27 201,33.7157288 201,42 C201,50.2842712 194.284271,57 186,57 C177.715729,57 171,50.2842712 171,42 C171,33.7157288 177.715729,27 186,27 Z" fill-opacity="0.1" fill="#FF5F2E" fill-rule="nonzero" mask="url(#mask-2)"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

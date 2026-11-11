@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=375, initial-scale=1">
+<title>作文批改报告</title>
+<!-- 学生端 H5「作文批改报告」页示意：原生 HTML + CSS，无外部依赖；内容由地址 # 后的 JSON 渲染（班课以 from=cm 方式嵌入预览） -->
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:#303133;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;-webkit-text-size-adjust:100%}
+body{width:375px;padding-bottom:28px}
+.top{position:sticky;top:0;z-index:2;height:46px;line-height:46px;text-align:center;font-size:17px;font-weight:600;background:#fff;border-bottom:1px solid #f0f0f0}
+.sec{padding:16px 16px 0}
+.h{display:flex;align-items:center;margin:0 0 10px;font-size:16px;font-weight:600;line-height:1.2}
+.h:before{content:"";width:4px;height:16px;margin-right:8px;border-radius:2px;background:#ff8000}
+.info{background:#fafafa;border-radius:8px;padding:6px 14px}
+.info div{display:flex;padding:7px 0;font-size:14px;line-height:1.5}
+.info span{flex:0 0 64px;color:#909399}
+.info b{flex:1;font-weight:400;color:#303133;word-break:break-all}
+.txt{font-size:14px;line-height:1.8;color:#303133;white-space:pre-wrap;word-break:break-all}
+.card{background:#fff7ef;border-radius:8px;padding:12px 14px}
+/* 批改后的手写稿纸：横线稿纸 + 手写线条 + 红色圈注 */
+.paper{position:relative;height:250px;border:1px solid #ebeef5;border-radius:6px;overflow:hidden;background-color:#fffdf6;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 29px,#e8e2cf 29px,#e8e2cf 30px);background-position:0 8px}
+.paper i{position:absolute;left:6%;height:5px;border-radius:3px;background:#b6bbc6;opacity:.85}
+.paper u{position:absolute;box-sizing:border-box;border:2px solid #f56c6c;border-radius:50%}
+.paper em{position:absolute;font-style:normal;font-size:12px;color:#f56c6c;white-space:nowrap}
+.cap{margin-top:8px;font-size:12px;color:#909399;line-height:1.6}
+.tag{display:inline-block;margin-left:6px;padding:0 6px;border-radius:9px;font-size:11px;line-height:18px;color:#ff8000;background:#fff0e0;vertical-align:1px}
+</style>
+</head>
+<body>
+<div class="top">作文批改报告</div>
+<div id="app"></div>
+<script>
+(function(){
+  var d = {};
+  try { d = JSON.parse(decodeURIComponent((location.hash || '').slice(1))) || {}; } catch (e) {}
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function sec(title, body){ return '<div class="sec"><h3 class="h">' + title + '</h3>' + body + '</div>'; }
+  var kindText = d.kind === 'second' ? '订正作文' : '首次文字作文';
+  var html = '';
+  html += sec('作文信息', '<div class="info">' +
+    '<div><span>学生</span><b>' + esc(d.name) + '</b></div>' +
+    '<div><span>年级</span><b>' + esc(d.grade) + '</b></div>' +
+    '<div><span>单元</span><b>' + esc(d.unit) + '</b></div>' +
+    '<div><span>作文标题</span><b>' + esc(d.title) + '<em class="tag" style="font-style:normal">' + kindText + '</em></b></div></div>');
+  if (d.form === 'image') {
+    var lines = '';
+    for (var n = 0; n < 8; n++) lines += '<i style="top:' + (20 + n * 30) + 'px;width:' + (n % 3 === 2 ? 55 : n % 2 ? 84 : 72) + '%"></i>';
+    html += sec('老师批注', '<div class="paper">' + lines +
+      '<u style="left:14%;top:10px;width:70px;height:28px"></u>' +
+      '<u style="left:50%;top:70px;width:96px;height:28px"></u>' +
+      '<u style="left:22%;top:130px;width:76px;height:28px"></u>' +
+      '<em style="left:62%;top:30px">用词生动</em>' +
+      '<em style="left:8%;top:100px">这里可以再具体些</em>' +
+      '<em style="left:56%;top:160px">结尾可以呼应开头</em></div>' +
+      '<div class="cap">' + esc(d['批注说明'] || '批注后的手写稿纸') + '</div>');
+  } else {
+    var ps = (d.paras || []).map(function(t, i){ return '<p style="margin:0 0 8px">' + (i === 1 ? '<span style="border-bottom:2px solid #f56c6c">' + esc(t) + '</span>' : esc(t)) + '</p>'; }).join('');
+    html += sec('老师批注', '<div class="card"><div class="txt">' + ps + '</div></div><div class="cap">红线处为老师批注的地方</div>');
+  }
+  html += sec('总评', '<div class="card"><div class="txt">' + esc(d['总评']) + '</div></div>');
+  html += sec('详细点评', '<div class="txt">' + esc(d['详细点评']) + '</div>');
+  html += sec('全文润色', '<div class="card"><div class="txt">' + esc(d['全文润色']) + '</div></div>');
+  html += sec('诊断建议', '<div class="txt">' + esc(d['诊断建议']) + '</div>');
+  document.getElementById('app').innerHTML = html;
+})();
+</script>
+</body>
+</html>

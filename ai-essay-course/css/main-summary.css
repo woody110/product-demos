@@ -1,0 +1,114 @@
+/* =====================================================================
+ * main-summary.css —— 学员学情总结页 + 家长话术（V1.1）
+ * 复用班课真实 token：主色 #ff5f2e、文字 #303133 / #606266 / #909399、边框 #ebeef5 / #e4e7ed、
+ * 状态色 #67c23a / #e6a23c / #f56c6c / #409eff（见 main-workbench.css 数据卡片、状态列）。
+ * 全部为新增元素，class 统一 x-sm- 前缀。
+ * ===================================================================== */
+
+/* ====== 新增（产品方案 V1.1） ====== */
+.x-sm-page { padding: 16px 20px 28px; color: #303133; font-size: 14px; }
+.x-sm-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.x-sm-top-title { font-size: 18px; font-weight: 600; }
+.x-sm-top-who { padding: 4px 12px; border-radius: 14px; background: #f0f2f5; color: #606266; font-size: 12px; }
+
+.x-sm-card { background: #fff; border: 1px solid #ebeef5; border-radius: 8px; padding: 16px 18px; box-sizing: border-box; }
+.x-sm-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+.x-sm-avatar { width: 52px; height: 52px; border-radius: 50%; background: #ff5f2e; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; flex: none; }
+.x-sm-name { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.x-sm-sub { margin-top: 4px; font-size: 13px; color: #909399; }
+.x-sm-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: 12px; }
+.x-sm-meta { margin-left: auto; text-align: right; font-size: 12px; color: #909399; line-height: 20px; }
+.x-sm-meta b { color: #409eff; font-weight: 600; }
+
+.x-sm-chip { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; line-height: 20px; background: #f4f4f5; color: #909399; white-space: nowrap; }
+.x-sm-chip-green { background: #f0f9eb; color: #67c23a; }
+.x-sm-chip-orange { background: #fdf6ec; color: #e6a23c; }
+.x-sm-chip-red { background: #fef0f0; color: #f56c6c; }
+.x-sm-chip-blue { background: #ecf5ff; color: #409eff; }
+.x-sm-chip-gray { background: #f4f4f5; color: #909399; }
+.x-sm-lv { font-weight: 600; }
+.x-sm-lv-a { background: #f0f9eb; color: #07c160; }
+.x-sm-lv-b { background: #ecf5ff; color: #409eff; }
+.x-sm-lv-c { background: #fdf6ec; color: #ff8000; }
+
+.x-sm-grid { display: grid; grid-template-columns: 1fr 1fr 1.1fr; gap: 14px; margin-bottom: 14px; align-items: stretch; }
+@media (max-width: 1500px) { .x-sm-grid { grid-template-columns: 1fr 1fr; } }
+.x-sm-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; margin-bottom: 12px; flex-wrap: wrap; }
+.x-sm-hint { font-size: 12px; font-weight: 400; color: #909399; }
+.x-sm-ic { display: inline-block; width: 8px; height: 16px; border-radius: 3px; }
+.x-sm-ic-blue { background: #409eff; } .x-sm-ic-red { background: #f56c6c; } .x-sm-ic-orange { background: #e6a23c; } .x-sm-ic-green { background: #67c23a; }
+.x-sm-empty { padding: 28px 0; text-align: center; color: #909399; font-size: 13px; }
+
+/* 上课留痕 */
+.x-sm-lessons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+.x-sm-ls { border: 1px solid #e4e7ed; border-radius: 6px; padding: 6px 4px; text-align: center; background: #fafafa; }
+.x-sm-ls-no { font-size: 12px; color: #909399; }
+.x-sm-ls-v { font-size: 14px; font-weight: 600; color: #c0c4cc; margin-top: 2px; }
+.x-sm-ls-done { background: #f0f9eb; border-color: #c2e7b0; } .x-sm-ls-done .x-sm-ls-v { color: #67c23a; }
+.x-sm-ls-part { background: #fdf6ec; border-color: #f5dab1; } .x-sm-ls-part .x-sm-ls-v { color: #e6a23c; }
+.x-sm-ls-off .x-sm-ls-v, .x-sm-ls-none .x-sm-ls-v { color: #c0c4cc; }
+.x-sm-tagrow { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.x-sm-stat { font-size: 13px; color: #606266; line-height: 28px; }
+.x-sm-stat i { margin-right: 6px; color: #909399; }
+.x-sm-stat b { color: #303133; }
+
+/* 成长变化 */
+.x-sm-bars { display: flex; justify-content: space-around; align-items: flex-end; height: 120px; margin-bottom: 12px; }
+.x-sm-bar { text-align: center; }
+.x-sm-bar-val { font-size: 14px; font-weight: 600; color: #409eff; margin-bottom: 4px; }
+.x-sm-bar-col { width: 40px; margin: 0 auto; background: #409eff; border-radius: 6px 6px 0 0; opacity: .85; }
+.x-sm-bar-name { margin-top: 6px; font-size: 12px; color: #909399; }
+
+/* 提示条 / 作文要点 */
+.x-sm-note { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; border-radius: 6px; font-size: 13px; line-height: 20px; margin-top: 10px; }
+.x-sm-note i { margin-top: 3px; }
+.x-sm-note-green { background: #f0f9eb; color: #529b2e; }
+.x-sm-note-orange { background: #fdf6ec; color: #b88230; }
+.x-sm-note-gray { background: #f4f4f5; color: #909399; }
+.x-sm-inner { margin-left: auto; flex: none; padding: 0 8px; border-radius: 10px; background: #fff; color: #909399; font-size: 12px; }
+.x-sm-point { display: flex; gap: 8px; font-size: 13px; line-height: 20px; margin-bottom: 8px; }
+.x-sm-point i { margin-top: 3px; }
+.x-sm-ok i { color: #67c23a; } .x-sm-warn i { color: #e6a23c; }
+
+/* 给家长的话术 */
+.x-sm-script .x-sm-title { margin-bottom: 14px; }
+.x-sm-status { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.x-sm-link { font-size: 12px; font-weight: 400; color: #409eff; cursor: pointer; }
+.x-sm-banner { display: flex; align-items: center; gap: 8px; padding: 8px 12px; margin-bottom: 12px; border-radius: 6px; background: #fdf6ec; color: #b88230; font-size: 13px; }
+.x-sm-banner-t { flex: 1; }
+.x-sm-banner-red { background: #fef0f0; color: #f56c6c; }
+.x-sm-text { border: 1px solid #ebeef5; border-radius: 6px; padding: 6px 14px; background: #fafafa; }
+.x-sm-para { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; line-height: 22px; }
+.x-sm-para + .x-sm-para { border-top: 1px dashed #ebeef5; }
+.x-sm-para-tag { flex: none; padding: 0 8px; border-radius: 4px; background: #ecf5ff; color: #409eff; font-size: 12px; line-height: 22px; }
+.x-sm-pt1 { background: #f0f9eb; color: #67c23a; }
+.x-sm-pt2 { background: #fdf6ec; color: #e6a23c; }
+.x-sm-actions { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.x-sm-actions .el-button { margin-left: 0; }
+.x-sm-send-wrap { display: inline-block; }
+.x-sm-foot { margin-top: 12px; font-size: 12px; color: #909399; }
+
+/* ====== 新增（产品方案 V1.1）：能力变化 ====== */
+.x-sm-ab { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f2f3f5; font-size: 13px; color: #303133; }
+.x-sm-ab-head { color: #909399; font-size: 12px; padding-top: 0; }
+.x-sm-ab-name { flex: 0 0 90px; }
+.x-sm-ab-c { flex: 1; text-align: center; }
+.x-sm-ab-t { flex: 0 0 80px; text-align: right; }
+.x-sm-lv { display: inline-block; min-width: 28px; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center; }
+.x-sm-lv-优 { background: #e8f8ee; color: #07c160; }
+.x-sm-lv-良 { background: #eaf3ff; color: #409eff; }
+.x-sm-lv-中 { background: #fff3e0; color: #ff8000; }
+.x-sm-ab-pend { color: #c0c4cc; font-size: 12px; }
+.x-sm-up { color: #07c160; font-weight: 600; }
+.x-sm-flat { color: #909399; }
+.x-sm-ab + .x-sm-note { margin-top: 12px; }
+
+/* ====== 新增（V1.1 调整）：能力变化曲线，页面去掉本次作文与话术两块后改为两列 ====== */
+.x-sm-grid { grid-template-columns: 1fr 1.5fr; }
+@media (max-width: 1500px) { .x-sm-grid { grid-template-columns: 1fr; } }
+.x-sm-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 6px; }
+.x-sm-lg { cursor: pointer; font-size: 12px; color: #606266; display: inline-flex; align-items: center; user-select: none; }
+.x-sm-lg i { width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+.x-sm-lg b { margin-left: 5px; font-weight: 600; color: #303133; }
+.x-sm-lg.off { opacity: .35; }
+.x-sm-svg { width: 100%; max-width: 640px; height: auto; display: block; margin: 0 auto; }
