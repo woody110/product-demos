@@ -42,13 +42,12 @@ iframe.on{display:block}
 <p style="line-height:1.9;color:#666">这是产品方案 v2 的可点原型：页面结构、样式、文案取自班课与作文批改助手真实源码，数据是假的。「班课主系统」和「作文批改助手」是两个独立页面（真实环境里作文批改助手是新页签打开的应用）。推荐路线：</p>
 <ol>
 <li><b>切到 AI 作文课</b>：打开后是现有的一站式工作台。点右上角"王老师"那个筛选浮层，课程选「三年级下·AI作文课」，页面整体换成 AI 作文课工作台（7 个页签换成「学员列表」一个）。<b>浮层里的「班级」多选保留，默认全选</b>，改班级后列表和三张汇总卡片一起变。</li>
-<li><b>学员列表</b>：页面里的筛选只有「课节」「批改状态」「学生姓名」。把"批改状态"筛成"待批改"；「首次文字作文」是课上直接批完的，只有「查看」；「订正作文」是学生重写拍照提交的，也只有「查看」；批改入口在最右侧「操作」列的「批改」（没有待批的订正作文时置灰）。周八带"已退费"标签但照常可批。</li>
-<li><b>查看批改结果</b>：点张三「首次文字作文」的「查看」→ 抽屉里嵌学生端的批改结果预览页；点「订正作文」的「查看」→ 待批改，只展示学生提交的内容，有「去批改」。</li>
-<li><b>批改</b>：点张三行「操作」里的「批改」→ 新页签打开作文批改助手：先"文字识别 / 图片校对"，点开始批改后 AI 批改，进入批改页，点「完成批改」→ 点「关闭页签」回到班课，列表已刷新为已批改。</li>
-<li><b>学员档案里找旧年级作文</b>：顶部演示栏切到「李老师 · 四年级教辅」→ 浮层课程选「四年级上·AI作文课」→ 班级下拉里可多选 → 点<b>吴九</b>的姓名，页签条新开他的「学员档案」，默认就在「作文批改」页签（带"新"角标）→ 能看到他三年级《写日记》等作文：首次已批改、订正待批改 → 点订正那条的「批改」进作文批改助手完成批改 → 关闭页签回来，这条变成已批改，点「查看」看结果。工具栏的课程类型、年级、状态可以筛。</li>
+<li><b>学员列表</b>：页面里的筛选是「课节」「是否完课」「提交状态」「批改报告」「学生姓名」，对应列表里的同名字段；没有汇总卡片。列表按所选课节展示：是否完课、视频学习时长（首次）、写作步骤进度（如 5/5，总数来自课节配置）、互动题完成情况与答题正确率、学习时长（首次）、作文、提交状态、提交时间。周八带"已退费"标签但照常可看。</li>
+<li><b>作文与草稿</b>：点张三「作文」的「查看」→ 抽屉里嵌学生端（C 端）渲染的作文，标明是最终提交版；王五第 3 课提交状态为"否"，查看是草稿，提交时间显示"--"，「查看批改结果」置灰。</li>
+<li><b>批改结果与批改报告</b>：点张三「操作」里的「查看批改结果」→ 新页签打开作文批改助手，进入学生提交作文的批改结果页，点「完成批改」→ 批改报告发送给学生 C 端 → 关闭页签回班课，该行「查看批改报告」变为可点，点开是 C 端批改报告页。尚未生成报告的行，「查看批改报告」置灰。</li>
+<li><b>学员档案里找旧年级作文</b>：顶部演示栏切到「李老师 · 四年级教辅」→ 浮层课程选「四年级上·AI作文课」→ 点<b>吴九</b>的姓名，页签条新开他的「学员档案」，默认在「作文批改」页签 → 能看到他三年级的作文：可查看作文、查看批改结果、查看批改报告（已生成时）。</li>
 <li><b>现有工作台能力</b>：勾选学员后点「企微群发」；点「导出」导出当前筛选结果；点学员姓名或ID，在页签条里多开一个该学员的「学员档案」页签（可关闭，最多 5 个）。</li>
-<li><b>学情总结（V1.1）</b>：学员列表操作列点「学情总结」，页签条新开"学情总结·姓名"。页面有页头摘要（完课、订正状态、首次/订正 优良中）、上课留痕、能力变化曲线（截止到当前课节；点图例可显示/隐藏某项能力，鼠标停在圆点上看分数）。赵六一节没学，「学情总结」置灰；只学满 1 节的学员，能力变化显示"数据不足"。家长话术与发送暂时从总结页移出，待定入口。</li>
-<li><b>只读</b>：王老师视角下在浮层里把教辅换成"李老师"，课程选「四年级上·AI作文课」，点任意一行的「批改」，作文批改助手里保存修改、完成批改置灰（登录人不是所选教辅）。</li>
+<li><b>只读</b>：王老师视角下在浮层里把教辅换成"李老师"，课程选「四年级上·AI作文课」，点「查看批改结果」，作文批改助手里保存修改、完成批改置灰（登录人不是所选教辅）。</li>
 </ol>
 <p><button onclick="A.hideGuide()">开始演示</button></p></div></div>
 <div id="note"></div>
@@ -64,8 +63,8 @@ const COURSES = {
 };
 /* 每门 AI 作文课共 8 节；open=已开课 */
 const LESSONS = {
-  ai3:['猜猜他是谁','我的好朋友','写日记','我最喜欢的动物','一次有趣的游戏','难忘的一天','我的家乡','我的心愿'].map((n,i)=>({id:'l'+(i+1),name:'第'+(i+1)+'课 '+n,open:i<3})),
-  ai4:['我的暑假','一次难忘的旅行','秋天的校园','我敬佩的人','一件小事','神奇的想象','我的课余生活','写给未来的信'].map((n,i)=>({id:'l'+(i+1),name:'第'+(i+1)+'课 '+n,open:i<2}))
+  ai3:['猜猜他是谁','我的好朋友','写日记','我最喜欢的动物','一次有趣的游戏','难忘的一天','我的家乡','我的心愿'].map((n,i)=>({id:'l'+(i+1),name:'第'+(i+1)+'课 '+n,open:i<3,stepTotal:i===2?6:5})),
+  ai4:['我的暑假','一次难忘的旅行','秋天的校园','我敬佩的人','一件小事','神奇的想象','我的课余生活','写给未来的信'].map((n,i)=>({id:'l'+(i+1),name:'第'+(i+1)+'课 '+n,open:i<2,stepTotal:5}))
 };
 /* 班级 → 教辅：浮层里班级下拉的选项 = 该课程下、该教辅名下的班级 */
 const CLASS_TEACHER = { '三年级(1)班':'wang','三年级(2)班':'wang','四年级(1)班':'li' };
@@ -76,7 +75,8 @@ const TXT = {
   '诊断建议':'优势能力：观察细致，语言自然。\n待提升能力：详略安排、结尾呼应。\n生活中练习：每天用三句话描述一个熟悉的人。'
 };
 const PARAS = ['我们班有个“棋王”，书包里总装着一副小小的象棋。','他的眼睛笑起来眯成一条缝，嘴角还有一个浅浅的酒窝。','有一次，同桌的数学题不会做，他把自己的草稿纸推过去，一步一步讲给同桌听。','这就是我们班的棋王，一个爱下棋、也爱帮助同学的人。'];
-const D = { COURSE:'三年级下·素养课', TEACHERS, COURSES, LESSONS, CLASS_TEACHER, TXT, PARAS, NOW:'11-08 10:20', TEACHER:'王老师',
+const DRAFT_PARAS = PARAS.slice(0,2);
+const D = { DRAFT_PARAS, COURSE:'三年级下·素养课', TEACHERS, COURSES, LESSONS, CLASS_TEACHER, TXT, PARAS, NOW:'11-08 10:20', TEACHER:'王老师',
   STUDENTS:[{id:'12345',name:'张三'},{id:'23456',name:'李四'},{id:'34567',name:'王五'}] };
 
 /* 学员主数据：每条 = 一个学员在一门 AI 作文课里的记录 */
@@ -104,7 +104,7 @@ function seed(){
     '67890':ST(2,'11-07 20:50','已完课',100,'5/5',20,39,'6/6',true),
     '90123':ST(1,'11-08 08:30','已完课',100,'4/5',26,26,'6/6',true)
   };
-  const DONE = ST(2,'11-02 19:20','已完课',100,'5/5',20,45,'6/6',true), NONE = ST(0,null,'未学习',0,'0/5',0,0,'0/6',false);
+  const DONE = ST(2,'11-02 19:20','已完课',100,'5/5',20,45,'5/5',true), NONE = ST(0,null,'未学习',0,'0/5',0,0,'0/5',false);
   const hasEssay = {l1:['12345','23456','56789','67890','90123','34567'], l2:['12345','23456','56789','67890']};
   STU.forEach(s=>{
     if(s.course==='ai3'){
@@ -112,38 +112,46 @@ function seed(){
       s.study.l1 = hasEssay.l1.indexOf(s.sid)>-1 ? DONE : NONE;
       s.study.l2 = hasEssay.l2.indexOf(s.sid)>-1 ? DONE : NONE;
     } else {
-      s.study.l1 = s.sid==='89012' ? ST(1,'11-08 09:45','已学习',70,'3/5',14,14,'3/6',false) : NONE;
+      s.study.l1 = s.sid==='89012' ? ST(1,'11-08 09:45','已学习',70,'3/5',14,14,'3/5',false) : NONE;
       s.study.l2 = NONE;
     }
   });
-  const mk=(id,sid,lesson,title,kind,status,submit,extra)=>Object.assign({id,sid,course:'ai3',lesson,title,kind,form:kind==='first'?'text':'image',status,submit,annot:3,
-    hasResult:status==='graded',ocrDone:status==='graded',txt:Object.assign({},TXT)},extra||{});
+  /* 互动题答题正确率（%）：只有学过的课节才有 */
+  const ACC = {'12345':100,'23456':80,'34567':60,'56789':100,'67890':80,'90123':75,'89012':67};
+  STU.forEach(s=>Object.keys(s.study).forEach(k=>{ const st=s.study[k]; s.study[k]=Object.assign({},st,{acc: st.times ? (ACC[s.sid]||90) : null}) }));
+  /* 每课节每学员 1 篇作文：draft = 草稿（学生未提交）；pending = 已提交、批改报告未生成；graded = 已提交、批改报告已发送给学生 */
+  const mk=(id,sid,lesson,title,status,submit,extra)=>Object.assign({id,sid,course:'ai3',lesson,title,form:'text',status,submit,annot:3,
+    hasResult:status!=='draft',ocrDone:true,txt:Object.assign({},TXT)},extra||{});
   const g=(by,at)=>({gradedBy:by,gradedAt:at});
   E = [
-    mk('e1','12345','l3','写日记','first','graded','11-07 20:15',g('wang','11-07 21:30')),
-    mk('e2','12345','l3','写日记','second','pending','11-08 08:40'),
-    mk('e3','23456','l3','写日记','first','graded','11-07 19:55',g('wang','11-07 19:55')),
-    mk('e14','23456','l3','写日记','second','pending','11-08 07:50'),
-    mk('e4','56789','l3','写日记','first','graded','11-06 18:50',g('wang','11-06 20:10')),
-    mk('e5','56789','l3','写日记','second','graded','11-07 08:20',g('wang','11-07 10:05')),
-    mk('e6','67890','l3','写日记','first','graded','11-07 21:20',g('wang','11-07 21:20')),
-    mk('e15','67890','l3','写日记','second','pending','11-08 09:05'),
-    mk('e7','78901','l3','写日记','first','graded','11-06 20:30',g('wang','11-06 20:30')),
-    mk('e16','78901','l3','写日记','second','pending','11-07 18:40'),
-    mk('e17','34567','l1','猜猜他是谁','first','graded','10-26 20:10',g('wang','10-27 09:40')),
-    mk('e18','90123','l3','写日记','first','graded','11-08 08:50',g('wang','11-08 08:50')),
-    mk('e8','12345','l2','我的好朋友','first','graded','11-02 19:40',g('wang','11-03 09:10')),
-    mk('e9','23456','l2','我的好朋友','first','graded','11-02 20:10',g('wang','11-03 09:30')),
-    mk('e10','56789','l2','我的好朋友','first','graded','11-02 19:50',g('wang','11-03 09:50')),
-    mk('e11','78901','l2','我的好朋友','first','graded','11-02 20:20',g('wang','11-03 10:10')),
-    mk('e12','12345','l1','猜猜他是谁','first','graded','10-26 19:30',g('wang','10-27 09:00')),
-    mk('e13','78901','l1','猜猜他是谁','first','graded','10-26 19:45',g('wang','10-27 09:20'))
+    mk('e1','12345','l3','写日记','pending','11-07 20:15'),
+    mk('e3','23456','l3','写日记','pending','11-07 19:55'),
+    mk('e4','56789','l3','写日记','graded','11-06 18:50',g('wang','11-06 20:10')),
+    mk('e6','67890','l3','写日记','pending','11-07 21:20'),
+    mk('e7','78901','l3','写日记','pending','11-06 20:30'),
+    mk('e18','90123','l3','写日记','graded','11-08 08:50',g('wang','11-08 09:10')),
+    mk('e19','34567','l3','写日记','draft','11-08 09:10'),
+    mk('e17','34567','l1','猜猜他是谁','graded','10-26 20:10',g('wang','10-27 09:40')),
+    mk('e8','12345','l2','我的好朋友','graded','11-02 19:40',g('wang','11-03 09:10')),
+    mk('e9','23456','l2','我的好朋友','graded','11-02 20:10',g('wang','11-03 09:30')),
+    mk('e10','56789','l2','我的好朋友','graded','11-02 19:50',g('wang','11-03 09:50')),
+    mk('e11','78901','l2','我的好朋友','graded','11-02 20:20',g('wang','11-03 10:10')),
+    mk('e12','12345','l1','猜猜他是谁','graded','10-26 19:30',g('wang','10-27 09:00')),
+    mk('e13','78901','l1','猜猜他是谁','graded','10-26 19:45',g('wang','10-27 09:20')),
+    mk('e20','23456','l1','猜猜他是谁','graded','10-26 19:50',g('wang','10-27 09:10')),
+    mk('e21','56789','l1','猜猜他是谁','graded','10-26 20:00',g('wang','10-27 09:15')),
+    mk('e22','67890','l1','猜猜他是谁','graded','10-26 20:20',g('wang','10-27 09:50')),
+    mk('e23','90123','l1','猜猜他是谁','graded','10-26 20:30',g('wang','10-27 10:00')),
+    mk('e25','67890','l2','我的好朋友','graded','11-02 20:30',g('wang','11-03 10:20')),
+    mk('e24','89012','l1','我的暑假','draft','11-08 09:50',{course:'ai4'})
   ];
+  /* 草稿没有提交时间 */
+  E.forEach(e=>{ e.savedAt=e.submit; if(e.status==='draft') e.submit=null });
   /* 作文批改时输出的优良中（班课直接读取，不另算）；演示用轮换 */
-  E.forEach((e,i)=>{ if(e.status==='graded') e.level = e.kind==='second' ? '优' : ['优','良','中'][i%3] });
+  E.forEach((e,i)=>{ if(e.status==='graded') e.level = ['优','良','中'][i%3] });
   /* 话术发送的演示标记：王五家长未加老师好友；钱十一首次发送会失败、重试成功 */
   STU.forEach(s=>{ if(s.sid==='34567') s.noFriend=true; if(s.sid==='90123') s.failFirst=true });
-  S = { scene:'main', me:'wang', ro:false, epoch:0, cur:null, eview:'review', tab:'总评', editing:null, draft:null, preview:false, done:false, guide:false };
+  S = { scene:'main', me:'wang', ro:false, epoch:0, cur:null, eview:'review', tab:'总评', editing:null, draft:null, preview:false, done:false, guide:false, helps:[], focus:null, helpN:0 };
   D.TEACHER = TEACHERS[S.me].name;
 }
 const ev = id => E.find(e=>e.id===id);
@@ -174,15 +182,15 @@ fm.addEventListener('load',refresh); fe.addEventListener('load',refresh);
 function toast(msg,kind){ postToast(msg,kind) }
 
 const NOTES = {
-  main:'对应产品方案 4.1–4.3：右上角浮层「教辅 / 课程 / 班级」→ AI 作文课工作台（只有学员列表）；首次/订正作文列里「查看」，操作列「批改」（订正作文）；点学员姓名开学员档案，在「作文批改」里找旧年级作文。班课系统一侧。',
-  essay:'对应产品方案 4.4：批改详情沿用作文批改助手（真实环境是新页签打开的独立应用）；图片作文先识别校对，完成批改后关闭页签回班课。'
+  main:'班课系统一侧：右上角浮层「教辅 / 课程 / 班级」→ AI 作文课工作台（学员列表）；作文「查看」看学生作文（草稿 / 最终提交版），操作列「查看批改结果」进作文批改助手，「查看批改报告」看 C 端报告；点学员姓名开学员档案。',
+  essay:'批改结果页沿用作文批改助手（真实环境是新页签打开的独立应用）；点「完成批改」后批改报告发送给学生 C 端，关闭页签回班课。'
 };
 function renderBar(){
   const where = S.scene==='essay' ? '当前：作文批改助手（新页签 · 独立应用）' : '当前：班课主系统';
   document.getElementById('bar').innerHTML = `<b>AI 作文课 · 交互原型 v2</b><span class="lab">演示视角</span>`+
     Object.keys(TEACHERS).map(k=>`<button class="sc ${S.me===k?'on':''}" onclick="A.setMe({k:'${k}'})">${TEACHERS[k].name} · ${TEACHERS[k].grade}教辅</button>`).join('')+
     `<span class="where">${where}</span><span class="sp"></span>
-     <button class="gh" onclick="A.showGuide()">演示指引</button><button class="act" onclick="A.reset()">重置演示</button>`;
+     <button class="gh" onclick="A.simHelp()">模拟学生点「求助」</button><button class="gh" onclick="A.showGuide()">演示指引</button><button class="act" onclick="A.reset()">重置演示</button>`;
 }
 
 /* ================= 流程 ================= */
@@ -203,6 +211,20 @@ const _A = {
   setMe(d){ TOK++; S.me=d.k; D.TEACHER=TEACHERS[d.k].name; S.scene='main'; S.cur=null; S.epoch++; clearToasts() },
   reset(){ TOK++; const me=S.me; seed(); S.me=me; D.TEACHER=TEACHERS[me].name; S.epoch=1+Math.floor(Math.random()*1e6); clearToasts() },
   showGuide(){S.guide=true}, hideGuide(){S.guide=false},
+  /* 模拟学生端：草稿作文的学生点「求助」→ 向班课推送带链接的通知到该班教辅的小铃铛 */
+  simHelp(){
+    const cand = E.filter(e=>e.status==='draft').map(e=>{ const s=STU.find(x=>x.sid===e.sid&&x.course===e.course); return {e,s,t:CLASS_TEACHER[s.cls]} });
+    if(!cand.length){ toast('当前没有草稿作文的学生','warning'); return }
+    const c = cand.find(x=>x.t===S.me) || cand[0];
+    const e=c.e, s=c.s, C=COURSES[e.course], l=LESSONS[e.course].find(x=>x.id===e.lesson);
+    const words = (D.DRAFT_PARAS||[]).join('').length;
+    S.helps.unshift({ id:'h'+(++S.helpN), t:c.t, sid:s.sid, name:s.name, course:e.course, lesson:e.lesson, essayId:e.id, title:e.title,
+      courseText: C.title+'·'+l.name.split(' ')[0], words, time:D.NOW, read:false });
+    toast(s.name+'点击了求助，已向'+TEACHERS[c.t].name+'的小铃铛推送通知'+(c.t===S.me?'':'（切换到'+TEACHERS[c.t].name+'视角可见）'),'success') },
+  /* 小铃铛点开求助链接：标记已读，并跳到该学生的作文草稿 */
+  openHelp(d){ const h=S.helps.find(x=>x.id===d.id); if(!h) return; h.read=true;
+    S.scene='main'; S.focus={ n:(S.focus?S.focus.n:0)+1, t:h.t, course:h.course, lesson:h.lesson, sid:h.sid, essayId:h.essayId } },
+  readHelps(){ S.helps.forEach(h=>{ if(h.t===S.me) h.read=true }) },
   fake(d){ toast(d.m,d.kind) },
   /* 班课侧 → 打开作文批改助手（新页签）：d.id=作文 id */
   openEssay(d){ const e=ev(d.id); clearToasts(); S.ro=!!d.ro; enterEssay(e);
@@ -219,7 +241,7 @@ const _A = {
   openPreview(){S.preview=true}, closePreview(){S.preview=false},
   save(){ toast('保存成功','success') },
   finish(){ const e=ev(S.cur); if(e.status!=='graded'){ e.status='graded'; e.gradedBy=S.me; e.gradedAt=D.NOW; e.level='优' }
-    S.done=true; toast('完成批改','success') }
+    S.done=true; toast('完成批改，批改报告已发送给学生','success') }
 };
 const A = {};
 Object.keys(_A).forEach(k=>{A[k]=function(d){ _A[k](d||{}); refresh() }});

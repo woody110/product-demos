@@ -351,7 +351,7 @@
         '<div class="x-done-bar" v-if="S.done && ev">' +
           '<div class="el-alert el-alert--success is-light" role="alert">' +
             '<i class="el-icon el-alert__icon">' + OK + '</i>' +
-            '<div class="el-alert__content"><span class="el-alert__title">已完成批改。班课里的学员列表、作文批改列表已更新。</span></div>' +
+            '<div class="el-alert__content"><span class="el-alert__title">已完成批改，批改报告已发送给学生。班课里的学员列表已更新。</span></div>' +
             '<button type="button" class="el-button el-button--small el-button--primary x-done-act" @click="$act(\'closeEssay\')"><span>关闭页签</span></button>' +
           '</div>' +
         '</div>' +

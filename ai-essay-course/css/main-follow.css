@@ -1,0 +1,75 @@
+/* 跟进抽屉：取自 src/components/addFollowDrawer/index.vue 的 <style lang="less">（展开嵌套，去 /deep/） */
+.follow-drawer-container .call-actions { display: flex; align-items: center; margin-left: 10px; }
+.follow-drawer-container .el-drawer__body {
+  display: flex; flex-direction: column; height: calc(100vh - 100px) !important; overflow: hidden !important; border-top: 1px solid #e6e6e6 !important;
+}
+.follow-drawer-container .drawer-content { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.follow-drawer-container .drawer-body { flex: 1 1 0; min-height: 0; display: flex; flex-direction: row; align-items: stretch; overflow: hidden; padding-left: 10px; }
+.follow-drawer-container .drawer-footer {
+  flex: 0 0 auto; height: 60px; line-height: 60px; padding: 0 20px; border-top: 1px solid #e6e6e6; display: flex; justify-content: flex-end; align-items: center; background: #fff;
+}
+.follow-drawer-container .drawer-title { font-size: 16px; color: #333; position: relative; display: flex; justify-content: space-between; flex-direction: column; width: 100%; }
+.follow-drawer-container .drawer-title .title-left { display: flex; align-items: center; }
+.follow-drawer-container .drawer-title .title-left .close-icon { font-size: 20px; cursor: pointer; margin-right: 15px; color: #666; }
+.follow-drawer-container .drawer-title .title-left .close-icon:hover { color: #333; }
+.follow-drawer-container .drawer-title .follow-type { margin-top: 10px; }
+
+.follow-drawer-container .drawer-left-panel { flex: 0 0 46%; align-self: stretch; min-height: 0; display: flex; flex-direction: column; border-right: 1px solid #e6e6e6; overflow: hidden; }
+.follow-drawer-container .left-tabs-wrap { flex: 1 1 0; min-height: 0; height: 100%; overflow: hidden; }
+.follow-drawer-container .info-tabs { flex: 1 1 0; min-height: 0; height: 100%; display: grid !important; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; }
+.follow-drawer-container .info-tabs .el-tabs__header { grid-row: 1; margin: 0; padding: 0 20px; border-bottom: 1px solid #e6e6e6; background: #fff; }
+.follow-drawer-container .info-tabs .el-tabs__content { grid-row: 2; min-height: 0; position: relative; overflow: hidden; padding: 0; }
+.follow-drawer-container .info-tabs .el-tab-pane { position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; }
+.follow-drawer-container .info-tabs .tab-content {
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; padding: 20px; box-sizing: border-box; overflow-x: auto; overflow-y: auto;
+}
+.follow-drawer-container .tab-content .table-container { overflow-x: auto; overflow-y: visible; max-width: 100%; margin-top: 10px; }
+.follow-drawer-container .tab-content .table-container .el-table { min-width: 100%; }
+.follow-drawer-container .tab-content .content-section { margin-bottom: 14px; }
+.follow-drawer-container .tab-content .content-section .content-section-title { font-size: 14px; line-height: 24px; height: 24px; color: #333; font-weight: 600; display: flex; align-items: center; }
+.follow-drawer-container .tab-content .content-section .content-section-title.before-line::before {
+  content: ''; display: inline-block; width: 4px; height: 14px; background-color: #ff5f2e; margin-right: 6px;
+}
+.follow-drawer-container .tab-content .content-section .student-lesson-content-body { display: flex; padding: 10px 20px; overflow-x: auto; white-space: nowrap; }
+.follow-drawer-container .tab-content .content-section .student-lesson-content-body .section-item {
+  background-color: #f5f7fa; padding: 20px 20px; margin-right: 10px; border-radius: 4px; white-space: nowrap; flex-shrink: 0;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+.follow-drawer-container .tab-content .content-section .content-section-body { padding: 10px 20px; line-height: 24px; }
+.follow-drawer-container .tab-content .content-section .content-section-body .section-item { position: relative; padding: 2px 0; }
+.follow-drawer-container .tab-content .content-section .content-section-body .section-item.before-dot::before {
+  content: ''; display: inline-block; width: 4px; height: 4px; background-color: #ff5f2e; border-radius: 100px; margin-right: 6px; position: absolute; left: -12px; top: 12px;
+}
+
+.follow-drawer-container .drawer-right-panel { flex: 0 0 26%; display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 20px; }
+.follow-drawer-container .drawer-right-panel .drawer-body-item-title { text-align: center; min-height: 60px; padding: 10px 0; background-color: #fff; position: relative; z-index: 1; }
+.follow-drawer-container .drawer-right-panel .drawer-body-item-title .title { font-size: 16px; line-height: 36px; color: #333; font-weight: 600; }
+.follow-drawer-container .drawer-right-panel .drawer-body-item-content { flex: 1; overflow-y: auto; min-height: 0; padding: 20px 0; }
+
+/* 中间沟通策略（真实 .drawer-center-panel） */
+.follow-drawer-container .drawer-center-panel { flex: 0 0 28%; min-height: 0; display: flex; flex-direction: column; border-right: 1px solid #e6e6e6; overflow: hidden; }
+.follow-drawer-container .drawer-center-panel .center-panel-title { font-size: 14px; font-weight: 600; color: #333; padding: 12px 20px; border-bottom: 1px solid #e6e6e6; }
+.follow-drawer-container .drawer-center-panel .center-panel-content { flex: 1 1 0; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 20px; }
+.follow-drawer-container .center-panel-content .content-section .content-section-title { font-size: 14px; line-height: 24px; min-height: 24px; color: #333; font-weight: 600; display: flex; align-items: center; flex-wrap: wrap; }
+.follow-drawer-container .center-panel-content .content-section .content-section-title.before-line::before { content: ''; display: inline-block; width: 4px; height: 14px; background-color: #ff5f2e; margin-right: 6px; flex-shrink: 0; }
+.follow-drawer-container .center-panel-content .content-section .content-section-body { padding: 10px 12px; line-height: 24px; }
+.follow-drawer-container .center-panel-content .content-section .content-section-body .section-item { position: relative; padding: 2px 0; }
+.follow-drawer-container .negative-tag-wrap { font-weight: normal; margin-left: 4px; }
+.follow-drawer-container .demand-tag { margin-right: 4px; color: #409eff; border-color: #b3d8ff; }
+.follow-drawer-container .tab-content .content-section .content-section-body .section-item .tip { font-size: 12px; color: #999; }
+/* 家长预期 / 测评报告 */
+.follow-drawer-container .x-fd-qa { margin-bottom: 16px; }
+.follow-drawer-container .x-fd-q { font-weight: 600; color: #333; line-height: 24px; margin-bottom: 6px; }
+.follow-drawer-container .x-fd-opt { display: inline-block; margin: 0 8px 6px 0; padding: 4px 12px; border: 1px solid #dcdfe6; border-radius: 4px; color: #606266; font-size: 13px; }
+.follow-drawer-container .x-fd-opt.on { border-color: #ff5f2e; color: #ff5f2e; background: #fff5f0; }
+.follow-drawer-container .ability-test-tab { display: flex; flex-direction: column; overflow: hidden; padding: 8px 16px 12px; }
+.follow-drawer-container .ability-test-summary { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 10px 14px; margin-bottom: 8px; background: linear-gradient(135deg, #fff8f5 0%, #fff1eb 100%); border: 1px solid #ffe4d9; border-radius: 6px; }
+.follow-drawer-container .ability-test-summary .summary-item { display: inline-flex; align-items: baseline; gap: 6px; font-size: 13px; line-height: 20px; }
+.follow-drawer-container .ability-test-summary .summary-label { color: #606266; }
+.follow-drawer-container .ability-test-summary .summary-value { font-weight: 600; color: #ff5f2e; }
+.follow-drawer-container .ability-test-empty { flex: 1 1 0; display: flex; align-items: center; justify-content: center; color: #999; }
+
+/* 小节表「作文提交=是」点开的 C 端作文弹窗 */
+.x-fd-dlg .el-dialog__body { padding: 10px 20px 20px; }
+.x-fd-dlg-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.x-fd-dlg-tip { color: #909399; font-size: 12px; }

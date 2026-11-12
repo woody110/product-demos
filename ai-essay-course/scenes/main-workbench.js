@@ -541,7 +541,7 @@
     /* ===== B. Tab 内容容器 -> Workbench.vue（workbench-container tab-content） ===== */
     '<div class="tab-container-wrapper"><div>' +
       /* 新增（产品方案 v2）：AI 作文课时整体换成 AI 作文课工作台；换教辅/课程用 :key 重建（回到「学员列表」、筛选重置） */
-      '<ai-panel v-if="isAi" v-show="aiTab === \'list\'" :key="formInline.searchAD + \'|\' + formInline.courseId" :course-key="formInline.courseId" :viewer="viewerKey" :class-ids="formInline.classIds" @open-student="openRec" @open-summary="openSummary"></ai-panel>' +
+      '<ai-panel ref="aiPanel" v-if="isAi" v-show="aiTab === \'list\'" :key="formInline.searchAD + \'|\' + formInline.courseId" :course-key="formInline.courseId" :viewer="viewerKey" :class-ids="formInline.classIds" @open-student="openRec" @open-summary="openSummary"></ai-panel>' +
       /* 新增：点学员姓名 / ID 开「学员档案」灵活页签（沿用现有；原型只示意页签与头部信息） */
       '<template v-if="isAi"><div v-for="r in aiRecs" v-show="aiTab === r.name" :key="r.name">' +
       '<student-summary v-if="r.kind === \'summary\'" :row="r.row" :viewer="viewerKey" :entry="sumStore[r.key]" @send="openWechat"></student-summary>' +
@@ -805,6 +805,7 @@
       };
     },
     computed: {
+      focusN: function () { return ((this.ctx.S || {}).focus || {}).n || 0; },
       /* 侧栏展开 205 / 收起 65（真实：MutationObserver 读 .sc_menu 的 menuCollapse；这里读外壳的折叠状态） */
       menuLeft: function () {
         var p = this.$parent;
@@ -896,6 +897,19 @@
       }
     },
     watch: {
+      /* 小铃铛「作文求助」：切到求助学生所在的 AI 作文课，课节定位到求助作文，打开学生的作文草稿 */
+      focusN: function () {
+        var f = (this.ctx.S || {}).focus, me = this;
+        if (!f) return;
+        var adList = this.adList, ad = (adList.filter(function (a) { return a.key === f.t; })[0] || {}).teacherAd;
+        var form = this.formInline, need = (ad && form.searchAD !== ad) || form.courseId !== f.course;
+        if (ad) form.searchAD = ad;
+        this.$nextTick(function () {
+          form.courseId = f.course;
+          me.aiTab = 'list';
+          setTimeout(function () { var p = me.$refs.aiPanel; if (p) p.applyFocus(f); }, need ? 120 : 0);
+        });
+      },
       filteredRows: function () { this.currentPage = 1; },
       /* 换教辅：课程回到该教辅的素养课；换课程：班级跟着换；两者都回到「学员列表」（AI 面板由 :key 重建、筛选重置） */
       'formInline.searchAD': function () {

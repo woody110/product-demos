@@ -225,3 +225,6 @@
 /* 抽屉获得焦点时不出现浏览器默认的蓝色聚焦框 */
 .student-list-order-drawer:focus, .student-list-order-drawer *:focus { outline: none !important; }
 .el-drawer__wrapper .el-drawer:focus, .el-drawer__header span:focus { outline: none !important; }
+
+/* 小铃铛求助跳转：定位到的学员行高亮 */
+.x-ai-panel .el-table .x-ai-hl td { background: #FFF1E5 !important; }

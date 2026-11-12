@@ -22,32 +22,6 @@
   var PENDING = '#ff8000', GRADED = '#07c160';          /* 沿用班课作文批改里已有的色值 */
   var RANK = { '已完课': 0, '已学习': 1, '未学习': 2 };
 
-  /* 批改状态单元格（学员列表、作文批改两张表共用写法） */
-  function statusCell(expr) {
-    return '<span v-if="' + expr + ' === \'pending\'" :style="{ color: \'' + PENDING + '\' }">待批改</span>' +
-      '<span v-else-if="' + expr + ' === \'graded\'" :style="{ color: \'' + GRADED + '\' }">已批改</span>' +
-      '<span v-else>-</span>';
-  }
-
-  /* 作文流转列（首次文字作文 / 订正作文）：照抄真实"能力测评状态"列的 DOM；
-     已提交 / 已批改 = 「查看」，未提交 = 无按钮；批改入口在操作列 */
-  function flowCol(label, which) {
-    var e = 'scope.row.' + which;
-    return '<el-table-column label="' + label + '" width="150" align="center">' +
-      '<template slot-scope="scope">' +
-        '<div style="line-height: 1.6;">' +
-          '<div>{{ flowText(' + e + ') }}</div>' +
-          '<template v-if="' + e + '">' +
-            '<div style="font-size: 12px; color: #909399;">{{ ' + e + '.submit }}</div>' +
-            '<div class="x-ai-flow-btns">' +
-              '<el-button type="text" size="small" style="padding: 0;" @click="viewEssay(' + e + ')">查看</el-button>' +
-            '</div>' +
-          '</template>' +
-        '</div>' +
-      '</template>' +
-    '</el-table-column>';
-  }
-
   var STUDENT_COL =
     '<el-table-column label="学员" width="200" fixed="left">' +
       '<template slot-scope="scope">' +
@@ -62,7 +36,7 @@
           '</div>' +
           '<div class="student-phone">' +
             '<el-tooltip placement="top" :open-delay="1000" :content="scope.row.phone">' +
-              '<span style="cursor: pointer; color: #ff5f2e; margin-right: 4px;" @click="fake"> {{ mask(scope.row.phone) }} </span>' +
+              '<span style="cursor: pointer; color: #ff5f2e; margin-right: 4px;" @click="openFollow(scope.row)"> {{ mask(scope.row.phone) }} </span>' +
             '</el-tooltip>' +
             '<i class="el-icon-document-copy copy-icon" style="cursor: pointer; color: #409EFF;" @click.stop="copy"></i>' +
           '</div>' +
@@ -71,7 +45,7 @@
     '</el-table-column>';
 
   var LIST_TABLE =
-    '<el-table :stripe="true" :data="listPage" max-height="700px" :highlight-current-row="true" key="x-ai-table-list" @selection-change="onSel">' +
+    '<el-table :stripe="true" :data="listPage" max-height="700px" :highlight-current-row="true" :row-class-name="rowClass" key="x-ai-table-list" @selection-change="onSel">' +
       '<el-table-column type="selection" width="55" fixed="left"></el-table-column>' +
       STUDENT_COL +
       '<el-table-column prop="cls" label="班级" width="130"></el-table-column>' +
@@ -80,24 +54,26 @@
       '</template></el-table-column>' +
       '<el-table-column label="本课节学习次数" width="130"><template slot-scope="scope">{{ scope.row.st.times }}</template></el-table-column>' +
       '<el-table-column label="最近学习时间" width="140"><template slot-scope="scope">{{ scope.row.st.last || \'-\' }}</template></el-table-column>' +
-      '<el-table-column label="学习状态" width="100"><template slot-scope="scope">{{ scope.row.st.state }}</template></el-table-column>' +
-      '<el-table-column label="讲解视频学习进度" width="150"><template slot-scope="scope">{{ scope.row.st.video }}%</template></el-table-column>' +
+      '<el-table-column label="是否完课" width="100"><template slot-scope="scope">{{ scope.row.st.state === \'已完课\' ? \'是\' : \'否\' }}</template></el-table-column>' +
+      '<el-table-column label="视频学习时长（首次）" width="170"><template slot-scope="scope">{{ scope.row.st.times ? scope.row.vmin + \'分钟\' : \'-\' }}</template></el-table-column>' +
+      '<el-table-column label="写作步骤进度" width="120"><template slot-scope="scope">{{ scope.row.stepText }}</template></el-table-column>' +
       '<el-table-column label="互动题完成情况" width="130"><template slot-scope="scope">{{ scope.row.st.qa }}</template></el-table-column>' +
-      '<el-table-column label="单次学习时长" width="120"><template slot-scope="scope">{{ scope.row.st.once }}分钟</template></el-table-column>' +
-      '<el-table-column label="累计学习时长" width="120"><template slot-scope="scope">{{ scope.row.st.total }}分钟</template></el-table-column>' +
-      flowCol('首次文字作文', 'first') +
-      flowCol('订正作文', 'second') +
-      '<el-table-column label="首次提交时间" width="140"><template slot-scope="scope">{{ scope.row.first ? scope.row.first.submit : \'-\' }}</template></el-table-column>' +
-      '<el-table-column label="订正提交时间" width="140"><template slot-scope="scope">{{ scope.row.second ? scope.row.second.submit : \'-\' }}</template></el-table-column>' +
-      '<el-table-column label="批改状态" width="110" fixed="right">' +
-        '<template slot-scope="scope"><div>' + statusCell('scope.row.bs') + '</div></template>' +
+      '<el-table-column label="互动题答题正确率" width="150"><template slot-scope="scope">{{ scope.row.st.acc == null ? \'-\' : scope.row.st.acc + \'%\' }}</template></el-table-column>' +
+      '<el-table-column label="学习时长（首次）" width="150"><template slot-scope="scope">{{ scope.row.st.times ? scope.row.st.once + \'分钟\' : \'-\' }}</template></el-table-column>' +
+      '<el-table-column label="作文" width="110" align="center">' +
+        '<template slot-scope="scope">' +
+          '<el-button v-if="scope.row.essay" type="text" size="small" style="padding: 0;" @click="viewEssay(scope.row.essay)">查看</el-button>' +
+          '<span v-else>-</span>' +
+        '</template>' +
       '</el-table-column>' +
-      '<el-table-column label="操作" width="150" fixed="right" align="center">' +
+      '<el-table-column label="提交状态" width="100"><template slot-scope="scope">{{ scope.row.submitted ? \'是\' : \'否\' }}</template></el-table-column>' +
+      '<el-table-column label="提交时间" width="170"><template slot-scope="scope">{{ scope.row.submitted ? scope.row.essay.submit : \'--\' }}</template></el-table-column>' +
+      '<el-table-column label="操作" width="220" fixed="right" align="center">' +
         '<template slot-scope="scope"><div class="operation-buttons">' +
-          '<el-button v-if="scope.row.pendingE" type="text" size="mini" class="x-ai-go" @click="goGrade(scope.row.pendingE)"> 批改 </el-button>' +
-          '<el-button v-else type="text" size="mini" disabled> 批改 </el-button>' +
-          '<el-button v-if="!scope.row.noData" type="text" size="mini" @click="openSummary(scope.row)"> 学情总结 </el-button>' +
-          '<el-tooltip v-else content="暂无学习数据" placement="top"><span><el-button type="text" size="mini" disabled> 学情总结 </el-button></span></el-tooltip>' +
+          '<el-button v-if="scope.row.submitted" type="text" size="mini" class="x-ai-go" @click="goGrade(scope.row.essay)"> 查看批改结果 </el-button>' +
+          '<el-tooltip v-else content="学生还没有提交作文" placement="top"><span><el-button type="text" size="mini" disabled> 查看批改结果 </el-button></span></el-tooltip>' +
+          '<el-button v-if="scope.row.reported" type="text" size="mini" @click="viewReport(scope.row.essay)"> 查看批改报告 </el-button>' +
+          '<el-tooltip v-else content="批改报告还没有生成" placement="top"><span><el-button type="text" size="mini" disabled> 查看批改报告 </el-button></span></el-tooltip>' +
         '</div></template>' +
       '</el-table-column>' +
     '</el-table>';
@@ -129,41 +105,27 @@
             '<el-select v-model="lf.lesson" size="small" style="width: 200px;" placeholder="请选择课节">' +
               '<el-option v-for="l in lessons" :key="l.id" :label="l.open ? l.name : l.name + \'（未开课）\'" :value="l.id" :disabled="!l.open"></el-option>' +
             '</el-select>') +
-          searchBox('批改状态：',
-            '<el-select v-model="lf.status" size="small" style="width: 130px;">' +
+          searchBox('是否完课：',
+            '<el-select v-model="lf.done" size="small" style="width: 110px;">' +
               '<el-option label="全部" value="all"></el-option>' +
-              '<el-option label="待批改" value="pending"></el-option>' +
-              '<el-option label="已批改" value="graded"></el-option>' +
+              '<el-option label="是" value="yes"></el-option>' +
+              '<el-option label="否" value="no"></el-option>' +
             '</el-select>') +
-          searchBox('学生姓名：',
-            '<el-input v-model="lf.nameInput" placeholder="输入学生姓名，按回车查询" size="small" style="width: 240px;" ' +
+          searchBox('提交状态：',
+            '<el-select v-model="lf.submit" size="small" style="width: 110px;">' +
+              '<el-option label="全部" value="all"></el-option>' +
+              '<el-option label="是" value="yes"></el-option>' +
+              '<el-option label="否" value="no"></el-option>' +
+            '</el-select>') +
+          searchBox('批改报告：',
+            '<el-select v-model="lf.report" size="small" style="width: 130px;">' +
+              '<el-option label="全部" value="all"></el-option>' +
+              '<el-option label="已生成" value="yes"></el-option>' +
+              '<el-option label="未生成" value="no"></el-option>' +
+            '</el-select>') +
+          searchBox('学生ID/手机号/姓名：',
+            '<el-input v-model="lf.nameInput" placeholder="输入学生ID/手机号或姓名，按回车查询" size="small" style="width: 300px;" ' +
               '@keyup.enter.native="applyListName" @clear="applyListName" clearable></el-input>') +
-        '</div>' +
-      '</div>' +
-      '<div class="x-ai-cards">' +
-        '<div class="main-data-cards">' +
-          '<div class="data-card x-ai-card">' +
-            '<div class="card-content">' +
-              '<div class="card-metrics-row">' +
-                '<div class="metric-col"><div class="metric-value metric-my-data">{{ cards.done }} 人</div><div class="metric-label">完课人数</div></div>' +
-                '<div class="metric-col"><div class="metric-value metric-my-goal">{{ cards.rate }}</div><div class="metric-label">完课率</div></div>' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="data-card x-ai-card">' +
-            '<div class="card-content">' +
-              '<div class="card-metrics-row">' +
-                '<div class="metric-col"><div class="metric-value metric-my-data">{{ cards.upTotal }} 篇</div><div class="metric-label">订正作文上传总数</div></div>' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="data-card x-ai-card">' +
-            '<div class="card-content">' +
-              '<div class="card-metrics-row">' +
-                '<div class="metric-col"><div class="metric-value metric-my-data text-red">{{ cards.pending }} 篇</div><div class="metric-label">待批改总数</div></div>' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
         '</div>' +
       '</div>' +
       '<div class="list-section">' +
@@ -171,7 +133,6 @@
           '<div class="list-header-inline">' +
             '<div class="list-info"><span>符合筛选条件的约有{{ listRows.length }}条</span><span>，已选中{{ sel.length }}条</span></div>' +
             '<div class="list-actions">' +
-              '<div style="display: inline-block;padding: 0 10px;"><el-button type="primary" @click="groupSend">企微群发</el-button></div>' +
               '<el-button @click="clearList">清空筛选条件</el-button>' +
               '<el-button @click="doExport">导出</el-button>' +
             '</div>' +
@@ -185,57 +146,42 @@
     '</div>' +
 
     /* ================= 抽屉：批改结果（全局组件 essay-result-drawer） ================= */
-    '<essay-result-drawer :essay-id="repId" :visible.sync="repShow" @grade="goGrade"></essay-result-drawer>' +
+    '<essay-result-drawer :essay-id="repId" :mode="repMode" :visible.sync="repShow" @grade="goGrade"></essay-result-drawer>' +
+    '<follow-drawer :row="followRow" :visible.sync="followShow"></follow-drawer>' +
 
   '</div>';
 
   var DRAWER_TPL =
     '<el-drawer :title="repTitle" :visible="visible" @update:visible="$emit(\'update:visible\', $event)" direction="rtl" size="480px" append-to-body custom-class="student-list-order-drawer x-ai-report-drawer">' +
       '<div class="order-detail-drawer-body" v-if="repE">' +
-        '<el-alert v-if="repE.status === \'pending\'" title="待批改，暂无批改结果" type="warning" show-icon :closable="false" description="学生已提交，老师还没有批改完成，学生端还没有报告。下面是学生提交的原文。" class="x-ai-alert"></el-alert>' +
         '<div class="order-detail-card"><div class="order-detail-card__rows">' +
           row('学生', '{{ repStu ? repStu.name : \'-\' }}') +
           row('作文标题', '{{ repE.title }}') +
           row('课节', '{{ lessonName(repE.course, repE.lesson) }}') +
-          row('首次 / 订正', '{{ repE.kind === \'first\' ? \'首次文字作文\' : \'订正作文\' }}') +
-          row('提交时间', '{{ repE.submit }}') +
-          '<template v-if="repE.status === \'graded\'">' +
-            '<div v-if="repE.kind !== \'first\'">' + row('批改老师', '{{ teacherName(repE.gradedBy) }}') + '</div>' +
+          row('是否提交', '{{ isDraft ? \'否（当前为草稿）\' : \'是（当前为最终提交版）\' }}') +
+          row('提交时间', '{{ isDraft ? \'--\' : repE.submit }}') +
+          '<template v-if="mode === \'report\' && repE.status === \'graded\'">' +
+            row('批改老师', '{{ teacherName(repE.gradedBy) }}') +
             row('批改时间', '{{ repE.gradedAt }}') +
           '</template>' +
         '</div></div>' +
 
-        /* 已批改：手机外框里嵌学生端报告页（班课以 from=cm 方式嵌入） */
-        '<template v-if="repE.status === \'graded\'">' +
-          '<div class="x-ai-phone-wrap">' +
-            '<div class="x-ai-phone"><iframe class="x-ai-phone-frame" :src="reportSrc" frameborder="0"></iframe></div>' +
-            '<div class="x-ai-paper-cap">学生端预览（学生端报告页，班课以 from=cm 方式嵌入）</div>' +
-          '</div>' +
-        '</template>' +
-
-        /* 待批改：学生提交的原文 / 原图 + 去批改 */
-        '<template v-else>' +
-          '<div class="order-detail-card"><div class="x-ai-sec-title">学生提交的作文</div>' +
-            '<div v-if="repE.form === \'text\'" class="x-ai-paper x-ai-paper--text"><p v-for="(p, i) in paras" :key="i">{{ p }}</p></div>' +
-            '<div v-else class="x-ai-paper-wrap">' +
-              '<div class="x-ai-paper x-ai-paper--img">' +
-                '<i v-for="n in 7" :key="n" class="x-ai-scribble" :style="{ top: (18 + (n - 1) * 28) + \'px\', width: (n % 3 === 0 ? 55 : n % 2 ? 86 : 72) + \'%\' }"></i>' +
-              '</div>' +
-              '<div class="x-ai-paper-cap">学生拍照提交</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="x-ai-drawer-foot"><el-button type="primary" @click="$emit(\'grade\', repE)">去批改</el-button></div>' +
-        '</template>' +
+        /* 手机外框里嵌学生端（C 端）页面：作文内容 / 批改报告 */
+        '<div class="x-ai-phone-wrap">' +
+          '<div class="x-ai-phone"><iframe class="x-ai-phone-frame" :src="frameSrc" frameborder="0"></iframe></div>' +
+          '<div class="x-ai-paper-cap">{{ mode === \'report\' ? \'学生端批改报告页（班课以 from=cm 方式嵌入）\' : \'学生端作文页（C 端渲染）· \' + (isDraft ? \'草稿\' : \'最终提交版\') }}</div>' +
+        '</div>' +
       '</div>' +
     '</el-drawer>';
 
-  /* 批改结果抽屉：已批改 = 嵌学生端预览；待批改 = 原文 + 去批改。学员列表与学员档案「作文批改」共用 */
+  /* 抽屉：mode=essay → 学生作文内容（草稿 / 最终提交版）；mode=report → 学生端批改报告。学员列表与学员档案「作文批改」共用 */
   Vue.component('essay-result-drawer', C({
-    props: { essayId: String, visible: Boolean },
+    props: { essayId: String, visible: Boolean, mode: { type: String, default: 'essay' } },
     computed: {
       D: function () { return this.ctx.D || {}; },
       paras: function () { return this.D.PARAS || []; },
       repE: function () { var id = this.essayId; return id ? (this.ctx.E || []).filter(function (e) { return e.id === id; })[0] || null : null; },
+      isDraft: function () { return !!this.repE && this.repE.status === 'draft'; },
       repStu: function () {
         var e = this.repE;
         if (!e) return null;
@@ -246,16 +192,16 @@
         var e = this.repE, C = (this.D.COURSES || {})[e && e.course];
         return C ? String(C.title).slice(0, 3) : '-';
       },
-      repTitle: function () { return this.repE ? '作文批改结果（' + (this.repE.kind === 'first' ? '首次' : '订正') + '）' : '作文批改结果'; },
-      reportSrc: function () {
+      repTitle: function () { return this.mode === 'report' ? '批改报告' : '作文内容'; },
+      frameSrc: function () {
         var e = this.repE;
-        if (!e || e.status !== 'graded') return '';
+        if (!e) return '';
         var t = e.txt || {};
         var data = {
-          kind: e.kind, form: e.form, name: this.repStu ? this.repStu.name : '', grade: this.repGrade,
+          view: this.mode, draft: this.isDraft, name: this.repStu ? this.repStu.name : '', grade: this.repGrade,
           unit: this.lessonName(e.course, e.lesson), title: e.title,
-          paras: this.paras, '总评': t['总评'], '详细点评': t['详细点评'], '全文润色': t['全文润色'], '诊断建议': t['诊断建议'],
-          '批注说明': '老师在你的手写稿纸上圈出了写得好的地方，并写了小批注。'
+          paras: this.isDraft ? (this.D.DRAFT_PARAS || this.paras.slice(0, 2)) : this.paras,
+          '总评': t['总评'], '详细点评': t['详细点评'], '全文润色': t['全文润色'], '诊断建议': t['诊断建议']
         };
         return 'student-report.html#' + encodeURIComponent(JSON.stringify(data));
       }
@@ -281,10 +227,11 @@
       var def = ls.length ? ls[0].id : '';
       ls.forEach(function (l) { if (l.open) def = l.id; });
       return {
-        lf: { lesson: def, status: 'all', nameInput: '', name: '', page: 1, size: 50 },
-        repShow: false, repId: null, sel: []
+        lf: { lesson: def, done: 'all', submit: 'all', report: 'all', nameInput: '', name: '', page: 1, size: 50 },
+        repShow: false, repId: null, repMode: 'essay', sel: [], followShow: false, followRow: null, hlSid: ''
       };
     },
+    created: function () {},
     computed: {
       D: function () { return this.ctx.D || {}; },
       lessons: function () { return (this.D.LESSONS || {})[this.courseKey] || []; },
@@ -294,50 +241,40 @@
         var ids = this.classIds || [];
         return (this.ctx.STU || []).filter(function (s) { return s.course === this.courseKey && ids.indexOf(s.cls) !== -1; }, this);
       },
-      /* ---- 汇总卡片：跟随浮层"班级"和页面"课节"；不受批改状态、姓名影响。均按所选课节统计 ---- */
-      cards: function () {
-        var f = this.lf, ctx = this.ctx, self = this, L = f.lesson;
-        var stus = this.courseStu;
-        var done = stus.filter(function (s) { return s.study[L] && s.study[L].state === '已完课'; }).length;
-        var sids = stus.map(function (s) { return s.sid; });
-        var ups = (ctx.E || []).filter(function (e) { return e.course === self.courseKey && e.lesson === L && e.kind === 'second' && sids.indexOf(e.sid) !== -1; });
-        return {
-          lessonName: this.lessonName(this.courseKey, L),
-          done: done,
-          rate: stus.length ? Math.round(done / stus.length * 100) + '%' : '--',
-          upTotal: ups.length,
-          pending: ups.filter(function (e) { return e.status === 'pending'; }).length
-        };
-      },
-      /* ---- 学员列表 ---- */
+      /* ---- 汇总卡片已去掉 ---- */
+      cards: function () { return {}; },
+      /* ---- 学员列表：每课节每学员 1 篇作文；草稿 = 学生没提交；批改报告在老师「完成批改」后生成并发给学生 ---- */
       listAll: function () {
         var allLs = (this.D.LESSONS || {})[this.courseKey] || [], ctx = this.ctx, L = this.lf.lesson;
+        var lesson = allLs.filter(function (l) { return l.id === L; })[0] || {};
         return this.courseStu.map(function (s, idx) {
-          var es = (ctx.E || []).filter(function (e) { return e.sid === s.sid && e.course === s.course && e.lesson === L; });
-          var first = es.filter(function (e) { return e.kind === 'first'; })[0] || null;
-          var second = es.filter(function (e) { return e.kind === 'second'; })[0] || null;
-          var pend = es.filter(function (e) { return e.status === 'pending'; });
-          var bs = pend.length ? 'pending' : es.some(function (e) { return e.status === 'graded'; }) ? 'graded' : 'none';
-          var st = s.study[L] || { times: 0, last: null, state: '未学习', video: 0, qa: '0/5', once: 0, total: 0, steps: '0/6', draft: false };
+          var essay = (ctx.E || []).filter(function (e) { return e.sid === s.sid && e.course === s.course && e.lesson === L; })[0] || null;
+          var st = s.study[L] || { times: 0, last: null, state: '未学习', video: 0, qa: '0/5', once: 0, total: 0, steps: '0/5', acc: null };
+          var submitted = !!essay && essay.status !== 'draft';
           return {
             idx: idx, sid: s.sid, name: s.name, phone: s.phone, cls: s.cls, refunded: s.refunded, course: s.course,
-            st: st, first: first, second: second, bs: bs, pendingE: pend[0] || null, noData: !allLs.some(function (l) { return s.study[l.id] && s.study[l.id].times > 0; }), done: allLs.filter(function (l) { return s.study[l.id] && s.study[l.id].state === '已完课'; }).length,
-            earliest: pend.length ? pend.map(function (e) { return e.submit; }).sort()[0] : ''
+            st: st, essay: essay, submitted: submitted, reported: !!essay && essay.status === 'graded',
+            vmin: Math.round(st.video * 0.12),
+            stepText: (parseInt(st.steps) || 0) + '/' + (lesson.stepTotal || 5),
+            done: allLs.filter(function (l) { return s.study[l.id] && s.study[l.id].state === '已完课'; }).length
           };
         });
       },
       listRows: function () {
         var f = this.lf;
         var rows = this.listAll.filter(function (r) {
-          if (f.status !== 'all' && r.bs !== f.status) return false;
-          if (f.name && r.name.indexOf(f.name.trim()) === -1) return false;
+          if (f.done !== 'all' && (r.st.state === '已完课') !== (f.done === 'yes')) return false;
+          if (f.submit !== 'all' && r.submitted !== (f.submit === 'yes')) return false;
+          if (f.report !== 'all' && r.reported !== (f.report === 'yes')) return false;
+          var kw = (f.name || '').trim();
+          if (kw && r.name.indexOf(kw) === -1 && String(r.sid).indexOf(kw) === -1 && String(r.phone).indexOf(kw) === -1) return false;
           return true;
         });
-        /* 待批改在前（提交早的在前）；其余按学习状态 已完课 > 已学习 > 未学习 */
+        /* 已提交未出报告的在前（提交早的在前，先到先看）；其余按学习状态 已完课 > 已学习 > 未学习 */
         return rows.sort(function (a, b) {
-          var pa = a.bs === 'pending' ? 0 : 1, pb = b.bs === 'pending' ? 0 : 1;
+          var pa = a.submitted && !a.reported ? 0 : 1, pb = b.submitted && !b.reported ? 0 : 1;
           if (pa !== pb) return pa - pb;
-          if (pa === 0 && a.earliest !== b.earliest) return a.earliest < b.earliest ? -1 : 1;
+          if (pa === 0 && a.essay.submit !== b.essay.submit) return a.essay.submit < b.essay.submit ? -1 : 1;
           var ra = RANK[a.st.state], rb = RANK[b.st.state];
           if (ra !== rb) return ra - rb;
           return a.idx - b.idx;
@@ -349,7 +286,9 @@
       'lf.lesson': function () { this.lf.page = 1; },
       /* 浮层里改班级：课节回到默认、回第一页 */
       classIds: function () { this.resetLesson(); this.lf.page = 1; },
-      'lf.status': function () { this.lf.page = 1; },
+      'lf.done': function () { this.lf.page = 1; },
+      'lf.submit': function () { this.lf.page = 1; },
+      'lf.report': function () { this.lf.page = 1; },
       'lf.name': function () { this.lf.page = 1; }
     },
     methods: {
@@ -360,15 +299,19 @@
         var l = ((this.D.LESSONS || {})[ck] || []).filter(function (x) { return x.id === id; })[0];
         return l ? l.name : '-';
       },
-      teacherName: function (k) { return ((this.D.TEACHERS || {})[k] || {}).name || '-'; },
-      flowText: function (e) { return !e ? '未提交' : e.status === 'graded' ? '已批改' : '已提交'; },
       onSel: function (rows) { this.sel = rows; },
-      openSummary: function (row) { this.$emit('open-summary', { sid: row.sid, name: row.name, cls: row.cls, phone: row.phone, course: row.course, refunded: !!row.refunded }); },
       openStu: function (row) { this.$emit('open-student', { sid: row.sid, name: row.name, cls: row.cls, phone: row.phone }); },
-      groupSend: function () {
-        if (!this.sel.length) { this.$message({ message: '请先勾选要群发的学员', type: 'warning' }); return; }
-        var n = this.sel.filter(function (r) { return r.refunded; }).length;
-        this.$message({ message: '已选 ' + this.sel.length + ' 人，进入企微群发' + (n ? '（其中 ' + n + ' 位已退费学员已自动排除）' : ''), type: 'success' });
+      /* 点手机号：打开该学员的跟进抽屉（学情数据页签展示 AI 作文课数据） */
+      openFollow: function (row) { this.followRow = { sid: row.sid, name: row.name, phone: row.phone, cls: row.cls, course: row.course }; this.followShow = true; },
+      rowClass: function (o) { return o.row.sid === this.hlSid ? 'x-ai-hl' : ''; },
+      /* 小铃铛「作文求助」点开：定位到发起求助学生的作文草稿 */
+      applyFocus: function (f) {
+        if (!f) return;
+        var self = this, lf = this.lf;
+        lf.done = 'all'; lf.submit = 'all'; lf.report = 'all'; lf.nameInput = ''; lf.name = ''; lf.page = 1;
+        lf.lesson = f.lesson; this.hlSid = f.sid;
+        this.repMode = 'essay'; this.repId = f.essayId; this.repShow = true;
+        this.$nextTick(function () { var el = document.querySelector('.x-ai-hl'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center' }); });
       },
       doExport: function () { this.$message({ message: '已导出当前筛选结果 ' + this.listRows.length + ' 条（Excel，字段同列表各列）', type: 'success' }); },
       onSize: function (n) { this.lf.size = n; this.lf.page = 1; },
@@ -376,7 +319,7 @@
       applyListName: function () { this.lf.name = this.lf.nameInput; },
       clearList: function () {
         var f = this.lf;
-        f.status = 'all'; f.nameInput = ''; f.name = '';
+        f.done = 'all'; f.submit = 'all'; f.report = 'all'; f.nameInput = ''; f.name = ''; this.hlSid = '';
         this.resetLesson();
       },
       resetLesson: function () {
@@ -384,8 +327,11 @@
         ls.forEach(function (l) { if (l.open) def = l.id; });
         this.lf.lesson = def;
       },
-      viewEssay: function (e) { this.repId = e.id; this.repShow = true; },
-      /* 列表 / 抽屉里进入批改：所选教辅不是登录人时只读 */
+      /* 作文列「查看」：C 端渲染的作文内容（草稿 / 最终提交版） */
+      viewEssay: function (e) { this.repMode = 'essay'; this.repId = e.id; this.repShow = true; },
+      /* 操作列「查看批改报告」：学生端批改报告页（C 端样式） */
+      viewReport: function (e) { this.repMode = 'report'; this.repId = e.id; this.repShow = true; },
+      /* 操作列「查看批改结果」：新页签打开作文批改助手；所选教辅不是登录人时只读 */
       goGrade: function (e) { this.repShow = false; this.$act('openEssay', { id: e.id, ro: this.viewer !== (this.ctx.S || {}).me }); }
     }
   }, TEMPLATE));

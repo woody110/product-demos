@@ -23,11 +23,26 @@
    * ------------------------------------------------------------------ */
   Vue.component('shell-header', C({
     props: ['isCollapse'],
+    data: function () { return { bellShow: false, bellTab: 'all', readStatus: 'unread' }; },
+    computed: {
+      /* 作文求助通知：只给该学员所属班级的教辅（= 当前登录教辅）推送 */
+      helps: function () { var me = (this.ctx.S || {}).me; return ((this.ctx.S || {}).helps || []).filter(function (h) { return h.t === me; }); },
+      unread: function () { return this.helps.filter(function (h) { return !h.read; }).length; },
+      shown: function () {
+        var st = this.readStatus;
+        if (this.bellTab === 'follow') return [];
+        return this.helps.filter(function (h) { return st === 'all' || !h.read; });
+      }
+    },
     methods: {
       todo: function () { this.$act('fake', { m: '待办面板是班课现有功能，原型里不演示' }); },
       lingxi: function () { this.$act('fake', { m: '灵犀首页是班课现有功能，原型里不演示' }); },      /* 真实：点 Logo / 灵犀图标跳灵犀首页 */
       avatar: function () { this.$act('fake', { m: '设置头像是班课现有功能，原型里不演示' }); },      /* 真实：点头像弹"设置头像" */
-      command: function () { this.$act('fake', { m: '原型里不退出登录' }); }
+      command: function () { this.$act('fake', { m: '原型里不退出登录' }); },
+      /* 点卡片：已读，关闭小面板，跳到该学生的作文草稿 */
+      openHelp: function (h) { this.bellShow = false; this.$act('openHelp', { id: h.id }); },
+      readAll: function () { this.$act('readHelps', {}); },
+      setStatus: function (c) { this.readStatus = c; }
     }
   },
   '<div class="layout-header-content">' +
@@ -38,6 +53,49 @@
       '</div>' +
       '<div class="handle-icon" @click="$emit(\'toggle\')"><img src="' + IMG + 'handle-icon.svg" alt=""></div>' +
       '<div class="lingxi-ai-icon"><img src="' + IMG + 'lingxi.png" alt="灵犀首页" @click="lingxi"></div>' +
+    '</div>' +
+    /* 小铃铛（Notice.vue）：保留真实嵌套 Notice 根 div > .normal-notice + el-popover > .user-message */
+    '<div>' +
+      '<div class="normal-notice"><div class="notice-buttons"></div></div>' +
+      '<el-popover v-model="bellShow" placement="bottom-end" width="450" trigger="manual" append-to-body>' +
+        '<div class="messageTip-box">' +
+          '<div class="messageTip-box-header">' +
+            '<span style="float:left; font-size:18px; font-weight:600;">通知</span>' +
+            '<div style="float:right; display: flex; align-items: center;">' +
+              '<el-dropdown style="margin-right: 15px;" @command="setStatus">' +
+                '<span class="el-dropdown-link" style="line-height:30px">{{ readStatus === \'unread\' ? \'未读消息\' : \'全部消息\' }}<i class="el-icon-arrow-down el-icon--right"></i></span>' +
+                '<el-dropdown-menu slot="dropdown"><el-dropdown-item command="all">全部消息</el-dropdown-item><el-dropdown-item command="unread">未读消息</el-dropdown-item></el-dropdown-menu>' +
+              '</el-dropdown>' +
+              '<i class="el-icon-close" style="cursor: pointer; font-size: 16px;" @click="bellShow = false"></i>' +
+            '</div>' +
+          '</div>' +
+          '<div><div>' +
+            '<el-tabs v-model="bellTab">' +
+              '<el-tab-pane name="all"><span slot="label">全部<el-badge :is-dot="false"></el-badge></span></el-tab-pane>' +
+              '<el-tab-pane name="follow"><span slot="label">跟进提醒<el-badge :is-dot="false"></el-badge></span></el-tab-pane>' +
+              '<el-tab-pane name="help"><span slot="label">作文求助<el-badge :is-dot="unread > 0"></el-badge></span></el-tab-pane>' +
+              '<div class="messageTip-box-list">' +
+                '<div v-if="shown.length">' +
+                  '<div v-for="h in shown" :key="h.id" class="messageTip-box-item" :style="h.read ? \'color:#D1D1D1 \' : \'\'" style="cursor: pointer;" @click="openHelp(h)">' +
+                    '<div class="messageTip-box-details"><div>' +
+                      '<div class="messageTip-box-details-item notice-title" :class="{ \'is-read\': h.read }">{{ h.name }}发来作文求助</div>' +
+                      '<div class="messageTip-box-details-item">{{ h.courseText }}</div>' +
+                      '<div class="messageTip-box-details-item"><span class="notice-inline-gap">作文：《{{ h.title }}》</span><span>当前 {{ h.words }} 字</span></div>' +
+                      '<div class="messageTip-box-details-item notice-footer"><div class="notice-time">{{ h.time }}</div><el-button type="text" class="notice-detail-btn">详情></el-button></div>' +
+                    '</div></div>' +
+                  '</div>' +
+                '</div>' +
+                '<div v-else style="position: absolute; top: 120px; left: 160px; font-size: 16px;">暂无消息记录</div>' +
+              '</div>' +
+            '</el-tabs>' +
+          '</div></div>' +
+          '<div class="messageTip-box-bottom" v-show="shown.length">' +
+            '<el-button type="info" size="mini" icon="el-icon-check" circle @click="readAll"></el-button>' +
+            '<span style="margin-left:5px;color:black">全部标记为已读</span>' +
+          '</div>' +
+        '</div>' +
+        '<el-badge slot="reference" :value="unread" :hidden="unread === 0" :max="99" class="user-message"><img @click="bellShow = !bellShow" src="' + IMG + 'messageTip.svg" alt="消息通知"></el-badge>' +
+      '</el-popover>' +
     '</div>' +
     '<div>' +
       '<el-popover :value="false" placement="bottom-end" width="450" trigger="manual" append-to-body>' +
