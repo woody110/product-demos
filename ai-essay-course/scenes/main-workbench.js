@@ -145,7 +145,9 @@
     var D = (window.__ctx && window.__ctx.D) || {}, S = (window.__ctx && window.__ctx.S) || {};
     var me = S.me || 'wang', T = (D.TEACHERS || {})[me] || { ad: 'wang.lin' };
     var formal = me === 'li' ? 'formal4' : 'formal3';
-    return { searchAD: T.ad, courseId: formal, classIds: [formal === 'formal4' ? 'k4' : 'k2'] };
+    var ai = me === 'li' ? 'ai4' : 'ai3', CT = D.CLASS_TEACHER || {}, aiCls = [];
+    ((window.__ctx && window.__ctx.STU) || []).forEach(function (st) { if (st.course === ai && CT[st.cls] === me && aiCls.indexOf(st.cls) === -1) aiCls.push(st.cls); });
+    return { searchAD: T.ad, courseId: formal, classIds: [formal === 'formal4' ? 'k4' : 'k2'], aiCourseId: ai, aiClassIds: aiCls };
   }
 
   function freshFilterForm() {
@@ -484,12 +486,8 @@
     /* ===== A. 顶部页签条（index.vue）：position:fixed; top:60px；left 随侧栏展开 205 / 收起 65 ===== */
     '<div class="header-row" :style="{ left: menuLeft + \'px\' }">' +
       '<div class="tabs-col">' +
-        '<el-tabs v-if="!isAi" v-model="currentTabName" :before-leave="onHeaderTabLeave">' +
-          '<el-tab-pane v-for="item in fixedTabList" :key="item.name" :label="item.title" :name="item.name" :closable="false"></el-tab-pane>' +
-        '</el-tabs>' +
-        /* 新增（产品方案 v2）：选到 AI 作文课时，7 个页签换成一个「学员列表」页签 */
-        '<el-tabs v-else v-model="aiTab" @tab-remove="closeRec">' +
-          '<el-tab-pane v-for="item in aiTabList" :key="item.name" :label="item.title" :name="item.name" :closable="item.name !== \'list\'"></el-tab-pane>' +
+        '<el-tabs v-model="currentTabName" :before-leave="onHeaderTabLeave" @tab-remove="closeRec">' +
+          '<el-tab-pane v-for="item in tabList" :key="item.name" :label="item.title" :name="item.name" :closable="!!item.rec"></el-tab-pane>' +
         '</el-tabs>' +
       '</div>' +
       '<div class="filter-col">' +
@@ -503,7 +501,7 @@
             '</div>' +
             '<div v-if="formInline.searchAD" class="filter-panel-item">' +
               '<span class="filter-label">课程：</span>' +
-              '<el-select v-model="formInline.courseId" filterable placeholder="请选择课程" size="small" style="width: 100%;">' +
+              '<el-select v-model="curCourseId" filterable placeholder="请选择课程" size="small" style="width: 100%;">' +
                 '<el-option v-for="item in courseList" :key="item.courseId" :label="item.courseTitle" :value="item.courseId">' +
                   '<span>{{ item.courseTitle }}</span>' +
                   '<el-tag v-if="item.isAi" size="mini" class="x-wb-ai-tag">AI作文课</el-tag>' +
@@ -512,7 +510,7 @@
             '</div>' +
             '<div v-if="formInline.searchAD" class="filter-panel-item">' +
               '<span class="filter-label">班级：</span>' +
-              '<el-select v-model="formInline.classIds" multiple collapse-tags filterable placeholder="请选择班级" size="small" style="width: 100%;" @change="onClassChange">' +
+              '<el-select v-model="curClassIds" multiple collapse-tags filterable placeholder="请选择班级" size="small" style="width: 100%;" @change="onClassChange">' +
                 '<el-option v-for="item in classList" :key="item.classIdStr" :label="item.className" :value="item.classIdStr"></el-option>' +
               '</el-select>' +
             '</div>' +
@@ -541,14 +539,14 @@
     /* ===== B. Tab 内容容器 -> Workbench.vue（workbench-container tab-content） ===== */
     '<div class="tab-container-wrapper"><div>' +
       /* 新增（产品方案 v2）：AI 作文课时整体换成 AI 作文课工作台；换教辅/课程用 :key 重建（回到「学员列表」、筛选重置） */
-      '<ai-panel ref="aiPanel" v-if="isAi" v-show="aiTab === \'list\'" :key="formInline.searchAD + \'|\' + formInline.courseId" :course-key="formInline.courseId" :viewer="viewerKey" :class-ids="formInline.classIds" @open-student="openRec" @open-summary="openSummary" @open-wechat="openWechatBatch"></ai-panel>' +
+      '<ai-panel ref="aiPanel" v-if="aiVisited" v-show="currentTabName === \'AiEssay\'" :key="formInline.searchAD + \'|\' + formInline.aiCourseId" :course-key="formInline.aiCourseId" :viewer="viewerKey" :class-ids="formInline.aiClassIds" @open-student="openRec" @open-summary="openSummary" @open-wechat="openWechatBatch"></ai-panel>' +
       /* 新增：点学员姓名 / ID 开「学员档案」灵活页签（沿用现有；原型只示意页签与头部信息） */
-      '<template v-if="isAi"><div v-for="r in aiRecs" v-show="aiTab === r.name" :key="r.name">' +
+      '<template><div v-for="r in aiRecs" v-show="currentTabName === r.name" :key="r.name">' +
       '<student-summary v-if="r.kind === \'summary\'" :row="r.row" :viewer="viewerKey" :entry="sumStore[r.key]" @send="openWechat"></student-summary>' +
       '<wechat-send-page v-else-if="r.kind === \'wechat\'" :student="r.student" :students="r.students" :task-kind="r.taskKind" :content="r.content" :mode="r.mode" :filter-text="r.filterText" :templates="r.templates" :def-type="r.defType" @cancel="closeRec(r.name)" @submit="onWechatSubmit(r, $event)"></wechat-send-page>' +
       '<student-record v-else :row="r"></student-record>' +
       '</div></template>' +
-      '<div v-else class="workbench-container tab-content">' +
+      '<div v-if="!isAi" class="workbench-container tab-content">' +
 
         /* 期段 tabs + 刷新按钮 */
         '<div style="position: relative;top: 5px;">' +
@@ -766,7 +764,7 @@
         /* 顶部页签条：常驻 7 个 */
         currentTabName: 'Workbench',
         fixedTabList: [
-          { name: 'Workbench', title: '工作台' }, { name: 'AfterClassPractice', title: '课后练习' },
+          { name: 'Workbench', title: '工作台' }, { name: 'AfterClassPractice', title: '课后练习' }, { name: 'AiEssay', title: 'AI作文课' },
           { name: 'FormalClassSupervision', title: '正价课监课' }, { name: 'SpecialClassSupervision', title: '专项课监课' },
           { name: 'ClassData', title: '班级数据' }, { name: 'TemporaryTransfer', title: '临调学员' }, { name: 'Referral', title: '转介绍' }
         ],
@@ -774,7 +772,7 @@
         filterPopoverVisible: false,
         dropdownVisible: false,
         formInline: initialForm(),
-        aiTab: 'list',
+        aiVisited: false,
         aiRecs: [],
         sumStore: {},
         /* 期段 */
@@ -812,7 +810,20 @@
         return p && p.isCollapse ? 65 : 205;
       },
       /* 教辅：D.TEACHERS 的两位，label 沿用真实写法「姓名-账号」 */
-      aiTabList: function () { return [{ name: 'list', title: '学员列表' }].concat(this.aiRecs); },
+      tabList: function () { return this.fixedTabList.concat(this.aiRecs.map(function (r) { return { name: r.name, title: r.title, rec: true }; })); },
+      /* 兼容原有写法：'list' = AI 作文课页签；其余 = 动态页签名 */
+      aiTab: {
+        get: function () { return this.currentTabName === 'AiEssay' ? 'list' : this.currentTabName; },
+        set: function (v) { this.aiVisited = true; this.currentTabName = v === 'list' ? 'AiEssay' : v; }
+      },
+      curCourseId: {
+        get: function () { return this.isAi ? this.formInline.aiCourseId : this.formInline.courseId; },
+        set: function (v) { if (this.isAi) this.formInline.aiCourseId = v; else this.formInline.courseId = v; }
+      },
+      curClassIds: {
+        get: function () { return this.isAi ? this.formInline.aiClassIds : this.formInline.classIds; },
+        set: function (v) { if (this.isAi) this.formInline.aiClassIds = v; else this.formInline.classIds = v; }
+      },
       adList: function () {
         var T = this.ctx.D.TEACHERS || {};
         return Object.keys(T).map(function (k) { return { key: k, teacherName: T[k].name, teacherAd: T[k].ad }; });
@@ -824,13 +835,14 @@
       },
       /* 课程：所选教辅名下的课程（素养课 + AI作文课） */
       courseList: function () {
-        var C = this.ctx.D.COURSES || {}, key = this.viewerKey;
-        return Object.keys(C).filter(function (k) { return C[k].teacher === key; })
+        var C = this.ctx.D.COURSES || {}, key = this.viewerKey, ai = this.isAi;
+        return Object.keys(C).filter(function (k) { return C[k].teacher === key && (C[k].type === 'ai') === ai; })
           .map(function (k) { return { courseId: k, courseTitle: C[k].title, isAi: C[k].type === 'ai' }; });
       },
+      /* 当前是否在 AI 作文课页签（含它的学员档案 / 企微群发等动态页签） */
       isAi: function () {
-        var c = (this.ctx.D.COURSES || {})[this.formInline.courseId];
-        return !!c && c.type === 'ai';
+        var n = this.currentTabName;
+        return n === 'AiEssay' || this.aiRecs.some(function (r) { return r.name === n; });
       },
       classList: function () {
         if (this.isAi) return this.aiClassOptions();
@@ -897,32 +909,33 @@
       }
     },
     watch: {
-      /* 小铃铛「作文求助」：切到求助学生所在的 AI 作文课，课节定位到求助作文，打开学生的作文草稿 */
+      /* 小铃铛「作文求助」：切到求助学生所在的 AI 作文课页签，课节定位到求助作文，打开学生的文字版作文 */
       focusN: function () {
         var f = (this.ctx.S || {}).focus, me = this;
         if (!f) return;
-        var adList = this.adList, ad = (adList.filter(function (a) { return a.key === f.t; })[0] || {}).teacherAd;
-        var form = this.formInline, need = (ad && form.searchAD !== ad) || form.courseId !== f.course;
+        var ad = ((this.adList.filter(function (a) { return a.key === f.t; })[0]) || {}).teacherAd;
+        var form = this.formInline, need = (ad && form.searchAD !== ad) || form.aiCourseId !== f.course;
         if (ad) form.searchAD = ad;
+        this.aiVisited = true;
         this.$nextTick(function () {
-          form.courseId = f.course;
-          me.aiTab = 'list';
-          setTimeout(function () { var p = me.$refs.aiPanel; if (p) p.applyFocus(f); }, need ? 120 : 0);
+          form.aiCourseId = f.course;
+          me.currentTabName = 'AiEssay';
+          setTimeout(function () { var p = me.$refs.aiPanel; if (p) p.applyFocus(f); }, need ? 150 : 50);
         });
       },
       filteredRows: function () { this.currentPage = 1; },
-      /* 换教辅：课程回到该教辅的素养课；换课程：班级跟着换；两者都回到「学员列表」（AI 面板由 :key 重建、筛选重置） */
+      /* 换教辅：素养课、AI 作文课各回到该教辅名下的第一门；动态页签关闭（AI 面板由 :key 重建、筛选重置） */
       'formInline.searchAD': function () {
-        var f = this.formInline, formal = this.courseList.filter(function (c) { return !c.isAi; })[0];
-        f.courseId = formal ? formal.courseId : '';
-        this.aiTab = 'list'; this.aiRecs = []; this.sumStore = {};
+        var f = this.formInline, C = this.ctx.D.COURSES || {}, key = this.viewerKey;
+        var ks = Object.keys(C).filter(function (k) { return C[k].teacher === key; });
+        var formal = ks.filter(function (k) { return C[k].type !== 'ai'; })[0], ai = ks.filter(function (k) { return C[k].type === 'ai'; })[0];
+        this.resetRecs();
+        f.courseId = formal || ''; f.aiCourseId = ai || '';
       },
-      'formInline.courseId': function (v) {
-        this.aiTab = 'list'; this.aiRecs = []; this.sumStore = {};
-        var cl = v === 'formal4' ? ['k4'] : ['k2'];
-        var c = (this.ctx.D.COURSES || {})[v];
-        if (c && c.type === 'ai') cl = this.aiClassOptions().map(function (o) { return o.classIdStr; });
-        this.formInline.classIds = cl;
+      'formInline.courseId': function (v) { this.formInline.classIds = v === 'formal4' ? ['k4'] : ['k2']; },
+      'formInline.aiCourseId': function () {
+        this.resetRecs();
+        this.formInline.aiClassIds = this.aiClassOptions().map(function (o) { return o.classIdStr; });
       },
       /* 选了具体课节：与数据卡片筛选、全部筛选条件互斥（真实：选课节时无法按用户条件搜索） */
       selectedSchedule: function (v) {
@@ -935,7 +948,7 @@
     methods: {
       /* AI 作文课的班级选项 = 该课程下、该教辅名下（班级 → 教辅映射）学员所在的班级；默认全选 */
       aiClassOptions: function () {
-        var D = this.ctx.D || {}, CT = D.CLASS_TEACHER || {}, key = this.viewerKey, course = this.formInline.courseId, out = [];
+        var D = this.ctx.D || {}, CT = D.CLASS_TEACHER || {}, key = this.viewerKey, course = this.formInline.aiCourseId, out = [];
         (this.ctx.STU || []).forEach(function (s) {
           if (s.course !== course || CT[s.cls] !== key) return;
           if (!out.some(function (o) { return o.classIdStr === s.cls; })) out.push({ classIdStr: s.cls, className: s.cls });
@@ -943,7 +956,13 @@
         return out;
       },
       /* 浮层里改班级：回到「学员列表」；课节重置由 ai-panel 监听 classIds 完成；已开的档案 / 总结页签保留（沿用现有 handleClassChange） */
-      onClassChange: function () { this.aiTab = 'list'; },
+      onClassChange: function () { if (this.isAi) this.currentTabName = 'AiEssay'; },
+      /* 换教辅 / 换 AI 作文课：关闭学员档案等动态页签，回到「AI作文课」页签（在素养课页签时不跳转） */
+      resetRecs: function () {
+        var n = this.currentTabName, isRec = this.aiRecs.some(function (r) { return r.name === n; });
+        this.aiRecs = []; this.sumStore = {};
+        if (isRec) this.currentTabName = 'AiEssay';
+      },
       /* ---- 学员档案灵活页签（同一学员复用；可关闭页签最多 5 个，沿用现有提示） ---- */
       openRec: function (row) {
         var name = 'StudentRecord_' + row.sid;
@@ -1008,8 +1027,9 @@
       openEssay: function () { this.$act('fake', { m: '素养课的作文批改入口本次不涉及；AI 作文课请在浮层里选「AI作文课」' }); },
       /* 顶部页签：只有"工作台"是本次范围，其它页签点了给提示、保持选中"工作台" */
       onHeaderTabLeave: function (name) {
-        if (name !== 'Workbench') { this.$act('fake', { m: FAKE }); return false; }
-        return true;
+        if (name === 'AiEssay') { this.aiVisited = true; return true; }
+        if (name === 'Workbench' || this.aiRecs.some(function (r) { return r.name === name; })) return true;
+        this.$act('fake', { m: FAKE }); return false;
       },
       onStageClick: function () { this.selectedFilterType = null; this.selectedFilterValue = null; this.selection = []; },
       onRefresh: function () { this.$act('fake', { m: FAKE }); },

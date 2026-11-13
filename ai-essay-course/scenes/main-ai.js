@@ -52,14 +52,12 @@
       '<el-table-column label="课程完成" width="120"><template slot-scope="scope">' +
         '<span class="x-ai-done">{{ scope.row.done }}</span><span class="x-ai-done-total"> / {{ lessons.length }} 节</span>' +
       '</template></el-table-column>' +
-      '<el-table-column label="本课节学习次数" width="130"><template slot-scope="scope">{{ scope.row.st.times }}</template></el-table-column>' +
       '<el-table-column label="最近学习时间" width="140"><template slot-scope="scope">{{ scope.row.st.last || \'-\' }}</template></el-table-column>' +
-      '<el-table-column label="是否完课" width="110"><template slot-scope="scope"><div>{{ scope.row.st.state === \'已完课\' ? \'是\' : \'否\' }}</div><div v-if="scope.row.chasedDone" class="x-ai-chased">{{ scope.row.chasedDone }}</div></template></el-table-column>' +
-      '<el-table-column label="视频学习时长（首次）" width="170"><template slot-scope="scope">{{ scope.row.st.times ? scope.row.vmin + \'分钟\' : \'-\' }}</template></el-table-column>' +
+      '<el-table-column width="120"><template slot="header"><el-tooltip placement="top" content="学生是否完成全部AI带练步骤"><span>是否完课 <i class="el-icon-question"></i></span></el-tooltip></template><template slot-scope="scope"><div>{{ scope.row.st.state === \'已完课\' ? \'是\' : \'否\' }}</div><div v-if="scope.row.chasedDone" class="x-ai-chased">{{ scope.row.chasedDone }}</div></template></el-table-column>' +
       '<el-table-column label="写作步骤进度" width="120"><template slot-scope="scope">{{ scope.row.stepText }}</template></el-table-column>' +
       '<el-table-column label="互动题完成情况" width="130"><template slot-scope="scope">{{ scope.row.st.qa }}</template></el-table-column>' +
       '<el-table-column label="互动题答题正确率" width="150"><template slot-scope="scope">{{ scope.row.st.acc == null ? \'-\' : scope.row.st.acc + \'%\' }}</template></el-table-column>' +
-      '<el-table-column label="学习时长（首次）" width="150"><template slot-scope="scope">{{ scope.row.st.times ? scope.row.st.once + \'分钟\' : \'-\' }}</template></el-table-column>' +
+      '<el-table-column width="130"><template slot="header"><el-tooltip placement="top" content="学生在单次AI带练步骤中的互动次数"><span>互动轮次 <i class="el-icon-question"></i></span></el-tooltip></template><template slot-scope="scope">{{ scope.row.st.rounds == null ? \'-\' : scope.row.st.rounds + \'次\' }}</template></el-table-column>' +
       '<el-table-column label="作文" width="110" align="center">' +
         '<template slot-scope="scope">' +
           '<el-button v-if="scope.row.essay" type="text" size="small" style="padding: 0;" @click="viewEssay(scope.row.essay)">查看</el-button>' +
@@ -68,6 +66,7 @@
       '</el-table-column>' +
       '<el-table-column label="提交状态" width="110"><template slot-scope="scope"><div>{{ scope.row.submitted ? \'是\' : \'否\' }}</div><div v-if="scope.row.chasedSubmit" class="x-ai-chased">{{ scope.row.chasedSubmit }}</div></template></el-table-column>' +
       '<el-table-column label="提交时间" width="170"><template slot-scope="scope">{{ scope.row.submitted ? scope.row.essay.submit : \'--\' }}</template></el-table-column>' +
+      '<el-table-column label="批改状态" width="110"><template slot-scope="scope"><span v-if="scope.row.reported" :style="{ color: \'#07c160\' }">已批改</span><span v-else-if="scope.row.submitted" :style="{ color: \'#ff8000\' }">未批改</span><span v-else>--</span></template></el-table-column>' +
       '<el-table-column label="操作" width="220" fixed="right" align="center">' +
         '<template slot-scope="scope"><div class="operation-buttons">' +
           '<el-button v-if="scope.row.submitted" type="text" size="mini" class="x-ai-go" @click="goGrade(scope.row.essay)"> 查看批改结果 </el-button>' +
@@ -117,11 +116,11 @@
               '<el-option label="是" value="yes"></el-option>' +
               '<el-option label="否" value="no"></el-option>' +
             '</el-select>') +
-          searchBox('批改报告：',
-            '<el-select v-model="lf.report" size="small" style="width: 130px;">' +
+          searchBox('批改状态：',
+            '<el-select v-model="lf.grade" size="small" style="width: 130px;">' +
               '<el-option label="全部" value="all"></el-option>' +
-              '<el-option label="已生成" value="yes"></el-option>' +
-              '<el-option label="未生成" value="no"></el-option>' +
+              '<el-option label="已批改" value="yes"></el-option>' +
+              '<el-option label="未批改" value="no"></el-option>' +
             '</el-select>') +
           searchBox('学生ID/手机号/姓名：',
             '<el-input v-model="lf.nameInput" placeholder="输入学生ID/手机号或姓名，按回车查询" size="small" style="width: 300px;" ' +
@@ -159,8 +158,7 @@
           row('学生', '{{ repStu ? repStu.name : \'-\' }}') +
           row('作文标题', '{{ repE.title }}') +
           row('课节', '{{ lessonName(repE.course, repE.lesson) }}') +
-          row('是否提交', '{{ isDraft ? \'否（当前为草稿）\' : \'是（当前为最终提交版）\' }}') +
-          row('提交时间', '{{ isDraft ? \'--\' : repE.submit }}') +
+          '<div v-if="mode === \'report\'">' + row('提交时间', '{{ repE.submit }}') + '</div>' +
           '<template v-if="mode === \'report\' && repE.status === \'graded\'">' +
             row('批改老师', '{{ teacherName(repE.gradedBy) }}') +
             row('批改时间', '{{ repE.gradedAt }}') +
@@ -170,7 +168,7 @@
         /* 手机外框里嵌学生端（C 端）页面：作文内容 / 批改报告 */
         '<div class="x-ai-phone-wrap">' +
           '<div class="x-ai-phone"><iframe class="x-ai-phone-frame" :src="frameSrc" frameborder="0"></iframe></div>' +
-          '<div class="x-ai-paper-cap">{{ mode === \'report\' ? \'学生端批改报告页（班课以 from=cm 方式嵌入）\' : \'学生端作文页（C 端渲染）· \' + (isDraft ? \'草稿\' : \'最终提交版\') }}</div>' +
+          '<div class="x-ai-paper-cap">{{ mode === \'report\' ? \'学生端批改报告页（班课以 from=cm 方式嵌入）\' : \'学生端（C 端）作文页 · 学生的文字版作文\' }}</div>' +
         '</div>' +
       '</div>' +
     '</el-drawer>';
@@ -199,9 +197,9 @@
         if (!e) return '';
         var t = e.txt || {};
         var data = {
-          view: this.mode, draft: this.isDraft, name: this.repStu ? this.repStu.name : '', grade: this.repGrade,
+          view: this.mode, draft: false, name: this.repStu ? this.repStu.name : '', grade: this.repGrade,
           unit: this.lessonName(e.course, e.lesson), title: e.title,
-          paras: this.isDraft ? (this.D.DRAFT_PARAS || this.paras.slice(0, 2)) : this.paras,
+          paras: this.paras,
           '总评': t['总评'], '详细点评': t['详细点评'], '全文润色': t['全文润色'], '诊断建议': t['诊断建议']
         };
         return 'student-report.html#' + encodeURIComponent(JSON.stringify(data));
@@ -228,7 +226,7 @@
       var def = ls.length ? ls[0].id : '';
       ls.forEach(function (l) { if (l.open) def = l.id; });
       return {
-        lf: { lesson: def, done: 'all', submit: 'all', report: 'all', nameInput: '', name: '', page: 1, size: 50 },
+        lf: { lesson: def, done: 'all', submit: 'all', grade: 'all', nameInput: '', name: '', page: 1, size: 50 },
         repShow: false, repId: null, repMode: 'essay', sel: [], followShow: false, followRow: null, hlSid: '', chased: {}, reachToday: 1494
       };
     },
@@ -269,7 +267,8 @@
         var rows = this.listAll.filter(function (r) {
           if (f.done !== 'all' && (r.st.state === '已完课') !== (f.done === 'yes')) return false;
           if (f.submit !== 'all' && r.submitted !== (f.submit === 'yes')) return false;
-          if (f.report !== 'all' && r.reported !== (f.report === 'yes')) return false;
+          if (f.grade === 'yes' && !r.reported) return false;
+          if (f.grade === 'no' && !(r.submitted && !r.reported)) return false;
           var kw = (f.name || '').trim();
           if (kw && r.name.indexOf(kw) === -1 && String(r.sid).indexOf(kw) === -1 && String(r.phone).indexOf(kw) === -1) return false;
           return true;
@@ -292,7 +291,7 @@
       classIds: function () { this.resetLesson(); this.lf.page = 1; },
       'lf.done': function () { this.lf.page = 1; },
       'lf.submit': function () { this.lf.page = 1; },
-      'lf.report': function () { this.lf.page = 1; },
+      'lf.grade': function () { this.lf.page = 1; },
       'lf.name': function () { this.lf.page = 1; }
     },
     methods: {
@@ -317,7 +316,7 @@
         var f = this.lf, p = ['课节：' + this.lessonName(this.courseKey, f.lesson)];
         if (f.done !== 'all') p.push('是否完课：' + (f.done === 'yes' ? '是' : '否'));
         if (f.submit !== 'all') p.push('提交状态：' + (f.submit === 'yes' ? '是' : '否'));
-        if (f.report !== 'all') p.push('批改报告：' + (f.report === 'yes' ? '已生成' : '未生成'));
+        if (f.grade !== 'all') p.push('批改状态：' + (f.grade === 'yes' ? '已批改' : '未批改'));
         if ((f.name || '').trim()) p.push('关键词：' + f.name.trim());
         return p.join('；');
       },
@@ -361,7 +360,7 @@
       applyFocus: function (f) {
         if (!f) return;
         var self = this, lf = this.lf;
-        lf.done = 'all'; lf.submit = 'all'; lf.report = 'all'; lf.nameInput = ''; lf.name = ''; lf.page = 1;
+        lf.done = 'all'; lf.submit = 'all'; lf.grade = 'all'; lf.nameInput = ''; lf.name = ''; lf.page = 1;
         lf.lesson = f.lesson; this.hlSid = f.sid;
         this.repMode = 'essay'; this.repId = f.essayId; this.repShow = true;
         this.$nextTick(function () { var el = document.querySelector('.x-ai-hl'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center' }); });
@@ -372,7 +371,7 @@
       applyListName: function () { this.lf.name = this.lf.nameInput; },
       clearList: function () {
         var f = this.lf;
-        f.done = 'all'; f.submit = 'all'; f.report = 'all'; f.nameInput = ''; f.name = ''; this.hlSid = '';
+        f.done = 'all'; f.submit = 'all'; f.grade = 'all'; f.nameInput = ''; f.name = ''; this.hlSid = '';
         this.resetLesson();
       },
       resetLesson: function () {

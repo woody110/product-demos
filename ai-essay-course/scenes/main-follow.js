@@ -70,12 +70,11 @@
                 '<div class="table-container">' +
                   '<el-table :data="rows" size="small" border style="width: 100%;">' +
                     '<el-table-column prop="name" label="小节" width="118" fixed></el-table-column>' +
-                    '<el-table-column label="是否完课" width="64"><template slot-scope="s">{{ s.row.done ? \'是\' : \'否\' }}</template></el-table-column>' +
-                    '<el-table-column label="视频学习时长（首次）" width="96"><template slot-scope="s">{{ s.row.learned ? s.row.vmin + \'分钟\' : \'-\' }}</template></el-table-column>' +
+                    '<el-table-column width="84"><template slot="header"><el-tooltip placement="top" content="学生是否完成全部AI带练步骤"><span>是否完课 <i class="el-icon-question"></i></span></el-tooltip></template><template slot-scope="s">{{ s.row.done ? \'是\' : \'否\' }}</template></el-table-column>' +
                     '<el-table-column label="写作步骤进度" width="72"><template slot-scope="s">{{ s.row.steps }}</template></el-table-column>' +
                     '<el-table-column label="互动题完成情况" width="76"><template slot-scope="s">{{ s.row.qa }}</template></el-table-column>' +
                     '<el-table-column label="互动题答题正确率" width="84"><template slot-scope="s">{{ s.row.acc == null ? \'-\' : s.row.acc + \'%\' }}</template></el-table-column>' +
-                    '<el-table-column label="学习时长（首次）" width="84"><template slot-scope="s">{{ s.row.learned ? s.row.dur + \'分钟\' : \'-\' }}</template></el-table-column>' +
+                    '<el-table-column width="96"><template slot="header"><el-tooltip placement="top" content="学生在单次AI带练步骤中的互动次数"><span>互动轮次 <i class="el-icon-question"></i></span></el-tooltip></template><template slot-scope="s">{{ s.row.rounds == null ? \'-\' : s.row.rounds + \'次\' }}</template></el-table-column>' +
                     '<el-table-column label="作文提交" width="64"><template slot-scope="s"><el-button v-if="s.row.submitted" type="text" size="mini" style="padding:0" @click="openEssay(s.row)">是</el-button><span v-else>否</span></template></el-table-column>' +
                     '<el-table-column label="提交时间" width="96"><template slot-scope="s">{{ s.row.submitted ? s.row.submit : \'--\' }}</template></el-table-column>' +
                   '</el-table>' +
@@ -119,21 +118,12 @@
       '</div>' +
     '</div>' +
     '<div class="drawer-footer"><el-button type="primary" @click="submit">提交</el-button></div>' +
-    '<el-dialog :visible.sync="dlg" :title="dlgTitle" width="460px" append-to-body custom-class="x-fd-dlg">' +
-      '<div v-if="cur">' +
-        '<div class="x-fd-dlg-bar"><el-radio-group v-model="view" size="small">' +
-          '<el-radio-button label="essay">作文（最终提交版）</el-radio-button>' +
-          '<el-radio-button label="report" :disabled="!cur.graded">批改报告</el-radio-button>' +
-        '</el-radio-group><span v-if="!cur.graded" class="x-fd-dlg-tip">批改报告还没有生成</span></div>' +
-        '<div class="x-ai-phone-wrap"><div class="x-ai-phone"><iframe class="x-ai-phone-frame" :src="frameSrc" frameborder="0"></iframe></div>' +
-        '<div class="x-ai-paper-cap">学生端（C 端）页面 · {{ view === \'report\' ? \'批改报告\' : \'作文最终提交版\' }}</div></div>' +
-      '</div>' +
-    '</el-dialog>' +
+    '<essay-result-drawer :essay-id="essayId" mode="essay" :visible.sync="essayShow"></essay-result-drawer>' +
   '</el-drawer>';
 
   Vue.component('follow-drawer', C({
     props: { row: Object, visible: Boolean },
-    data: function () { return { dlg: false, cur: null, view: 'essay', activeTab: 'lessonAction', followType: '首通', remark: '', channel: 1, finish: 2, types: ['首通', '首轮', '首课', '挽单沟通', '续费沟通', '空白期回访', '作业回访', '出勤回访', '阶段性学情回访', '重点跟进', '能力测评沟通', '其他'] }; },
+    data: function () { return { essayShow: false, essayId: null, activeTab: 'lessonAction', followType: '首通', remark: '', channel: 1, finish: 2, types: ['首通', '首轮', '首课', '挽单沟通', '续费沟通', '空白期回访', '作业回访', '出勤回访', '阶段性学情回访', '重点跟进', '能力测评沟通', '其他'] }; },
     watch: { visible: function (v) { if (v) { this.activeTab = 'lessonAction'; this.remark = ''; this.followType = '首通'; } } },
     computed: {
       D: function () { return this.ctx.D || {}; },
@@ -154,15 +144,6 @@
         return { stu: '近期完成了第 1~3 课学习，写作表达积极，细节描写偏弱。', parent: '家长关注作文成绩，愿意配合订正。', other: '周末晚间可沟通。',
           last: '2026-11-04 电话沟通', tips: '先肯定孩子写作的积极性，再用本节作文的具体例子说明细节描写的提升点，邀请家长陪孩子完成订正。' };
       },
-      dlgTitle: function () { return this.cur ? this.cur.name + ' · 作文' : '作文'; },
-      frameSrc: function () {
-        var c = this.cur, e = c && c.essay;
-        if (!e) return '';
-        var t = e.txt || {}, D = this.D, ck = this.row.course, C = (D.COURSES || {})[ck];
-        var data = { view: this.view, draft: false, name: this.row.name, grade: C ? String(C.title).slice(0, 3) : '-', unit: c.name, title: e.title,
-          paras: D.PARAS || [], '总评': t['总评'], '详细点评': t['详细点评'], '全文润色': t['全文润色'], '诊断建议': t['诊断建议'] };
-        return 'student-report.html#' + encodeURIComponent(JSON.stringify(data));
-      },
       ab: function () { return { dur: 18, ans: 5, total: 5, ok: 4 }; },
       /* 该学员在这门 AI 作文课里、已开课小节的学情 */
       rows: function () {
@@ -174,7 +155,7 @@
           var es = (ctx.E || []).filter(function (e) { return e.sid === row.sid && e.course === row.course && e.lesson === l.id; })[0];
           return {
             name: l.name, learned: st.times > 0, done: st.state === '已完课', vmin: Math.round(st.video * 0.12),
-            steps: num(st.steps) + '/' + (l.stepTotal || 5), qa: st.qa, ans: num(st.qa), qtotal: num(String(st.qa).split('/')[1]), acc: st.acc, dur: st.once,
+            steps: num(st.steps) + '/' + (l.stepTotal || 5), qa: st.qa, ans: num(st.qa), qtotal: num(String(st.qa).split('/')[1]), acc: st.acc, rounds: st.rounds == null ? null : st.rounds,
             submitted: !!es && es.status !== 'draft', submit: es ? es.submit : '', essay: es || null, graded: !!es && es.status === 'graded', lessonId: l.id
           };
         });
@@ -193,7 +174,7 @@
       }
     },
     methods: {
-      openEssay: function (r) { this.cur = r; this.view = 'essay'; this.dlg = true; },
+      openEssay: function (r) { this.essayId = r.essay.id; this.essayShow = true; },
       fake: function () { this.$act('fake', { m: '外呼是班课现有功能，原型里不演示' }); },
       close: function () { this.$emit('update:visible', false); },
       submit: function () { this.$message({ message: '跟进记录已提交（示意）', type: 'success' }); this.close(); }

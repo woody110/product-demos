@@ -44,9 +44,8 @@ body{width:375px;padding-bottom:28px}
     html += sec('作文信息', '<div class="info">' +
       '<div><span>学生</span><b>' + esc(d.name) + '</b></div>' +
       '<div><span>单元</span><b>' + esc(d.unit) + '</b></div>' +
-      '<div><span>作文标题</span><b>' + esc(d.title) + '<em class="tag" style="font-style:normal">' + (d.draft ? '草稿' : '已提交') + '</em></b></div></div>');
-    html += sec('作文内容', '<div class="card"><div class="txt" style="font-size:15px;line-height:2">' + eps + '</div></div>' +
-      '<div class="cap">' + (d.draft ? '这是学生保存的草稿，还没有提交。' : '这是学生最终提交的版本。') + '</div>');
+      '<div><span>作文标题</span><b>' + esc(d.title) + '</b></div></div>');
+    html += sec('作文内容', '<div class="card"><div class="txt" style="font-size:15px;line-height:2">' + eps + '</div></div>');
     document.getElementById('app').innerHTML = html;
     return;
   }
