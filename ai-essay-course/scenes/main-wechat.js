@@ -155,7 +155,8 @@
 
   /* ---------------- add-update.vue ---------------- */
   Vue.component('wechat-send-page', C({
-    props: { student: { type: Object, default: function () { return { sid: '', name: '', cls: '' }; } }, content: { type: String, default: '' } },
+    props: { student: { type: Object, default: function () { return { sid: '', name: '', cls: '' }; } }, students: { type: Array, default: function () { return []; } }, taskKind: { type: String, default: 'script' }, content: { type: String, default: '' },
+      mode: { type: String, default: '' }, filterText: { type: String, default: '' }, templates: { type: Object, default: function () { return {}; } }, defType: { type: Number, default: 91 } },
     data: function () {
       var me = this;
       var d = new Date();
@@ -163,11 +164,12 @@
         if (me.contents.length === 0) callback(new Error('请确认发送内容')); else callback();
       };
       return {
-        taskTypeList: [{ label: 'AI作文课学情话术', value: 90 }],
-        contents: this.content ? [{ contentSort: 1, contentType: '0', content: this.content }] : [],
+        taskTypeList: [{ label: 'AI作文课学情话术', value: 90 }, { label: 'AI作文课·自定义群发', value: 91 }, { label: 'AI作文课·催完课', value: 92 }, { label: 'AI作文课·催提交', value: 93 }],
+        lastTpl: (this.defType === 92 ? this.templates.done : this.defType === 93 ? this.templates.submit : '') || '',
+        contents: this.content ? [{ contentSort: 1, contentType: '0', content: this.content }] : ((this.defType === 92 ? this.templates.done : this.defType === 93 ? this.templates.submit : '') ? [{ contentSort: 1, contentType: '0', content: (this.defType === 92 ? this.templates.done : this.templates.submit) }] : []),
         ruleForm: {
-          taskName: 'AI作文课话术-' + (this.student.name || '') + '-' + pad(d.getMonth() + 1) + pad(d.getDate()),
-          sendType: '0', sendTime: '', taskType: 90
+          taskName: (this.taskKind === 'script' ? 'AI作文课话术-' + (this.student.name || '') : ({ 91: 'AI作文课群发', 92: '催完课', 93: '催提交' }[this.defType] || '群发')) + '-' + pad(d.getMonth() + 1) + pad(d.getDate()),
+          sendType: '0', sendTime: '', taskType: this.taskKind === 'script' ? 90 : this.defType
         },
         rules: {
           taskName: { required: true, message: '请输入任务名称', trigger: 'change' },
@@ -177,9 +179,29 @@
       };
     },
     computed: {
+      list: function () { return this.students.length ? this.students : [this.student]; },
+      typeOptions: function () { return this.taskKind === 'script' ? this.taskTypeList.slice(0, 1) : this.taskTypeList.slice(1); },
+      targetText: function () {
+        var l = this.list, names = l.map(function (x) { return x.name; }).join('、');
+        if (this.mode === 'dynamic') return '按当前筛选条件（动态）：' + this.filterText + '；共 ' + l.length + ' 位学员的家长企微好友（已排除家长未加好友 / 已退费学员）';
+        if (this.mode === 'static') return '按勾选学员（静态）：共 ' + l.length + ' 位学员的家长企微好友：' + names;
+        if (l.length === 1) return '已选择学员 ' + l[0].name + ' 的家长企微好友（1 位）';
+        return '已选择 ' + l.length + ' 位学员的家长企微好友：' + names;
+      },
+      typeTip: function () {
+        var l = this.list, t = this.ruleForm.taskType;
+        if (t === 92) { var n = l.filter(function (x) { return x.done; }).length; return n ? '提示：其中 ' + n + ' 位本课节已完课，不需要催完课；建议回列表把「是否完课」筛成"否"再发起。' : ''; }
+        if (t === 93) {
+          var a = l.filter(function (x) { return x.submitted; }).length, b = l.filter(function (x) { return !x.done; }).length, tip = [];
+          if (a) tip.push(a + ' 位已提交作文');
+          if (b) tip.push(b + ' 位还没完课（应先催完课）');
+          return tip.length ? '提示：其中 ' + tip.join('、') + '；建议回列表把「提交状态」筛成"否"再发起。' : '';
+        }
+        return '';
+      },
       /* 预览：变量替换成真实内容（真实页面原样显示变量） */
       previewContents: function () {
-        var name = this.student.name || '';
+        var name = this.list[0].name || '';
         return this.contents.map(function (c) {
           var t = String(c.content == null ? '' : c.content).replace(/\[孩子姓名\]/g, name).replace(/\[客户昵称\]/g, name + '家长');
           return { contentSort: c.contentSort, contentType: c.contentType, content: t };
@@ -188,12 +210,21 @@
     },
     methods: {
       onKeyup: function () { return false; },
+      /* 切换群发类型：内容为空或还是上一个模板时，换成新类型的默认话术，名称跟着换 */
+      onType: function (v) {
+        var t = v === 92 ? this.templates.done : v === 93 ? this.templates.submit : '', cur = this.contents.length === 1 && this.contents[0].content === this.lastTpl;
+        if (!this.contents.length || cur) this.contents = t ? [{ contentSort: 1, contentType: '0', content: t }] : [];
+        this.lastTpl = t || '';
+        var d = new Date();
+        this.ruleForm.taskName = ({ 91: 'AI作文课群发', 92: '催完课', 93: '催提交' }[v] || '群发') + '-' + pad(d.getMonth() + 1) + pad(d.getDate());
+      },
       contentsUpdated: function (data) { this.contents = data.slice(); },
       submitForm: function () {
         var me = this;
         this.$refs.ruleForm.validate(function (valid) {
           if (!valid) return false;
           var f = me.ruleForm;
+          if (me.list.length > 500) return me.$message.error('单次群发对象不能超过 500 人，请缩小筛选范围或分批发送');
           if (f.sendType === '1') {
             if (!f.sendTime) return me.$message.error('请选择定时发送时间');
             var diff = new Date(f.sendTime.replace(/-/g, '/')).getTime() - new Date().getTime();
@@ -204,6 +235,7 @@
           }).then(function () {
             me.$emit('submit', {
               content: me.contents.map(function (c) { return c.content; }).join('\n'),
+              taskKind: ({ 90: 'script', 91: 'free', 92: 'done', 93: 'submit' })[f.taskType],
               mode: f.sendType === '1' ? 'timed' : 'now',
               time: f.sendType === '1' ? f.sendTime : ''
             });
@@ -223,12 +255,12 @@
             '<el-input v-model="ruleForm.taskName" placeholder="请给这次群发起个名字~" show-word-limit maxlength="20" @keyup.native="onKeyup"></el-input>' +
           '</el-form-item>' +
           '<el-form-item label="群发类型" prop="taskType">' +
-            '<el-select :disabled="true" v-model="ruleForm.taskType" placeholder="请选择群发类型" style="width: 100%;" clearable>' +
-              '<el-option v-for="item in taskTypeList" :key="item.value" :label="item.label" :value="item.value"></el-option>' +
+            '<el-select :disabled="taskKind === \'script\'" v-model="ruleForm.taskType" placeholder="请选择群发类型" style="width: 100%;" @change="onType">' +
+              '<el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>' +
             '</el-select>' +
           '</el-form-item>' +
           '<el-form-item label="群发对象" prop="groupMembers">' +
-            '<span>已选择学员 {{ student.name }} 的家长企微好友（1 位）</span>' +
+            '<span>{{ targetText }}</span><p v-if="typeTip" class="time-tips" style="color: #e6a23c;">{{ typeTip }}</p>' +
           '</el-form-item>' +
           '<el-form-item label="群发内容" prop="contents" size="large" class="custom-label">' +
             '<wx-group-content ref="groupContent" :contentsData="contents" @contentsDataUpdated="contentsUpdated"></wx-group-content>' +

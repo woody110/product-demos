@@ -54,7 +54,7 @@
       '</template></el-table-column>' +
       '<el-table-column label="本课节学习次数" width="130"><template slot-scope="scope">{{ scope.row.st.times }}</template></el-table-column>' +
       '<el-table-column label="最近学习时间" width="140"><template slot-scope="scope">{{ scope.row.st.last || \'-\' }}</template></el-table-column>' +
-      '<el-table-column label="是否完课" width="100"><template slot-scope="scope">{{ scope.row.st.state === \'已完课\' ? \'是\' : \'否\' }}</template></el-table-column>' +
+      '<el-table-column label="是否完课" width="110"><template slot-scope="scope"><div>{{ scope.row.st.state === \'已完课\' ? \'是\' : \'否\' }}</div><div v-if="scope.row.chasedDone" class="x-ai-chased">{{ scope.row.chasedDone }}</div></template></el-table-column>' +
       '<el-table-column label="视频学习时长（首次）" width="170"><template slot-scope="scope">{{ scope.row.st.times ? scope.row.vmin + \'分钟\' : \'-\' }}</template></el-table-column>' +
       '<el-table-column label="写作步骤进度" width="120"><template slot-scope="scope">{{ scope.row.stepText }}</template></el-table-column>' +
       '<el-table-column label="互动题完成情况" width="130"><template slot-scope="scope">{{ scope.row.st.qa }}</template></el-table-column>' +
@@ -66,7 +66,7 @@
           '<span v-else>-</span>' +
         '</template>' +
       '</el-table-column>' +
-      '<el-table-column label="提交状态" width="100"><template slot-scope="scope">{{ scope.row.submitted ? \'是\' : \'否\' }}</template></el-table-column>' +
+      '<el-table-column label="提交状态" width="110"><template slot-scope="scope"><div>{{ scope.row.submitted ? \'是\' : \'否\' }}</div><div v-if="scope.row.chasedSubmit" class="x-ai-chased">{{ scope.row.chasedSubmit }}</div></template></el-table-column>' +
       '<el-table-column label="提交时间" width="170"><template slot-scope="scope">{{ scope.row.submitted ? scope.row.essay.submit : \'--\' }}</template></el-table-column>' +
       '<el-table-column label="操作" width="220" fixed="right" align="center">' +
         '<template slot-scope="scope"><div class="operation-buttons">' +
@@ -133,6 +133,7 @@
           '<div class="list-header-inline">' +
             '<div class="list-info"><span>符合筛选条件的约有{{ listRows.length }}条</span><span>，已选中{{ sel.length }}条</span></div>' +
             '<div class="list-actions">' +
+              '<el-tooltip :disabled="canSend" content="登录人不是所选教辅，不可群发" placement="top"><div style="display: inline-block;padding: 0 10px;"><el-button type="primary" :disabled="!canSend" @click="openBatch">企微群发</el-button></div></el-tooltip>' +
               '<el-button @click="clearList">清空筛选条件</el-button>' +
               '<el-button @click="doExport">导出</el-button>' +
             '</div>' +
@@ -228,12 +229,13 @@
       ls.forEach(function (l) { if (l.open) def = l.id; });
       return {
         lf: { lesson: def, done: 'all', submit: 'all', report: 'all', nameInput: '', name: '', page: 1, size: 50 },
-        repShow: false, repId: null, repMode: 'essay', sel: [], followShow: false, followRow: null, hlSid: ''
+        repShow: false, repId: null, repMode: 'essay', sel: [], followShow: false, followRow: null, hlSid: '', chased: {}, reachToday: 1494
       };
     },
     created: function () {},
     computed: {
       D: function () { return this.ctx.D || {}; },
+      canSend: function () { return this.viewer === (this.ctx.S || {}).me; },
       lessons: function () { return (this.D.LESSONS || {})[this.courseKey] || []; },
       paras: function () { return this.D.PARAS || []; },
       /* 学员 = 浮层所选班级下、当前课程里的学员 */
@@ -245,7 +247,7 @@
       cards: function () { return {}; },
       /* ---- 学员列表：每课节每学员 1 篇作文；草稿 = 学生没提交；批改报告在老师「完成批改」后生成并发给学生 ---- */
       listAll: function () {
-        var allLs = (this.D.LESSONS || {})[this.courseKey] || [], ctx = this.ctx, L = this.lf.lesson;
+        var allLs = (this.D.LESSONS || {})[this.courseKey] || [], ctx = this.ctx, L = this.lf.lesson, chased = this.chased;
         var lesson = allLs.filter(function (l) { return l.id === L; })[0] || {};
         return this.courseStu.map(function (s, idx) {
           var essay = (ctx.E || []).filter(function (e) { return e.sid === s.sid && e.course === s.course && e.lesson === L; })[0] || null;
@@ -254,6 +256,8 @@
           return {
             idx: idx, sid: s.sid, name: s.name, phone: s.phone, cls: s.cls, refunded: s.refunded, course: s.course,
             st: st, essay: essay, submitted: submitted, reported: !!essay && essay.status === 'graded',
+            noFriend: !!s.noFriend, essayTitle: essay ? essay.title : '',
+            chasedDone: chased[s.sid + '|' + L + '|done'] || '', chasedSubmit: chased[s.sid + '|' + L + '|submit'] || '',
             vmin: Math.round(st.video * 0.12),
             stepText: (parseInt(st.steps) || 0) + '/' + (lesson.stepTotal || 5),
             done: allLs.filter(function (l) { return s.study[l.id] && s.study[l.id].state === '已完课'; }).length
@@ -301,6 +305,55 @@
       },
       onSel: function (rows) { this.sel = rows; },
       openStu: function (row) { this.$emit('open-student', { sid: row.sid, name: row.name, cls: row.cls, phone: row.phone }); },
+      /* ---- 企微群发（现有能力）：有勾选 = 静态（按勾选学员）；没勾选 = 动态（按当前筛选条件，所有页）。
+            流程：当天触达是否超 1500 人次 → 触达校验（排除家长没加好友 / 已退费）并弹窗确认 → 新建群发页 → 单次是否超 500 人 → 二次确认 → 创建任务 ---- */
+      tpl: function (kind) {
+        var ln = this.lessonName(this.courseKey, this.lf.lesson), title = ln.split(' ')[1] || ln;
+        if (kind === 'done') return '[客户昵称]您好，[孩子姓名]这节「' + ln + '」还没有学完哦～打开 AI 作文课，跟着写作步骤一步步完成，大约 20 分钟就能写出自己的作文。遇到不会的随时问我～';
+        if (kind === 'submit') return '[客户昵称]您好，[孩子姓名]的作文《' + title + '》已经写好啦，就差最后一步「提交」～提交后老师就能帮孩子看作文、给出建议了，辛苦提醒孩子点一下提交哦～';
+        return '';
+      },
+      filterText: function () {
+        var f = this.lf, p = ['课节：' + this.lessonName(this.courseKey, f.lesson)];
+        if (f.done !== 'all') p.push('是否完课：' + (f.done === 'yes' ? '是' : '否'));
+        if (f.submit !== 'all') p.push('提交状态：' + (f.submit === 'yes' ? '是' : '否'));
+        if (f.report !== 'all') p.push('批改报告：' + (f.report === 'yes' ? '已生成' : '未生成'));
+        if ((f.name || '').trim()) p.push('关键词：' + f.name.trim());
+        return p.join('；');
+      },
+      openBatch: function () {
+        var me = this, mode = this.sel.length ? 'static' : 'dynamic', pool = this.sel.length ? this.sel : this.listRows;
+        if (!pool.length) { this.$message({ message: '没有可群发的学员', type: 'warning' }); return; }
+        if (this.reachToday + pool.length > 1500) {
+          this.$alert('今天已触达 ' + this.reachToday + ' 人次，本次 ' + pool.length + ' 人，合计将超过 1500 人次，存在封号风险，已禁止群发。请减少本次人数，或明天再发。', '无法群发', { confirmButtonText: '知道了', type: 'error' }).catch(function () {});
+          return;
+        }
+        var ok = [], out = {};
+        pool.forEach(function (r) {
+          var why = r.refunded ? '已退费' : r.noFriend ? '家长未加好友' : '';
+          if (why) (out[why] = out[why] || []).push(r.name); else ok.push(r);
+        });
+        var outText = Object.keys(out).map(function (k) { return k + ' ' + out[k].length + ' 人（' + out[k].join('、') + '）'; }).join('；');
+        if (!ok.length) { this.$alert('所选 ' + pool.length + ' 位学员里没有可触达的人。已排除：' + outText, '无法群发', { confirmButtonText: '知道了' }).catch(function () {}); return; }
+        var f = this.lf, defType = f.done === 'no' ? 92 : (f.submit === 'no' ? 93 : 91);
+        var go = function () {
+          me.$emit('open-wechat', { mode: mode, filterText: me.filterText(), lesson: me.lf.lesson, defType: defType,
+            templates: { done: me.tpl('done'), submit: me.tpl('submit') },
+            students: ok.map(function (r) { return { sid: r.sid, name: r.name, cls: r.cls, done: r.st.state === '已完课', submitted: r.submitted }; }) });
+        };
+        if (!outText) { go(); return; }
+        this.$confirm('本次' + (mode === 'static' ? '已勾选 ' : '按当前筛选条件共 ') + pool.length + ' 人，可触达 ' + ok.length + ' 人。已自动排除：' + outText + '。继续吗？',
+          '确认群发对象', { confirmButtonText: '继续', cancelButtonText: '取消', type: 'warning' }).then(go).catch(function () {});
+      },
+      /* 群发页提交后：回到列表，累计当天触达人次；催完课 / 催提交类型在格子里留一行小字 */
+      markSent: function (info, payload) {
+        var self = this, kind = payload && payload.taskKind, n = info.sids.length;
+        var when = payload && payload.mode === 'timed' ? String(payload.time || '').slice(5, 16) + ' 定时' : ((this.ctx.D || {}).NOW || '');
+        this.reachToday += n;
+        if (kind === 'done' || kind === 'submit') info.sids.forEach(function (sid) { self.$set(self.chased, sid + '|' + info.lesson + '|' + kind, (kind === 'done' ? '已催完课 ' : '已催提交 ') + when); });
+        this.$message({ type: 'success', message: (payload && payload.mode === 'timed' ? '已创建定时' : '已创建') + '企微群发任务，共 ' + n + ' 位学员家长；可在「企微群发」列表查看发送结果，消息在你的企微聊天记录里' });
+        this.sel = [];
+      },
       /* 点手机号：打开该学员的跟进抽屉（学情数据页签展示 AI 作文课数据） */
       openFollow: function (row) { this.followRow = { sid: row.sid, name: row.name, phone: row.phone, cls: row.cls, course: row.course }; this.followShow = true; },
       rowClass: function (o) { return o.row.sid === this.hlSid ? 'x-ai-hl' : ''; },

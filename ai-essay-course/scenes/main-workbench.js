@@ -541,11 +541,11 @@
     /* ===== B. Tab 内容容器 -> Workbench.vue（workbench-container tab-content） ===== */
     '<div class="tab-container-wrapper"><div>' +
       /* 新增（产品方案 v2）：AI 作文课时整体换成 AI 作文课工作台；换教辅/课程用 :key 重建（回到「学员列表」、筛选重置） */
-      '<ai-panel ref="aiPanel" v-if="isAi" v-show="aiTab === \'list\'" :key="formInline.searchAD + \'|\' + formInline.courseId" :course-key="formInline.courseId" :viewer="viewerKey" :class-ids="formInline.classIds" @open-student="openRec" @open-summary="openSummary"></ai-panel>' +
+      '<ai-panel ref="aiPanel" v-if="isAi" v-show="aiTab === \'list\'" :key="formInline.searchAD + \'|\' + formInline.courseId" :course-key="formInline.courseId" :viewer="viewerKey" :class-ids="formInline.classIds" @open-student="openRec" @open-summary="openSummary" @open-wechat="openWechatBatch"></ai-panel>' +
       /* 新增：点学员姓名 / ID 开「学员档案」灵活页签（沿用现有；原型只示意页签与头部信息） */
       '<template v-if="isAi"><div v-for="r in aiRecs" v-show="aiTab === r.name" :key="r.name">' +
       '<student-summary v-if="r.kind === \'summary\'" :row="r.row" :viewer="viewerKey" :entry="sumStore[r.key]" @send="openWechat"></student-summary>' +
-      '<wechat-send-page v-else-if="r.kind === \'wechat\'" :student="r.student" :content="r.content" @cancel="closeRec(r.name)" @submit="onWechatSubmit(r, $event)"></wechat-send-page>' +
+      '<wechat-send-page v-else-if="r.kind === \'wechat\'" :student="r.student" :students="r.students" :task-kind="r.taskKind" :content="r.content" :mode="r.mode" :filter-text="r.filterText" :templates="r.templates" :def-type="r.defType" @cancel="closeRec(r.name)" @submit="onWechatSubmit(r, $event)"></wechat-send-page>' +
       '<student-record v-else :row="r"></student-record>' +
       '</div></template>' +
       '<div v-else class="workbench-container tab-content">' +
@@ -974,7 +974,24 @@
           student: { sid: p.row.sid, name: p.row.name, cls: p.row.cls }, content: p.content })) return;
         this.aiTab = name;
       },
+      /* 列表头部「企微群发」「催完课」「催提交」：同一时间只开一个群发页签 */
+      openWechatBatch: function (p) {
+        var name = 'Wechat_batch', ex = this.aiRecs.filter(function (r) { return r.name === name; })[0];
+        var rec = { name: name, kind: 'wechat', title: '企微群发', students: p.students, student: p.students[0], taskKind: 'free', content: '',
+          mode: p.mode, filterText: p.filterText, templates: p.templates, defType: p.defType,
+          chase: { lesson: p.lesson, sids: p.students.map(function (s) { return s.sid; }) } };
+        if (ex) { this.aiRecs.splice(this.aiRecs.indexOf(ex), 1, rec); this.aiTab = name; return; }
+        if (!this.pushRec(rec)) return;
+        this.aiTab = name;
+      },
       onWechatSubmit: function (rec, payload) {
+        if (rec.chase) {
+          var panel = this.$refs.aiPanel;
+          this.closeRec(rec.name);
+          this.aiTab = 'list';
+          if (panel) panel.markSent(rec.chase, payload);
+          return;
+        }
         var key = rec.row.sid + '|' + rec.row.course, sname = 'Summary_' + rec.row.sid;
         this.closeRec(rec.name);
         this.aiTab = sname;
